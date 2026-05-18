@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabbit Hole Mindmap Learner 🧠✨</title>
+    <meta name="description" content="Belajar apapun lewat mindmap interaktif dan chat agent bertenaga AI. Masuk sedalam mungkin ke dalam 'rabbit hole' topik belajarmu!">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="index.css">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Kiri: Chat Agent & Kontrol -->
+        <aside class="chat-sidebar" id="chat-sidebar-section">
+            <header class="app-header">
+                <div class="logo-area">
+                    <span class="logo-emoji">🧠</span>
+                    <div class="logo-text">
+                        <h1>Rabbit Hole</h1>
+                        <p>Mindmap Learner</p>
+                    </div>
+                </div>
+                <button class="icon-btn" id="btn-open-settings" title="Pengaturan API Key">
+                    <i data-lucide="settings"></i>
+                </button>
+            </header>
+
+            <!-- Pesan Chat -->
+            <div class="chat-messages" id="chat-messages-container">
+                <div class="chat-bubble bot-message">
+                    <div class="message-content">
+                        Halo! Aku adalah Chat Agent belajarmu. 👋 <br><br>
+                        Topik apa yang ingin kamu pelajari hari ini? Tulis saja (misalnya: *Web Development*, *Quantum Physics*, atau *Seni Memasak*), dan aku akan buatkan peta jalan belajarmu!
+                    </div>
+                    <span class="message-time" id="welcome-message-time">19:15</span>
+                </div>
+            </div>
+
+            <!-- Area Input Chat -->
+            <div class="chat-input-wrapper">
+                <div id="api-warning" class="api-warning hidden">
+                    <i data-lucide="alert-triangle"></i>
+                    <span>9Router API Key belum dikonfigurasi. Klik tombol gerigi di kanan atas.</span>
+                </div>
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="chat-input" placeholder="Tulis topik atau pertanyaan di sini..." autocomplete="off" required>
+                    <button type="submit" id="btn-send-message" class="send-btn" title="Kirim pesan">
+                        <i data-lucide="send"></i>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Area Kanan: Visualisasi Mindmap -->
+        <main class="mindmap-main" id="mindmap-main-section">
+            <!-- Floating Navigation Controls -->
+            <div class="floating-controls">
+                <button class="control-btn" id="btn-zoom-in" title="Perbesar">
+                    <i data-lucide="plus"></i>
+                </button>
+                <button class="control-btn" id="btn-zoom-out" title="Perkecil">
+                    <i data-lucide="minus"></i>
+                </button>
+                <button class="control-btn" id="btn-zoom-fit" title="Pas Layar">
+                    <i data-lucide="maximize-2"></i>
+                </button>
+                <div class="divider"></div>
+                <button class="control-btn toggle-chat-btn" id="btn-toggle-chat" title="Sembunyikan Chat">
+                    <i data-lucide="menu"></i>
+                </button>
+            </div>
+
+            <!-- Mindmap Canvas Container -->
+            <div class="mindmap-canvas-container" id="mindmap-canvas-container">
+                <!-- SVG Canvas for D3 -->
+                <svg id="mindmap-svg" class="mindmap-svg"></svg>
+                
+                <!-- Hint Overlay -->
+                <div class="mindmap-hint" id="mindmap-hint-text">
+                    <i data-lucide="mouse-pointer-click"></i>
+                    <span>Tulis topik di kolom chat untuk memulai. Klik node di mindmap untuk masuk ke rabbit hole.</span>
+                </div>
+            </div>
+
+            <!-- Slide-out Detail Panel (Rabbit Hole Content) -->
+            <div class="detail-drawer" id="detail-drawer">
+                <div class="drawer-resize-handle" id="drawer-resize-handle"></div>
+                <header class="drawer-header">
+                    <div class="drawer-header-left">
+                        <span class="node-tag" id="drawer-node-level">Level 1</span>
+                        <h2 id="drawer-node-title">Judul Topik</h2>
+                    </div>
+                    <button class="icon-btn" id="btn-close-drawer" title="Tutup">
+                        <i data-lucide="x"></i>
+                    </button>
+                </header>
+                <div class="drawer-content" id="drawer-content-body">
+                    <!-- Penjelasan Markdown akan dirender di sini -->
+                    <div id="drawer-markdown-content" class="markdown-body">
+                        Pilih node untuk membaca penjelasan materi mendalam.
+                    </div>
+                    
+                    <!-- Fitur Tanya Jawab Node (Q&A) -->
+                    <div class="drawer-qa-section hidden" id="drawer-qa-section">
+                        <div class="qa-divider"></div>
+                        <h3 class="qa-title"><i data-lucide="help-circle"></i> Tanya Jawab Topik</h3>
+                        <div class="qa-messages-list" id="qa-messages-list"></div>
+                        <form id="drawer-qa-form" class="drawer-qa-form">
+                            <input type="text" id="drawer-qa-input" placeholder="Tanyakan detail atau hal bingung di sini..." autocomplete="off" required>
+                            <button type="submit" id="btn-send-qa" class="qa-send-btn" title="Kirim pertanyaan">
+                                <i data-lucide="send"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <footer class="drawer-footer">
+                    <div class="progress-selector">
+                        <span>Status Belajar:</span>
+                        <div class="status-options">
+                            <button class="status-btn active" data-status="todo" id="status-todo-btn">Belum Mulai</button>
+                            <button class="status-btn" data-status="doing" id="status-doing-btn">Sedang Belajar</button>
+                            <button class="status-btn" data-status="done" id="status-done-btn">Selesai</button>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Settings: API Key 9Router -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3><i data-lucide="key" class="icon-primary"></i> Pengaturan API Key</h3>
+                <button class="icon-btn" id="btn-close-settings" title="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p>Masukkan <strong>9Router API Key</strong> Anda untuk menghubungkan chat agent dengan kecerdasan AI. API Key Anda akan disimpan dengan aman secara lokal di browsermu.</p>
+                <div class="form-group">
+                    <label for="gemini-key-input">9Router API Key</label>
+                    <input type="password" id="gemini-key-input" placeholder="sk-..." autocomplete="off">
+                </div>
+                <div class="info-box">
+                    <i data-lucide="info"></i>
+                    <p>Gunakan API Key dari dashboard 9Router Anda (default: <a href="http://localhost:20128/dashboard" target="_blank" rel="noopener noreferrer">http://localhost:20128/dashboard</a>).</p>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-settings">Batal</button>
+                <button class="btn-primary" id="btn-save-settings">Simpan Kunci API</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- CDNs -->
+    <!-- D3.js v7 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
