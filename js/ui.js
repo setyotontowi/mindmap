@@ -16,7 +16,7 @@ function initUIEventListeners() {
     if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettingsModal);
     if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettingsModal);
     if (btnCancelSettings) btnCancelSettings.addEventListener('click', closeSettingsModal);
-    if (btnSaveSettings) btnSaveSettings.addEventListener('click', saveApiKey);
+    if (btnSaveSettings) btnSaveSettings.addEventListener('click', saveSettings);
     
     // Tutup modal jika klik di luar kartu modal
     if (settingsModal) {
@@ -191,9 +191,7 @@ function switchSidebarMode(mode) {
 // Modal Control
 function openSettingsModal() {
     const modal = document.getElementById('settings-modal');
-    const input = document.getElementById('gemini-key-input');
     const langSelect = document.getElementById('ai-language-select');
-    if (input) input.value = state.apiKey;
     if (langSelect) {
         langSelect.value = state.language;
     }
@@ -205,14 +203,7 @@ function closeSettingsModal() {
     if (modal) modal.classList.remove('open');
 }
 
-function saveApiKey() {
-    const input = document.getElementById('gemini-key-input');
-    if (!input) return;
-    const key = input.value.trim();
-    
-    state.apiKey = key;
-    localStorage.setItem('router_api_key', key);
-    
+function saveSettings() {
     const langSelect = document.getElementById('ai-language-select');
     if (langSelect) {
         state.language = langSelect.value;
@@ -220,11 +211,10 @@ function saveApiKey() {
     }
     
     closeSettingsModal();
-    checkApiKeyWarning();
     
     const message = state.language === 'en'
-        ? 'Settings saved successfully! Start typing a study topic to test it. 🌟'
-        : 'API Key dan pengaturan berhasil disimpan! Mulai ketik topik belajar untuk mencobanya. 🌟';
+        ? 'Settings saved successfully!'
+        : 'Pengaturan berhasil disimpan!';
     appendChatMessage('bot', message);
 }
 

@@ -78,10 +78,6 @@
 
             <!-- Area Input Chat -->
             <div class="chat-input-wrapper">
-                <div id="api-warning" class="api-warning hidden">
-                    <i data-lucide="alert-triangle"></i>
-                    <span>9Router API Key belum dikonfigurasi. Klik tombol gerigi di kanan atas.</span>
-                </div>
                 <form id="chat-form" class="chat-form">
                     <input type="text" id="chat-input" placeholder="Tulis topik atau pertanyaan di sini..." autocomplete="off" required>
                     <button type="submit" id="btn-send-message" class="send-btn" title="Kirim pesan">
@@ -199,21 +195,16 @@
         </main>
     </div>
 
-    <!-- Modal Settings: API Key 9Router -->
+    <!-- Modal Settings -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-card">
             <header class="modal-header">
-                <h3><i data-lucide="key" class="icon-primary"></i> Pengaturan API Key</h3>
+                <h3><i data-lucide="settings" class="icon-primary"></i> Pengaturan Aplikasi</h3>
                 <button class="icon-btn" id="btn-close-settings" title="Tutup">
                     <i data-lucide="x"></i>
                 </button>
             </header>
             <div class="modal-body">
-                <p>Masukkan <strong>9Router API Key</strong> Anda untuk menghubungkan chat agent dengan kecerdasan AI. API Key Anda akan disimpan dengan aman secara lokal di browsermu.</p>
-                <div class="form-group">
-                    <label for="gemini-key-input">9Router API Key</label>
-                    <input type="password" id="gemini-key-input" placeholder="sk-..." autocomplete="off">
-                </div>
                 <div class="form-group">
                     <label for="ai-language-select">Bahasa AI / AI Language</label>
                     <select id="ai-language-select">
@@ -221,14 +212,10 @@
                         <option value="en">English 🇬🇧</option>
                     </select>
                 </div>
-                <div class="info-box">
-                    <i data-lucide="info"></i>
-                    <p>Gunakan API Key dari dashboard 9Router Anda (default: <a href="http://localhost:20128/dashboard" target="_blank" rel="noopener noreferrer">http://localhost:20128/dashboard</a>).</p>
-                </div>
             </div>
             <footer class="modal-footer">
                 <button class="btn-secondary" id="btn-cancel-settings">Batal</button>
-                <button class="btn-primary" id="btn-save-settings">Simpan Kunci API</button>
+                <button class="btn-primary" id="btn-save-settings">Simpan Pengaturan</button>
             </footer>
         </div>
     </div>

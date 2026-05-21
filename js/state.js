@@ -2,7 +2,6 @@
    STATE MANAGEMENT & GLOBAL CONFIG
    ========================================================================== */
 const state = {
-    apiKey: localStorage.getItem('router_api_key') || '',
     language: localStorage.getItem('ai_language') || 'id',
     currentMindmapId: localStorage.getItem('current_mindmap_id') || 'default',
     mindmapData: null,       // Data pohon (tree) D3
@@ -55,6 +54,7 @@ async function saveState(skipDBSync = false) {
 
 function loadState() {
     try {
+        localStorage.removeItem('router_api_key'); // Clean up from local storage
         const savedMindmap = localStorage.getItem('mindmap_data');
         if (savedMindmap) {
             state.mindmapData = JSON.parse(savedMindmap);

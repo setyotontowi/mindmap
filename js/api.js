@@ -31,16 +31,11 @@ async function callRouterAI(prompt, systemInstruction = null) {
     };
 
     try {
-        const headers = {
-            'Content-Type': 'application/json'
-        };
-        if (state.apiKey) {
-            headers['Authorization'] = `Bearer ${state.apiKey}`;
-        }
-
         const response = await fetch(url, {
             method: 'POST',
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(requestBody)
         });
 
@@ -96,16 +91,3 @@ async function callRouterAI(prompt, systemInstruction = null) {
     }
 }
 
-// Cek warning API Key
-function checkApiKeyWarning() {
-    const warningEl = document.getElementById('api-warning');
-    if (!warningEl) return;
-    
-    if (!state.apiKey) {
-        // Warning hanya muncul jika backend key tidak diset, tapi untuk client-side
-        // jika kita tidak tahu apakah backend key diset, kita bisa sembunyikan jika ada key di localStorage
-        warningEl.classList.remove('hidden');
-    } else {
-        warningEl.classList.add('hidden');
-    }
-}

@@ -10,9 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup Event Listeners
     initUIEventListeners();
     
-    // Cek API Key awal
-    checkApiKeyWarning();
-
     // Inisialisasi Canvas D3
     initD3Canvas();
 
