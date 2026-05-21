@@ -20,7 +20,7 @@
 <body>
     <div class="app-container">
         <!-- Sidebar Kiri: Chat Agent & Kontrol -->
-        <aside class="chat-sidebar" id="chat-sidebar-section">
+        <aside class="chat-sidebar mode-history" id="chat-sidebar-section">
             <header class="app-header">
                 <div class="logo-area">
                     <span class="logo-emoji">🧠</span>
@@ -36,6 +36,14 @@
                     <i data-lucide="settings"></i>
                 </button>
             </header>
+
+            <!-- Sub-Header khusus mode Chat (Back Button) -->
+            <div class="chat-mode-header" id="chat-mode-header">
+                <button class="back-to-history-btn" id="btn-back-to-history" title="Kembali ke Riwayat Belajar">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Kembali ke Riwayat</span>
+                </button>
+            </div>
 
             <!-- Riwayat Mindmap Collapsible -->
             <div class="history-section" id="history-section">
@@ -127,6 +135,18 @@
                                 <h2 id="drawer-node-title">Judul Topik</h2>
                             </div>
                             <div class="drawer-header-actions" style="display: flex; gap: 4px;">
+                                <button class="icon-btn" id="btn-add-subnode" title="Tambah Sub-Node Manual">
+                                    <i data-lucide="plus-circle"></i>
+                                </button>
+                                <button class="icon-btn" id="btn-edit-node" title="Edit Node Ini">
+                                    <i data-lucide="edit-3"></i>
+                                </button>
+                                <button class="icon-btn" id="btn-regenerate-node" title="Buat Ulang (Regenerasi) Materi">
+                                    <i data-lucide="refresh-cw"></i>
+                                </button>
+                                <button class="icon-btn" id="btn-delete-node" title="Hapus Node & Cabangnya">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
                                 <button class="icon-btn" id="btn-toggle-drawer-qa" title="Tanya Jawab Topik">
                                     <i data-lucide="message-square"></i>
                                 </button>
@@ -213,12 +233,111 @@
         </div>
     </div>
 
+    <!-- Modal: Tambah Sub-Node Manual -->
+    <div class="modal-overlay" id="add-node-modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3><i data-lucide="plus-circle" class="icon-primary"></i> Tambah Sub-Node Baru</h3>
+                <button class="icon-btn" id="btn-close-add-node" title="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p>Tambahkan sub-node kustom secara manual di bawah node <strong id="add-node-parent-title"></strong>.</p>
+                <div class="form-group">
+                    <label for="add-node-title-input">Judul Sub-Topik</label>
+                    <input type="text" id="add-node-title-input" placeholder="Masukkan judul sub-topik..." autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="add-node-desc-input">Deskripsi Singkat (Maks 15 Kata)</label>
+                    <textarea id="add-node-desc-input" placeholder="Masukkan deskripsi singkat..." rows="2" required></textarea>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-add-node">Batal</button>
+                <button class="btn-primary" id="btn-submit-add-node">Tambah Node</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Node -->
+    <div class="modal-overlay" id="edit-node-modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3><i data-lucide="edit-3" class="icon-primary"></i> Edit Node</h3>
+                <button class="icon-btn" id="btn-close-edit-node" title="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p>Sunting judul dan deskripsi singkat dari node terpilih saat ini.</p>
+                <div class="form-group">
+                    <label for="edit-node-title-input">Judul Topik</label>
+                    <input type="text" id="edit-node-title-input" placeholder="Masukkan judul topik..." autocomplete="off" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-node-desc-input">Deskripsi Singkat</label>
+                    <textarea id="edit-node-desc-input" placeholder="Masukkan deskripsi singkat..." rows="2" required></textarea>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-edit-node">Batal</button>
+                <button class="btn-primary" id="btn-submit-edit-node">Simpan Perubahan</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal: Buat Ulang / Regenerasi Node -->
+    <div class="modal-overlay" id="regenerate-node-modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3><i data-lucide="refresh-cw" class="icon-primary"></i> Buat Ulang Materi AI</h3>
+                <button class="icon-btn" id="btn-close-regenerate-node" title="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p>Kamu akan meminta AI membuat ulang penjelasan materi untuk node <strong id="regenerate-node-title-display"></strong>.</p>
+                
+                <div class="form-group" style="margin-top: 0.5rem;">
+                    <label style="font-weight: 600; margin-bottom: 0.25rem;">Opsi Regenerasi Sub-Node:</label>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 5px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="regenerate-scope" value="keep" checked style="margin-top: 4px; cursor: pointer; width: auto; height: auto;">
+                            <div>
+                                <strong>Hanya buat ulang penjelasan 📝</strong>
+                                <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Penjelasan materi baru akan dibuat, tetapi semua sub-topik yang sudah ada di bawahnya TIDAK akan diubah.</div>
+                            </div>
+                        </label>
+                        
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="regenerate-scope" value="overwrite" style="margin-top: 4px; cursor: pointer; width: auto; height: auto;">
+                            <div>
+                                <strong>Buat ulang penjelasan & sub-topik baru 🔄</strong>
+                                <div style="font-size: 0.72rem; color: #ef4444; margin-top: 2px;">AI akan membuat materi baru DAN membuat sub-topik baru. Semua sub-topik lama/kustom di bawah node ini akan DIHAPUS.</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-regenerate-node">Batal</button>
+                <button class="btn-primary" id="btn-submit-regenerate-node" style="background: var(--accent);">Mulai Regenerasi</button>
+            </footer>
+        </div>
+    </div>
+
     <!-- CDNs -->
     <!-- D3.js v7 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-    <!-- App Script -->
-    <script src="app.js?v=2"></script>
+    <!-- App Scripts (Modularized) -->
+    <script src="js/state.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

@@ -1,681 +1,10 @@
 /* ==========================================================================
-   STATE MANAGEMENT & GLOBAL CONFIG
-   ========================================================================== */
-const state = {
-    apiKey: localStorage.getItem('router_api_key') || '',
-    language: localStorage.getItem('ai_language') || 'id',
-    currentMindmapId: localStorage.getItem('current_mindmap_id') || 'default',
-    mindmapData: null,       // Data pohon (tree) D3
-    activeNode: null,        // Node yang sedang aktif di drawer
-    nodeStatuses: JSON.parse(localStorage.getItem('node_statuses') || '{}'), // nodeName -> 'todo' | 'doing' | 'done'
-    nodeCache: {},           // nodeName -> { explanation, subtopics } (cache untuk rabbit hole)
-    collapsedSidebar: false
-};
-
-// 9Router System Instructions
-function getSystemInstructions() {
-    if (state.language === 'en') {
-        return `You are an expert tutor and professional learning architect. Your task is to help the user learn any topic through dynamic, structured mindmaps and interactive, deep-dive learning guides.`;
-    }
-    return `Anda adalah tutor ahli dan arsitek pembelajaran profesional. Tugas Anda adalah membantu pengguna mempelajari topik apa saja melalui peta pikiran (mindmap) terstruktur yang dinamis dan panduan belajar mendalam (deep dive) dalam Bahasa Indonesia yang interaktif.`;
-}
-
-/* ==========================================================================
-   PERSISTENCE — Save & Restore from localStorage
-   ========================================================================== */
-function showSyncStatus(statusText) {
-    const el = document.getElementById('sync-status');
-    if (el) el.innerText = statusText;
-}
-
-async function saveState(skipDBSync = false) {
-    try {
-        if (state.mindmapData) {
-            localStorage.setItem('mindmap_data', JSON.stringify(state.mindmapData));
-        }
-        localStorage.setItem('node_cache', JSON.stringify(state.nodeCache));
-        localStorage.setItem('node_statuses', JSON.stringify(state.nodeStatuses));
-        
-        if (!skipDBSync && state.mindmapData) {
-            showSyncStatus('Menyimpan... ⏳');
-            const res = await fetch('/api/mindmap', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: state.currentMindmapId,
-                    name: state.mindmapData.name,
-                    tree_data: state.mindmapData,
-                    node_cache: state.nodeCache,
-                    node_statuses: state.nodeStatuses
-                })
-            });
-            if (res.ok) {
-                showSyncStatus('Tersimpan 💾');
-            } else {
-                throw new Error('Server error');
-            }
-        }
-    } catch (e) {
-        console.warn('Gagal menyimpan state:', e);
-        showSyncStatus('Gagal Sinkron ⚠️');
-    }
-}
-
-function loadState() {
-    try {
-        const savedMindmap = localStorage.getItem('mindmap_data');
-        if (savedMindmap) {
-            state.mindmapData = JSON.parse(savedMindmap);
-        }
-        const savedCache = localStorage.getItem('node_cache');
-        if (savedCache) {
-            state.nodeCache = JSON.parse(savedCache);
-        }
-    } catch (e) {
-        console.warn('Gagal memuat state dari localStorage:', e);
-    }
-    // Sinkronisasi data secara asinkron dari SQLite database
-    syncFromDatabase();
-}
-
-async function syncFromDatabase(id = state.currentMindmapId) {
-    try {
-        showSyncStatus('Sinkronisasi... ⏳');
-        const url = id ? `/api/mindmap?id=${id}` : '/api/mindmap';
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Koneksi server gagal');
-        const dbData = await response.json();
-        
-        if (dbData) {
-            state.currentMindmapId = dbData.id || id;
-            localStorage.setItem('current_mindmap_id', state.currentMindmapId);
-            
-            state.mindmapData = dbData.tree_data || null;
-            state.nodeCache = dbData.node_cache || {};
-            state.nodeStatuses = dbData.node_statuses || {};
-            
-            // Simpan lokal agar sinkron
-            saveState(true); 
-            
-            if (state.mindmapData) {
-                updateMindmap(state.mindmapData);
-                setTimeout(zoomFit, 100);
-            } else {
-                // Bersihkan canvas
-                d3.select('#mindmap-svg').selectAll('*').remove();
-                document.getElementById('mindmap-hint-text').classList.remove('hidden');
-            }
-            showSyncStatus('Tersinkronisasi 💾');
-        } else {
-            // Jika DB Kosong tetapi localStorage berisi data, otomatis migrasikan ke SQLite!
-            if (state.mindmapData) {
-                showSyncStatus('Migrasi ke DB... ⏳');
-                await saveState(false);
-            } else {
-                showSyncStatus('DB Kosong 🔌');
-            }
-        }
-        // Muat daftar riwayat
-        await loadHistoryList();
-    } catch (error) {
-        console.warn('Gagal sinkron dari database SQLite:', error);
-        showSyncStatus('Offline (Lokal) 🔌');
-    }
-}
-
-async function clearState() {
-    state.mindmapData = null;
-    state.nodeCache = {};
-    state.nodeStatuses = {};
-    state.activeNode = null;
-    localStorage.removeItem('mindmap_data');
-    localStorage.removeItem('node_cache');
-    localStorage.removeItem('node_statuses');
-    
-    showSyncStatus('Menghapus... ⏳');
-    try {
-        await fetch('/api/mindmap', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: '',
-                tree_data: null,
-                node_cache: {},
-                node_statuses: {}
-            })
-        });
-        showSyncStatus('Dibersihkan ✨');
-    } catch (e) {
-        console.warn('Gagal menghapus data di database:', e);
-        showSyncStatus('Gagal Hapus DB ⚠️');
-    }
-}
-
-/* ==========================================================================
-   INITIALIZATION & SETUP
-   ========================================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-    // Jalankan inisialisasi ikon
-    lucide.createIcons();
-
-    // Setup Event Listeners
-    initUIEventListeners();
-    
-    // Cek API Key awal
-    checkApiKeyWarning();
-
-    // Inisialisasi Canvas D3
-    initD3Canvas();
-
-    // Restore mindmap dari sesi sebelumnya jika ada
-    loadState();
-    if (state.mindmapData) {
-        updateMindmap(state.mindmapData);
-        setTimeout(zoomFit, 100);
-        appendChatMessage('bot', `Selamat datang kembali! Mindmap **${state.mindmapData.name}** telah dipulihkan dari sesi terakhirmu. Lanjutkan belajar! 📚`);
-    }
-});
-
-/* ==========================================================================
-   9ROUTER API CLIENT (OpenAI Compatible)
-   ========================================================================== */
-async function callRouterAI(prompt, systemInstruction = null) {
-    if (!systemInstruction) {
-        systemInstruction = getSystemInstructions();
-    }
-    if (!state.apiKey) {
-        openSettingsModal();
-        throw new Error('API Key Router belum diset. Silakan masukkan kunci API Anda di menu Pengaturan.');
-    }
-
-    const url = 'http://localhost:20128/v1/chat/completions';
-    const model = 'kr/claude-sonnet-4.5';
-
-    const requestBody = {
-        model: model,
-        messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: prompt }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.2,
-        stream: false,
-        max_tokens: 4000
-    };
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${state.apiKey}`
-            },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            const errText = await response.text();
-            let errMsg = 'Gagal terhubung ke 9Router API';
-            try {
-                const errData = JSON.parse(errText);
-                errMsg = errData.error?.message || errMsg;
-            } catch (e) {
-                errMsg = errText || errMsg;
-            }
-            throw new Error(errMsg);
-        }
-
-        const rawText = await response.text();
-        let jsonText = '';
-
-        // Deteksi jika respon berupa format Server-Sent Events (SSE) stream
-        if (rawText.trim().startsWith('data:')) {
-            const lines = rawText.split('\n');
-            for (const line of lines) {
-                const cleanLine = line.trim();
-                if (!cleanLine) continue;
-                if (cleanLine.startsWith('data:')) {
-                    const dataStr = cleanLine.replace(/^data:\s*/, '');
-                    if (dataStr === '[DONE]') continue;
-                    try {
-                        const chunk = JSON.parse(dataStr);
-                        const content = chunk.choices?.[0]?.delta?.content || chunk.choices?.[0]?.message?.content || '';
-                        jsonText += content;
-                    } catch (err) {
-                        console.warn('Gagal memparsing chunk:', err, dataStr);
-                    }
-                }
-            }
-        } else {
-            // Respon JSON standar
-            const data = JSON.parse(rawText);
-            jsonText = data.choices[0].message.content;
-        }
-
-        // Antisipasi jika LLM membungkus JSON dengan markdown code blocks ```json ... ```
-        let cleanJsonText = jsonText.trim();
-        if (cleanJsonText.startsWith('```')) {
-            cleanJsonText = cleanJsonText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
-        }
-
-        return JSON.parse(cleanJsonText);
-    } catch (error) {
-        console.error('9Router API Error:', error);
-        throw error;
-    }
-}
-
-// Cek warning API Key
-function checkApiKeyWarning() {
-    const warningEl = document.getElementById('api-warning');
-    if (!state.apiKey) {
-        warningEl.classList.remove('hidden');
-    } else {
-        warningEl.classList.add('hidden');
-    }
-}
-
-/* ==========================================================================
-   D3.JS VISUALIZATION ENGINE
-   ========================================================================== */
-let svg, g, zoomBehavior;
-let treeLayout, rootNodeData;
-const nodeHeight = 65;
-const margin = { top: 20, right: 120, bottom: 20, left: 40 };
-
-// Fungsi helper untuk menghitung lebar node secara dinamis berdasarkan panjang judulnya
-function getNodeWidth(nodeData) {
-    const title = nodeData.name || '';
-    // Hitung lebar: base 100px + rata-rata 6.5px per karakter judul
-    const calculated = 100 + title.length * 6.5;
-    // Beri batas minimal 160px dan maksimal 280px
-    return Math.min(280, Math.max(160, Math.round(calculated)));
-}
-
-function initD3Canvas() {
-    const container = document.getElementById('mindmap-canvas-container');
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-
-    // Reset SVG jika sudah ada
-    d3.select('#mindmap-svg').selectAll('*').remove();
-
-    svg = d3.select('#mindmap-svg')
-        .attr('width', '100%')
-        .attr('height', '100%');
-
-    // Buat group utama untuk menampung zoom
-    g = svg.append('g').attr('class', 'main-group');
-
-    // Setup Zoom & Pan Behavior
-    zoomBehavior = d3.zoom()
-        .scaleExtent([0.1, 3])
-        .on('zoom', (event) => {
-            g.attr('transform', event.transform);
-        });
-
-    svg.call(zoomBehavior);
-
-    // Tree Layout Generator (Horizontal)
-    treeLayout = d3.tree()
-        .nodeSize([100, 260]); // Lebar vertikal antar node ditingkatkan ke 100px agar lega
-}
-
-// Fungsi helper untuk menghitung tinggi node secara dinamis berdasarkan konten teksnya
-function getNodeHeight(nodeData) {
-    const title = nodeData.name || '';
-    const desc = nodeData.description || '';
-    const currentWidth = getNodeWidth(nodeData);
-    
-    // Estimasi baris judul (berdasarkan lebar dinamis node)
-    const charsPerLineTitle = Math.max(12, Math.floor(currentWidth / 8.5));
-    const titleLines = Math.min(2, Math.ceil(title.length / charsPerLineTitle) || 1);
-    
-    // Estimasi baris deskripsi (berdasarkan lebar dinamis node)
-    const charsPerLineDesc = Math.max(15, Math.floor(currentWidth / 6.5));
-    let descLines = 0;
-    if (desc) {
-        descLines = Math.min(2, Math.ceil(desc.length / charsPerLineDesc) || 1);
-    }
-    
-    // Base padding (20px) + tinggi judul + tinggi deskripsi
-    const calculated = 20 + (titleLines * 15) + (descLines * 13);
-    
-    // Batasi tinggi antara 60px (minimal) dan 90px (maksimal)
-    return Math.min(90, Math.max(60, calculated));
-}
-
-// Fungsi utama untuk me-render / memperbarui Mindmap
-function updateMindmap(sourceData) {
-    if (!sourceData) return;
-
-    // Sembunyikan hint overlay jika mindmap ada
-    document.getElementById('mindmap-hint-text').classList.add('hidden');
-
-    // Konversi hierarchical data ke d3 hierarchy (sembunyikan anak jika di-collapse)
-    rootNodeData = d3.hierarchy(sourceData, d => d.collapsed ? null : d.children);
-
-    // Hitung posisi pohon
-    treeLayout(rootNodeData);
-
-    // Kustomisasi koordinat y (horizontal) secara dinamis agar jarak antar node
-    // memperhitungkan lebar dinamis dari node induknya (mencegah overlapping)
-    rootNodeData.eachBefore(d => {
-        if (d.depth === 0) {
-            d.y = 0;
-        } else {
-            const parentWidth = getNodeWidth(d.parent.data);
-            d.y = d.parent.y + parentWidth + 60; // 60px adalah gap horizontal antar tingkat
-        }
-    });
-
-    const nodes = rootNodeData.descendants();
-    const links = rootNodeData.links();
-
-    // --- RENDERING TAUTAN (LINKS) ---
-    const link = g.selectAll('.link')
-        .data(links, d => d.target.data.id || d.target.data.name);
-
-    // Link Exit (animasi hapus)
-    link.exit().transition().duration(400)
-        .attr('stroke-width', 0)
-        .remove();
-
-    // Link Enter
-    const linkEnter = link.enter().append('path')
-        .attr('class', 'link')
-        .attr('d', d => {
-            const parent = d.parent || d.source;
-            const startX = parent.y + getNodeWidth(parent.data);
-            const startY = parent.x; // Centered
-            return d3.linkHorizontal()
-                .source(() => ({ x: startX, y: startY }))
-                .target(() => ({ x: startX, y: startY }))
-                .x(p => p.x)
-                .y(p => p.y)(d);
-        });
-
-    // Link Update + Enter (Animasi Transisi Posisi)
-    linkEnter.merge(link)
-        .transition().duration(500)
-        .attr('class', d => `link ${state.activeNode && (d.target.data.id === state.activeNode.id || d.target.data.name === state.activeNode.name) ? 'active' : ''}`)
-        .attr('d', d => {
-            return d3.linkHorizontal()
-                .source(l => ({ x: l.source.y + getNodeWidth(l.source.data), y: l.source.x })) // Centered
-                .target(l => ({ x: l.target.y, y: l.target.x })) // Centered
-                .x(p => p.x)
-                .y(p => p.y)(d);
-        });
-
-    // --- RENDERING NODE (MENGGUNAKAN FOREIGN_OBJECT UNTUK HTML) ---
-    const node = g.selectAll('.node')
-        .data(nodes, d => d.data.id || d.data.name);
-
-    // Node Exit (animasi hapus)
-    node.exit().transition().duration(400)
-        .style('opacity', 0)
-        .remove();
-
-    // Node Enter
-    const nodeEnter = node.enter().append('g')
-        .attr('class', 'node')
-        .attr('transform', d => {
-            const parent = d.parent || d;
-            return `translate(${parent.y}, ${parent.x})`;
-        })
-        .style('opacity', 0);
-
-    // Tambahkan ForeignObject agar bisa merender HTML kustom di dalam SVG
-    const foreignObject = nodeEnter.append('foreignObject')
-        .attr('width', d => getNodeWidth(d.data))
-        .attr('height', d => getNodeHeight(d.data))
-        .attr('x', 0)
-        .attr('y', d => -getNodeHeight(d.data) / 2); // Centered vertically
-
-    // Render HTML Node Card ke dalam foreignObject
-    const nodeCard = foreignObject.append('xhtml:div')
-        .attr('class', d => `node-card level-${d.depth} ${getNodeStatusClass(d.data.name)}`)
-        .on('click', (event, d) => {
-            event.stopPropagation();
-            handleNodeClick(d);
-        });
-
-    nodeCard.append('div')
-        .attr('class', 'node-title')
-        .text(d => d.data.name);
-
-    nodeCard.append('div')
-        .attr('class', 'node-desc')
-        .text(d => d.data.description || 'Klik untuk belajar');
-
-    // Node Update + Enter (Animasi Bergerak ke Posisi Baru)
-    const nodeUpdate = nodeEnter.merge(node);
-    
-    nodeUpdate.transition().duration(500)
-        .attr('transform', d => `translate(${d.y}, ${d.x})`)
-        .style('opacity', 1);
-
-    // Pastikan foreignObject diupdate tingginya secara dinamis saat update
-    nodeUpdate.select('foreignObject')
-        .attr('width', d => getNodeWidth(d.data))
-        .attr('height', d => getNodeHeight(d.data))
-        .attr('y', d => -getNodeHeight(d.data) / 2);
-
-    // Update style/class node yang ada (misal status progress & status collapse)
-    nodeUpdate.select('.node-card')
-        .attr('class', d => {
-            const isLoading = d.data.loading ? 'loading' : '';
-            const isCollapsed = d.data.collapsed ? 'is-collapsed' : '';
-            const hasChildren = d.data.children && d.data.children.length > 0 ? 'has-children' : '';
-            return `node-card level-${d.depth} ${getNodeStatusClass(d.data.name)} ${isLoading} ${isCollapsed} ${hasChildren}`;
-        });
-
-    // Tambahkan atau perbarui collapse/expand toggle button
-    nodeUpdate.each(function(d) {
-        const card = d3.select(this).select('.node-card');
-        const hasChildren = d.data.children && d.data.children.length > 0;
-        
-        let toggle = card.select('.collapse-toggle');
-        
-        if (hasChildren) {
-            if (toggle.empty()) {
-                toggle = card.append('div')
-                    .attr('class', 'collapse-toggle')
-                    .on('click', (event) => {
-                        console.log('Collapse toggle clicked for:', d.data.name);
-                        event.stopPropagation(); // Mencegah drawer terbuka
-                        d.data.collapsed = !d.data.collapsed;
-                        saveState();
-                        updateMindmap(state.mindmapData);
-                    });
-            }
-            
-            toggle.html(''); // Bersihkan ikon lama
-            toggle.append('i')
-                .attr('data-lucide', d.data.collapsed ? 'plus' : 'minus');
-        } else {
-            toggle.remove();
-        }
-    });
-
-    // Re-inisialisasi ikon Lucide
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
-}
-
-// Fungsi helper status node class
-function getNodeStatusClass(nodeName) {
-    const status = state.nodeStatuses[nodeName];
-    if (status === 'doing') return 'status-doing';
-    if (status === 'done') return 'status-done';
-    return '';
-}
-
-// Handler klik node untuk Deep Dive & Rabbit Hole
-async function handleNodeClick(d3Node) {
-    const nodeName = d3Node.data.name;
-    const nodeDesc = d3Node.data.description || '';
-    state.activeNode = d3Node.data;
-
-    // Highlight link & node aktif
-    updateMindmap(state.mindmapData);
-
-    // Buka Slide-out Drawer
-    openDetailDrawer(nodeName);
-
-    // Jika data sudah tercache (pernah di-deep dive sebelumnya)
-    if (state.nodeCache[nodeName]) {
-        renderNodeDetail(nodeName, state.nodeCache[nodeName].explanation);
-        return;
-    }
-
-    // Tampilkan loading di drawer dan node mindmap
-    renderDrawerLoading(nodeName);
-    d3Node.data.loading = true;
-    updateMindmap(state.mindmapData);
-
-    // Tulis pesan robot di chat
-    const exploringMsg = state.language === 'en'
-        ? `Opening the rabbit hole portal for **${nodeName}**... I am digging up the explanation for you. 🔍`
-        : `Membuka portal rabbit hole untuk **${nodeName}**... Aku sedang menggali penjelasannya untukmu. 🔍`;
-    appendChatMessage('bot', exploringMsg);
-
-    try {
-        const rootTopicName = state.mindmapData.name;
-        const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants to deep-dive into the subtopic "${nodeName}" (Description: "${nodeDesc}").
-        
-        Your tasks are:
-        1. Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes. If there are sub-lists or nested lists, you must use correct spacing indentation like 2 or 4 spaces so that the markdown rendering is neat and properly indented).
-           IMPORTANT: To prevent the explanation from being truncated by token limits, write the explanation concisely, focusing on the most important core concepts, and limit the explanation length to a maximum of about 800-1000 words.
-        2. Generate several next, more specific subtopics/milestones under "${nodeName}" to dynamically expand their mindmap. Decide the most relevant number of subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the material. Do not make subtopics that are too generic.
-
-        Return the result in JSON with exactly this format:
-        {
-          "explanation": "Full explanation content in Markdown format here...",
-          "subtopics": [
-            { "name": "Specific Subtopic 1", "description": "Brief description 1" },
-            { "name": "Specific Subtopic 2", "description": "Brief description 2" }
-          ]
-        }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin melakukan deep-dive ke sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
-        
-        Tugasmu adalah:
-        1. Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik. Jika terdapat sub-list atau daftar bertingkat/nested list, wajib gunakan indentasi spasi yang benar seperti 2 atau 4 spasi agar terjemahan markdown rapi dan terindentasi dengan benar).
-           PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
-        2. Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
-
-        Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
-        {
-          "explanation": "Isi penjelasan lengkap dalam format Markdown di sini...",
-          "subtopics": [
-            { "name": "Sub-topik Spesifik 1", "description": "Deskripsi singkat 1" },
-            { "name": "Sub-topik Spesifik 2", "description": "Deskripsi singkat 2" }
-          ]
-        }`;
-
-        const result = await callRouterAI(prompt);
-
-        // Hapus status loading pada node
-        delete d3Node.data.loading;
-
-        // Validasi respon JSON
-        if (result && result.explanation) {
-            // Update cache & persist
-            state.nodeCache[nodeName] = {
-                explanation: result.explanation,
-                subtopics: result.subtopics || []
-            };
-            saveState();
-
-            // Tambahkan subtopics sebagai children baru ke dalam data D3 jika ada subtopics baru
-            if (result.subtopics && result.subtopics.length > 0) {
-                if (!d3Node.data.children) {
-                    d3Node.data.children = [];
-                }
-
-                // Hindari duplikasi sub-node dengan nama yang sama
-                result.subtopics.forEach(sub => {
-                    const exists = d3Node.data.children.some(child => child.name === sub.name);
-                    if (!exists) {
-                        sub.id = `${nodeName}-${sub.name}-${Date.now()}`; // Unique ID
-                        d3Node.data.children.push(sub);
-                    }
-                });
-
-                // Update visualisasi mindmap & persist
-                updateMindmap(state.mindmapData);
-                saveState();
-            }
-
-            // Render isi penjelasan ke drawer
-            renderNodeDetail(nodeName, result.explanation);
-
-            // Beri tahu di chat
-            const msg = state.language === 'en'
-                ? `Explanation for **${nodeName}** is ready! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click those new nodes to dig deeper! 🚀`
-                : `Penjelasan materi untuk **${nodeName}** telah siap! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node baru tersebut untuk menggali lebih dalam! 🚀`;
-            appendChatMessage('bot', msg);
-        } else {
-            throw new Error("Respon AI tidak sesuai format");
-        }
-    } catch (error) {
-        console.error('Deep dive error:', error);
-        delete d3Node.data.loading;
-        updateMindmap(state.mindmapData);
-        const msg = state.language === 'en'
-            ? `Sorry, I failed to explore the rabbit hole for **${nodeName}**. Error message: *${error.message}*. Try clicking again later!`
-            : `Maaf, aku gagal menjelajahi rabbit hole untuk **${nodeName}**. Pesan error: *${error.message}*. Coba klik lagi nanti!`;
-        appendChatMessage('bot', msg);
-        renderDrawerError(nodeName, error.message);
-    }
-}
-
-// Zoom Controls
-function zoomIn() { svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.3); }
-function zoomOut() { svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7); }
-function zoomFit() {
-    if (!rootNodeData) return;
-    
-    const container = document.getElementById('mindmap-canvas-container');
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    
-    // Temukan batas-batas grafik
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    let maxNode = null;
-    rootNodeData.descendants().forEach(d => {
-        if (d.y < minY) minY = d.y;
-        if (d.y > maxY) {
-            maxY = d.y;
-            maxNode = d;
-        }
-        if (d.x < minX) minX = d.x;
-        if (d.x > maxX) maxX = d.x;
-    });
-
-    const maxNodeWidth = maxNode ? getNodeWidth(maxNode.data) : 180;
-    const graphWidth = (maxY - minY) + maxNodeWidth + 100;
-    const graphHeight = (maxX - minX) + nodeHeight + 100;
-
-    const scale = Math.min(0.9, Math.min(width / graphWidth, height / graphHeight));
-    
-    const midX = minY + (maxY - minY) / 2 + maxNodeWidth / 2;
-    const midY = minX + (maxX - minX) / 2 + nodeHeight / 2;
-
-    const transform = d3.zoomIdentity
-        .translate(width / 2 - midX * scale, height / 2 - midY * scale)
-        .scale(scale);
-
-    svg.transition().duration(500).call(zoomBehavior.transform, transform);
-}
-
-/* ==========================================================================
    UI HANDLERS & NAVIGATION
    ========================================================================== */
 function initUIEventListeners() {
     // 1. Form Chat
     const chatForm = document.getElementById('chat-form');
-    chatForm.addEventListener('submit', handleChatSubmit);
+    if (chatForm) chatForm.addEventListener('submit', handleChatSubmit);
 
     // 2. Settings Modal
     const btnOpenSettings = document.getElementById('btn-open-settings');
@@ -684,27 +13,33 @@ function initUIEventListeners() {
     const btnSaveSettings = document.getElementById('btn-save-settings');
     const settingsModal = document.getElementById('settings-modal');
 
-    btnOpenSettings.addEventListener('click', openSettingsModal);
-    btnCloseSettings.addEventListener('click', closeSettingsModal);
-    btnCancelSettings.addEventListener('click', closeSettingsModal);
-    btnSaveSettings.addEventListener('click', saveApiKey);
+    if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettingsModal);
+    if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettingsModal);
+    if (btnCancelSettings) btnCancelSettings.addEventListener('click', closeSettingsModal);
+    if (btnSaveSettings) btnSaveSettings.addEventListener('click', saveApiKey);
     
     // Tutup modal jika klik di luar kartu modal
-    settingsModal.addEventListener('click', (e) => {
-        if (e.target === settingsModal) closeSettingsModal();
-    });
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettingsModal();
+        });
+    }
 
     // 3. Zoom Controls
-    document.getElementById('btn-zoom-in').addEventListener('click', zoomIn);
-    document.getElementById('btn-zoom-out').addEventListener('click', zoomOut);
-    document.getElementById('btn-zoom-fit').addEventListener('click', zoomFit);
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    const btnZoomFit = document.getElementById('btn-zoom-fit');
+    if (btnZoomIn) btnZoomIn.addEventListener('click', zoomIn);
+    if (btnZoomOut) btnZoomOut.addEventListener('click', zoomOut);
+    if (btnZoomFit) btnZoomFit.addEventListener('click', zoomFit);
 
     // 4. Toggle Chat Sidebar
     const btnToggleChat = document.getElementById('btn-toggle-chat');
-    btnToggleChat.addEventListener('click', toggleChatSidebar);
+    if (btnToggleChat) btnToggleChat.addEventListener('click', toggleChatSidebar);
 
     // 5. Drawer Close
-    document.getElementById('btn-close-drawer').addEventListener('click', closeDetailDrawer);
+    const btnCloseDrawer = document.getElementById('btn-close-drawer');
+    if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDetailDrawer);
 
     // 6. Status Progress Click
     const statusBtns = document.querySelectorAll('.status-btn');
@@ -732,11 +67,19 @@ function initUIEventListeners() {
             const content = document.getElementById('history-content-list');
             const isOpen = btnToggleHistory.classList.toggle('open');
             if (isOpen) {
-                content.classList.remove('hidden');
+                if (content) content.classList.remove('hidden');
                 loadHistoryList(); // reload whenever opened
             } else {
-                content.classList.add('hidden');
+                if (content) content.classList.add('hidden');
             }
+        });
+    }
+
+    // 9.5. Back to History Button
+    const btnBackToHistory = document.getElementById('btn-back-to-history');
+    if (btnBackToHistory) {
+        btnBackToHistory.addEventListener('click', () => {
+            switchSidebarMode('history');
         });
     }
 
@@ -744,6 +87,69 @@ function initUIEventListeners() {
     const btnNewTopic = document.getElementById('btn-new-topic');
     if (btnNewTopic) {
         btnNewTopic.addEventListener('click', createNewMindmap);
+    }
+
+    // 11. Custom Node Manual CRUD Buttons
+    const btnAddSubnode = document.getElementById('btn-add-subnode');
+    if (btnAddSubnode) {
+        btnAddSubnode.addEventListener('click', openAddNodeModal);
+    }
+    const btnEditNode = document.getElementById('btn-edit-node');
+    if (btnEditNode) {
+        btnEditNode.addEventListener('click', openEditNodeModal);
+    }
+    const btnRegenerateNode = document.getElementById('btn-regenerate-node');
+    if (btnRegenerateNode) {
+        btnRegenerateNode.addEventListener('click', openRegenerateNodeModal);
+    }
+    const btnDeleteNode = document.getElementById('btn-delete-node');
+    if (btnDeleteNode) {
+        btnDeleteNode.addEventListener('click', handleDeleteNode);
+    }
+
+    // 12. Modal Add Node Controls
+    const btnCloseAddNode = document.getElementById('btn-close-add-node');
+    const btnCancelAddNode = document.getElementById('btn-cancel-add-node');
+    const btnSubmitAddNode = document.getElementById('btn-submit-add-node');
+    const addNodeModal = document.getElementById('add-node-modal');
+
+    if (btnCloseAddNode) btnCloseAddNode.addEventListener('click', closeAddNodeModal);
+    if (btnCancelAddNode) btnCancelAddNode.addEventListener('click', closeAddNodeModal);
+    if (btnSubmitAddNode) btnSubmitAddNode.addEventListener('click', submitAddNode);
+    if (addNodeModal) {
+        addNodeModal.addEventListener('click', (e) => {
+            if (e.target === addNodeModal) closeAddNodeModal();
+        });
+    }
+
+    // 13. Modal Edit Node Controls
+    const btnCloseEditNode = document.getElementById('btn-close-edit-node');
+    const btnCancelEditNode = document.getElementById('btn-cancel-edit-node');
+    const btnSubmitEditNode = document.getElementById('btn-submit-edit-node');
+    const editNodeModal = document.getElementById('edit-node-modal');
+
+    if (btnCloseEditNode) btnCloseEditNode.addEventListener('click', closeEditNodeModal);
+    if (btnCancelEditNode) btnCancelEditNode.addEventListener('click', closeEditNodeModal);
+    if (btnSubmitEditNode) btnSubmitEditNode.addEventListener('click', submitEditNode);
+    if (editNodeModal) {
+        editNodeModal.addEventListener('click', (e) => {
+            if (e.target === editNodeModal) closeEditNodeModal();
+        });
+    }
+
+    // 14. Modal Regenerate Node Controls
+    const btnCloseRegenerateNode = document.getElementById('btn-close-regenerate-node');
+    const btnCancelRegenerateNode = document.getElementById('btn-cancel-regenerate-node');
+    const btnSubmitRegenerateNode = document.getElementById('btn-submit-regenerate-node');
+    const regenerateNodeModal = document.getElementById('regenerate-node-modal');
+
+    if (btnCloseRegenerateNode) btnCloseRegenerateNode.addEventListener('click', closeRegenerateNodeModal);
+    if (btnCancelRegenerateNode) btnCancelRegenerateNode.addEventListener('click', closeRegenerateNodeModal);
+    if (btnSubmitRegenerateNode) btnSubmitRegenerateNode.addEventListener('click', submitRegenerateNode);
+    if (regenerateNodeModal) {
+        regenerateNodeModal.addEventListener('click', (e) => {
+            if (e.target === regenerateNodeModal) closeRegenerateNodeModal();
+        });
     }
 }
 
@@ -756,14 +162,30 @@ function toggleChatSidebar() {
     state.collapsedSidebar = !state.collapsedSidebar;
     
     if (state.collapsedSidebar) {
-        sidebar.classList.add('collapsed');
-        toggleIcon.setAttribute('data-lucide', 'menu');
+        if (sidebar) sidebar.classList.add('collapsed');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'menu');
     } else {
-        sidebar.classList.remove('collapsed');
-        toggleIcon.setAttribute('data-lucide', 'x');
+        if (sidebar) sidebar.classList.remove('collapsed');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'x');
     }
-    lucide.createIcons();
+    if (window.lucide) window.lucide.createIcons();
     setTimeout(zoomFit, 350); // Sesuaikan visual mindmap setelah resize
+}
+
+// Peralihan Mode Sidebar (History vs Chat)
+function switchSidebarMode(mode) {
+    const sidebar = document.getElementById('chat-sidebar-section');
+    if (!sidebar) return;
+    if (mode === 'chat') {
+        sidebar.classList.remove('mode-history');
+        sidebar.classList.add('mode-chat');
+        // Auto focus ke input chat ketika masuk ke mode chat
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) setTimeout(() => chatInput.focus(), 50);
+    } else {
+        sidebar.classList.remove('mode-chat');
+        sidebar.classList.add('mode-history');
+    }
 }
 
 // Modal Control
@@ -771,19 +193,21 @@ function openSettingsModal() {
     const modal = document.getElementById('settings-modal');
     const input = document.getElementById('gemini-key-input');
     const langSelect = document.getElementById('ai-language-select');
-    input.value = state.apiKey;
+    if (input) input.value = state.apiKey;
     if (langSelect) {
         langSelect.value = state.language;
     }
-    modal.classList.add('open');
+    if (modal) modal.classList.add('open');
 }
 
 function closeSettingsModal() {
-    document.getElementById('settings-modal').classList.remove('open');
+    const modal = document.getElementById('settings-modal');
+    if (modal) modal.classList.remove('open');
 }
 
 function saveApiKey() {
     const input = document.getElementById('gemini-key-input');
+    if (!input) return;
     const key = input.value.trim();
     
     state.apiKey = key;
@@ -807,6 +231,8 @@ function saveApiKey() {
 // Chat UI Controls
 function appendChatMessage(sender, text) {
     const container = document.getElementById('chat-messages-container');
+    if (!container) return null;
+    
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${sender === 'bot' ? 'bot-message' : 'user-message'}`;
     
@@ -832,6 +258,8 @@ function appendChatMessage(sender, text) {
 // Render "Thinking..." chat bubble
 function showThinkingIndicator() {
     const container = document.getElementById('chat-messages-container');
+    if (!container) return;
+    
     const bubble = document.createElement('div');
     bubble.className = 'thinking-bubble';
     bubble.id = 'thinking-indicator';
@@ -842,7 +270,7 @@ function showThinkingIndicator() {
             <span></span>
             <span></span>
         </div>
-        <span style="font-size: 0.82rem; color: var(--text-muted);">AI sedang berpikir...</span>
+        <span style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">AI sedang berpikir...<br><span style="font-size: 0.72rem; opacity: 0.7; display: block;">(ini biasanya membutuhkan waktu sekitar 30 detik)</span></span>
     `;
     container.appendChild(bubble);
     container.scrollTop = container.scrollHeight;
@@ -857,6 +285,7 @@ function removeThinkingIndicator() {
 async function handleChatSubmit(e) {
     e.preventDefault();
     const inputEl = document.getElementById('chat-input');
+    if (!inputEl) return;
     const topic = inputEl.value.trim();
     if (!topic) return;
 
@@ -866,14 +295,9 @@ async function handleChatSubmit(e) {
     // Masukkan ke chat UI
     appendChatMessage('user', topic);
 
-    if (!state.apiKey) {
-        const msg = state.language === 'en'
-            ? 'Oops, I need a 9Router API Key to answer this. Please click the gear icon ⚙️ in the top right to set it up.'
-            : 'Aduh, aku butuh API Key 9Router untuk menjawab ini. Silakan klik tombol roda gigi ⚙️ di pojok kanan atas untuk menyetelnya.';
-        appendChatMessage('bot', msg);
-        openSettingsModal();
-        return;
-    }
+    // Warning is disabled if we use backend key.
+    // If state.apiKey is not present, we will try to generate via backend env key.
+    // If backend doesn't have it either, it will throw an authorization error which we will catch.
 
     // Tampilkan thinking
     showThinkingIndicator();
@@ -945,6 +369,9 @@ async function handleChatSubmit(e) {
             // Muat ulang daftar riwayat
             loadHistoryList();
 
+            // Kembalikan ke mode riwayat
+            switchSidebarMode('history');
+
             const msg = state.language === 'en'
                 ? `Initial mindmap to learn **${result.name}** is ready! 🗺️ <br><br>Use your mouse to pan & zoom the mindmap on the right panel. **Click on any node** to start deep diving into the lesson!`
                 : `Peta pikiran awal untuk belajar **${result.name}** telah siap! 🗺️ <br><br>Gunakan mouse untuk menggeser & men-zoom mindmap di panel kanan. **Klik pada node manapun** untuk memulai *deep dive* pelajaran!`;
@@ -969,6 +396,7 @@ function openDetailDrawer(title) {
     const drawer = document.getElementById('detail-drawer');
     const drawerTitle = document.getElementById('drawer-node-title');
     const drawerLevel = document.getElementById('drawer-node-level');
+    if (!drawer || !drawerTitle || !drawerLevel) return;
 
     drawerTitle.innerText = title;
     
@@ -988,6 +416,7 @@ function openDetailDrawer(title) {
 
 function closeDetailDrawer() {
     const drawer = document.getElementById('detail-drawer');
+    if (!drawer) return;
     const qaCol = document.getElementById('drawer-col-qa');
     const toggleBtn = document.getElementById('btn-toggle-drawer-qa');
     
@@ -1005,9 +434,10 @@ function closeDetailDrawer() {
 
 function renderDrawerLoading(title) {
     const content = document.getElementById('drawer-markdown-content');
+    if (!content) return;
     const loadingText = state.language === 'en'
-        ? `Exploring the rabbit hole for <strong>${title}</strong>... <br>Preparing deep theoretical summary & new subtopics.`
-        : `Menggali rabbit hole untuk <strong>${title}</strong>... <br>Mempersiapkan rangkuman teori mendalam & sub-topik baru.`;
+        ? `Exploring the rabbit hole for <strong>${title}</strong>... <br>Preparing deep theoretical summary & new subtopics.<br><span style="font-size:0.75rem; opacity:0.75; margin-top:0.25rem; display:block;">(this usually takes about 30 seconds)</span>`
+        : `Menggali rabbit hole untuk <strong>${title}</strong>... <br>Mempersiapkan rangkuman teori mendalam & sub-topik baru.<br><span style="font-size:0.75rem; opacity:0.75; margin-top:0.25rem; display:block;">(ini biasanya membutuhkan waktu sekitar 30 detik)</span>`;
     content.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 0; gap:1rem;">
             <div class="typing-dots">
@@ -1015,7 +445,7 @@ function renderDrawerLoading(title) {
                 <span></span>
                 <span></span>
             </div>
-            <p style="font-size:0.88rem; color:var(--text-muted); text-align:center;">${loadingText}</p>
+            <p style="font-size:0.88rem; color:var(--text-muted); text-align:center; line-height:1.45;">${loadingText}</p>
         </div>
     `;
     const qaList = document.getElementById('qa-messages-list');
@@ -1025,6 +455,7 @@ function renderDrawerLoading(title) {
 
 function renderDrawerError(title, errorMsg) {
     const content = document.getElementById('drawer-markdown-content');
+    if (!content) return;
     const errorTitle = state.language === 'en' ? 'An Error Occurred!' : 'Terjadi Kesalahan!';
     const errorText = state.language === 'en' 
         ? `Failed to load details for "${title}".`
@@ -1040,6 +471,7 @@ function renderDrawerError(title, errorMsg) {
 
 function renderNodeDetail(title, markdownText) {
     const content = document.getElementById('drawer-markdown-content');
+    if (!content) return;
     // Gunakan marked.js untuk merender Markdown ke HTML
     content.innerHTML = marked.parse(markdownText);
     
@@ -1127,7 +559,7 @@ function handleStatusChange(e) {
     if (newStatus === 'done') {
         const msg = state.language === 'en'
             ? `Excellent! You completed the topic **${nodeName}**. Keep up the great work! 🎓👏`
-            : `Luar biasa! Kamu telah menyelesaikan pelajaran **${nodeName}**. Terus pertahankan semangat belajarmu! 🎓👏`;
+            : `Luar biasa! Kamu telah menyelesaikan pelajaran **${nodeName}**. Terus pertahaman semangat belajarmu! 🎓👏`;
         appendChatMessage('bot', msg);
     } else if (newStatus === 'doing') {
         const msg = state.language === 'en'
@@ -1247,16 +679,16 @@ Anda wajib selalu mengembalikan jawaban dalam format JSON terstruktur dengan for
 
         const prompt = state.language === 'en' ? `Current material explanation context:
 "${nodeData.explanation}"
-
+ 
 Learner's question:
 "${question}"
-
+ 
 Answer the question directly and concisely (to-the-point) in a friendly and casual English. Do not use large headers (#, ##, ###). Keep your answer brief as if replying to a chat message. Return in JSON format: { "answer": "..." }.` : `Konteks penjelasan materi saat ini:
 "${nodeData.explanation}"
-
+ 
 Pertanyaan pembelajar:
 "${question}"
-
+ 
 Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) dengan bahasa Indonesia yang santai dan ramah. Jangan gunakan judul/header besar (#, ##, ###). Jadikan jawaban Anda singkat layaknya membalas pesan chat. Kembalikan dalam format JSON: { "answer": "..." }.`;
 
         // Panggil 9Router API
@@ -1280,7 +712,7 @@ Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) deng
         saveState();
 
         // Re-inisialisasi ikon lucide baru
-        lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
     } catch (error) {
         console.error('Gagal memproses tanya jawab:', error);
         loadingBubble.remove();
@@ -1390,7 +822,7 @@ async function loadHistoryList() {
             container.appendChild(item);
         });
         
-        lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
     } catch (e) {
         console.error('Gagal memuat daftar riwayat:', e);
         const container = document.getElementById('history-list-container');
@@ -1406,6 +838,9 @@ async function loadMindmapById(id) {
     
     // Sinkronkan
     await syncFromDatabase(id);
+    
+    // Pastikan berada di mode riwayat
+    switchSidebarMode('history');
     
     // Tampilkan pesan di chat bahwa mindmap berhasil dimuat
     if (state.mindmapData) {
@@ -1474,6 +909,423 @@ function createNewMindmap() {
     
     appendChatMessage('bot', 'Siap membuat mindmap baru! Silakan tulis topik belajar berikutnya yang ingin kamu jelajahi di bawah ini. 🧠🚀');
     
+    // Aktifkan mode chat
+    switchSidebarMode('chat');
+    
     // Refresh list history agar state active terupdate
     loadHistoryList();
+}
+
+/* ==========================================================================
+   Fase 5: MANUAL NODE CRUD & MODAL CONTROLLERS
+   ========================================================================== */
+
+function openAddNodeModal() {
+    if (!state.activeNode) return;
+    const modal = document.getElementById('add-node-modal');
+    const parentTitleEl = document.getElementById('add-node-parent-title');
+    const titleInput = document.getElementById('add-node-title-input');
+    const descInput = document.getElementById('add-node-desc-input');
+
+    if (parentTitleEl) parentTitleEl.innerText = state.activeNode.name;
+    if (titleInput) titleInput.value = '';
+    if (descInput) descInput.value = '';
+
+    if (modal) modal.classList.add('open');
+}
+
+function closeAddNodeModal() {
+    const modal = document.getElementById('add-node-modal');
+    if (modal) modal.classList.remove('open');
+}
+
+function openEditNodeModal() {
+    if (!state.activeNode) return;
+    const modal = document.getElementById('edit-node-modal');
+    const titleInput = document.getElementById('edit-node-title-input');
+    const descInput = document.getElementById('edit-node-desc-input');
+
+    if (titleInput) titleInput.value = state.activeNode.name;
+    if (descInput) descInput.value = state.activeNode.description || '';
+
+    if (modal) modal.classList.add('open');
+}
+
+function closeEditNodeModal() {
+    const modal = document.getElementById('edit-node-modal');
+    if (modal) modal.classList.remove('open');
+}
+
+function submitAddNode(e) {
+    e.preventDefault();
+    if (!state.activeNode) return;
+
+    const titleInput = document.getElementById('add-node-title-input');
+    const descInput = document.getElementById('add-node-desc-input');
+    if (!titleInput || !descInput) return;
+    
+    const title = titleInput.value.trim();
+    const desc = descInput.value.trim();
+
+    if (!title) {
+        alert(state.language === 'en' ? 'Please enter a title' : 'Silakan masukkan judul sub-topik');
+        return;
+    }
+
+    // Hindari duplikasi sub-node di parent yang sama
+    if (!state.activeNode.children) {
+        state.activeNode.children = [];
+    }
+
+    const exists = state.activeNode.children.some(child => child.name.toLowerCase() === title.toLowerCase());
+    if (exists) {
+        alert(state.language === 'en' 
+            ? 'A subtopic with this title already exists under this node.' 
+            : 'Sub-topik dengan judul ini sudah ada di bawah node ini.');
+        return;
+    }
+
+    // Buat node kustom baru
+    const newNode = {
+        id: `custom-${state.activeNode.name}-${title}-${Date.now()}`,
+        name: title,
+        description: desc || (state.language === 'en' ? 'Custom Subtopic' : 'Sub-topik Kustom'),
+        children: []
+    };
+
+    state.activeNode.children.push(newNode);
+    
+    // Simpan ke cache agar penjelasannya bisa ditulis manual atau otomatis saat di-deep dive
+    state.nodeCache[title] = {
+        explanation: state.language === 'en' 
+            ? `### ${title}\n\nThis is a custom subtopic created manually under **${state.activeNode.name}**.\n\nDescription: *${newNode.description}*`
+            : `### ${title}\n\nIni adalah sub-topik kustom yang dibuat secara manual di bawah **${state.activeNode.name}**.\n\nDeskripsi: *${newNode.description}*`,
+        subtopics: []
+    };
+
+    saveState();
+    updateMindmap(state.mindmapData);
+    closeAddNodeModal();
+
+    const msg = state.language === 'en'
+        ? `Successfully added new subtopic **${title}** manually under **${state.activeNode.name}**! 🚀`
+        : `Berhasil menambahkan sub-topik baru **${title}** secara manual di bawah **${state.activeNode.name}**! 🚀`;
+    appendChatMessage('bot', msg);
+}
+
+function submitEditNode(e) {
+    e.preventDefault();
+    if (!state.activeNode) return;
+
+    const titleInput = document.getElementById('edit-node-title-input');
+    const descInput = document.getElementById('edit-node-desc-input');
+    if (!titleInput || !descInput) return;
+    
+    const newTitle = titleInput.value.trim();
+    const newDesc = descInput.value.trim();
+
+    if (!newTitle) {
+        alert(state.language === 'en' ? 'Please enter a title' : 'Silakan masukkan judul');
+        return;
+    }
+
+    const oldTitle = state.activeNode.name;
+
+    // Jika mengganti judul utama (root node), perbarui nama mindmap utama
+    const isRoot = state.activeNode.id === 'root';
+    if (isRoot) {
+        state.mindmapData.name = newTitle;
+    }
+
+    // Cari node di tree dan update datanya
+    state.activeNode.name = newTitle;
+    state.activeNode.description = newDesc;
+
+    // Migrasi cache & status progress jika ada perubahan nama
+    if (oldTitle !== newTitle) {
+        // Cache penjelasan
+        if (state.nodeCache[oldTitle]) {
+            state.nodeCache[newTitle] = state.nodeCache[oldTitle];
+            delete state.nodeCache[oldTitle];
+            
+            // Perbarui judul h3 di isi markdown penjelasan jika menggunakan template bawaan
+            let currentExp = state.nodeCache[newTitle].explanation;
+            if (currentExp.startsWith(`### ${oldTitle}`)) {
+                state.nodeCache[newTitle].explanation = currentExp.replace(`### ${oldTitle}`, `### ${newTitle}`);
+            }
+        }
+        
+        // Status progress (todo, doing, done)
+        if (state.nodeStatuses[oldTitle]) {
+            state.nodeStatuses[newTitle] = state.nodeStatuses[oldTitle];
+            delete state.nodeStatuses[oldTitle];
+        }
+    }
+
+    saveState();
+    updateMindmap(state.mindmapData);
+    closeEditNodeModal();
+
+    // Perbarui drawer yang sedang terbuka
+    const drawerTitle = document.getElementById('drawer-node-title');
+    if (drawerTitle) drawerTitle.innerText = newTitle;
+
+    if (state.nodeCache[newTitle]) {
+        renderNodeDetail(newTitle, state.nodeCache[newTitle].explanation);
+    }
+
+    const msg = state.language === 'en'
+        ? `Node **${oldTitle}** was successfully edited to **${newTitle}**! ✏️`
+        : `Node **${oldTitle}** berhasil diubah menjadi **${newTitle}**! ✏️`;
+    appendChatMessage('bot', msg);
+    
+    // Muat ulang history jika root diubah namanya
+    if (isRoot) {
+        loadHistoryList();
+    }
+}
+
+function handleDeleteNode() {
+    if (!state.activeNode) return;
+
+    // Larang menghapus root node agar mindmap tetap utuh
+    if (state.activeNode.id === 'root') {
+        alert(state.language === 'en' 
+            ? 'You cannot delete the root node. Create a new mindmap instead!' 
+            : 'Anda tidak dapat menghapus node akar (root). Silakan buat mindmap baru jika ingin mengganti topik!');
+        return;
+    }
+
+    const confirmMsg = state.language === 'en'
+        ? `Are you sure you want to delete "${state.activeNode.name}" and all its subtopics? This action cannot be undone.`
+        : `Apakah Anda yakin ingin menghapus "${state.activeNode.name}" dan seluruh sub-cabang di bawahnya? Tindakan ini tidak bisa dibatalkan.`;
+
+    if (!confirm(confirmMsg)) return;
+
+    const nodeToDelete = state.activeNode;
+
+    // Fungsi rekursif untuk mencari parent dan menghapus child
+    function removeNodeRecursively(parent, targetId) {
+        if (!parent.children) return false;
+        const index = parent.children.findIndex(child => child.id === targetId || child.name === targetId);
+        if (index !== -1) {
+            parent.children.splice(index, 1);
+            return true;
+        }
+        for (let child of parent.children) {
+            if (removeNodeRecursively(child, targetId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Fungsi rekursif untuk membersihkan cache & status dari sub-tree yang dihapus
+    function cleanSubtreeData(node) {
+        if (node.name) {
+            delete state.nodeCache[node.name];
+            delete state.nodeStatuses[node.name];
+        }
+        if (node.children) {
+            node.children.forEach(cleanSubtreeData);
+        }
+    }
+
+    // Hapus dari tree
+    const deleted = removeNodeRecursively(state.mindmapData, nodeToDelete.id || nodeToDelete.name);
+
+    if (deleted) {
+        // Bersihkan seluruh data sub-tree
+        cleanSubtreeData(nodeToDelete);
+
+        saveState();
+        closeDetailDrawer();
+        updateMindmap(state.mindmapData);
+
+        const msg = state.language === 'en'
+            ? `Node **${nodeToDelete.name}** and all its branches were deleted successfully.`
+            : `Node **${nodeToDelete.name}** beserta seluruh cabangnya berhasil dihapus.`;
+        appendChatMessage('bot', msg);
+    } else {
+        alert(state.language === 'en' ? 'Failed to delete node.' : 'Gagal menghapus node.');
+    }
+}
+
+function openRegenerateNodeModal() {
+    if (!state.activeNode) return;
+    const modal = document.getElementById('regenerate-node-modal');
+    const displayEl = document.getElementById('regenerate-node-title-display');
+    if (displayEl) displayEl.innerText = state.activeNode.name;
+    if (modal) modal.classList.add('open');
+}
+
+function closeRegenerateNodeModal() {
+    const modal = document.getElementById('regenerate-node-modal');
+    if (modal) modal.classList.remove('open');
+}
+
+async function submitRegenerateNode(e) {
+    e.preventDefault();
+    if (!state.activeNode) return;
+
+    const nodeName = state.activeNode.name;
+    const nodeDesc = state.activeNode.description || '';
+    const rootTopicName = state.mindmapData.name;
+
+    // Ambil opsi dari radio input
+    const radios = document.getElementsByName('regenerate-scope');
+    let scope = 'keep';
+    for (let r of radios) {
+        if (r.checked) scope = r.value;
+    }
+
+    closeRegenerateNodeModal();
+
+    // 1. Tampilkan loading di drawer dan canvas
+    renderDrawerLoading(nodeName);
+    state.activeNode.loading = true;
+    updateMindmap(state.mindmapData);
+
+    const thinkingMsg = state.language === 'en'
+        ? `Regenerating material portal for **${nodeName}**... I am rebuilding the deep theoretical summary. 🔄`
+        : `Membangun ulang portal materi untuk **${nodeName}**... Aku sedang merancang kembali penjelasan teorinya. 🔄`;
+    appendChatMessage('bot', thinkingMsg);
+
+    try {
+        let result;
+        if (scope === 'keep') {
+            // Hanya buat ulang penjelasan, pertahankan sub-node di bawahnya
+            const existingSubtopicList = state.activeNode.children ? state.activeNode.children.map(c => c.name).join(', ') : '';
+            const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants you to regenerate the deep-dive explanation for the subtopic "${nodeName}" (Description: "${nodeDesc}").
+            The existing subtopics under this node are: [${existingSubtopicList}].
+            
+            Your task is:
+            Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes).
+            IMPORTANT: To prevent the explanation from being truncated by token limits, write the explanation concisely, focusing on the most important core concepts, and limit the explanation length to a maximum of about 800-1000 words.
+            
+            Return the result in JSON with exactly this format:
+            {
+              "explanation": "Full explanation content in Markdown format here..."
+            }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin Anda membuat ulang penjelasan materi yang mendalam untuk sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
+            Sub-topik yang sudah ada di bawah node ini adalah: [${existingSubtopicList}].
+            
+            Tugasmu adalah:
+            Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik).
+            PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
+            
+            Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
+            {
+              "explanation": "Isi penjelasan lengkap dalam format Markdown di sini..."
+            }`;
+
+            result = await callRouterAI(prompt);
+
+            // Validasi respon JSON
+            if (result && result.explanation) {
+                // Update cache penjelasan, tapi pertahankan subtopics lama di cache
+                if (!state.nodeCache[nodeName]) {
+                    state.nodeCache[nodeName] = { explanation: '', subtopics: [] };
+                }
+                state.nodeCache[nodeName].explanation = result.explanation;
+            } else {
+                throw new Error("Respon AI tidak sesuai format");
+            }
+        } else {
+            // Buat ulang penjelasan & buat ulang sub-node baru
+            const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants to deep-dive into the subtopic "${nodeName}" (Description: "${nodeDesc}").
+            
+            Your tasks are:
+            1. Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes).
+               IMPORTANT: To prevent the explanation from being truncated by token limits, write the explanation concisely, focusing on the most important core concepts, and limit the explanation length to a maximum of about 800-1000 words.
+            2. Generate several next, more specific subtopics/milestones under "${nodeName}" to dynamically expand their mindmap. Decide the most relevant number of subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the material. Do not make subtopics that are too generic.
+    
+            Return the result in JSON with exactly this format:
+            {
+              "explanation": "Full explanation content in Markdown format here...",
+              "subtopics": [
+                { "name": "Specific Subtopic 1", "description": "Brief description 1" },
+                { "name": "Specific Subtopic 2", "description": "Brief description 2" }
+              ]
+            }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin melakukan deep-dive ke sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
+            
+            Tugasmu adalah:
+            1. Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik).
+               PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
+            2. Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
+    
+            Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
+            {
+              "explanation": "Isi penjelasan lengkap dalam format Markdown di sini...",
+              "subtopics": [
+                { "name": "Sub-topik Spesifik 1", "description": "Deskripsi singkat 1" },
+                { "name": "Sub-topik Spesifik 2", "description": "Deskripsi singkat 2" }
+              ]
+            }`;
+
+            result = await callRouterAI(prompt);
+
+            // Validasi respon JSON
+            if (result && result.explanation) {
+                // Fungsi pembantu rekursif untuk membersihkan cache anak-anak lama sebelum diganti
+                function cleanSubtreeData(node) {
+                    if (node.name) {
+                        delete state.nodeCache[node.name];
+                        delete state.nodeStatuses[node.name];
+                    }
+                    if (node.children) {
+                        node.children.forEach(cleanSubtreeData);
+                    }
+                }
+
+                // Bersihkan data lama di bawah node ini
+                if (state.activeNode.children) {
+                    state.activeNode.children.forEach(cleanSubtreeData);
+                }
+
+                // Kosongkan dan ganti children
+                state.activeNode.children = [];
+
+                // Simpan cache baru
+                state.nodeCache[nodeName] = {
+                    explanation: result.explanation,
+                    subtopics: result.subtopics || []
+                };
+
+                // Tambah children baru
+                if (result.subtopics && result.subtopics.length > 0) {
+                    result.subtopics.forEach(sub => {
+                        sub.id = `${nodeName}-${sub.name}-${Date.now()}`;
+                        state.activeNode.children.push(sub);
+                    });
+                }
+            } else {
+                throw new Error("Respon AI tidak sesuai format");
+            }
+        }
+
+        // Hapus loading status
+        delete state.activeNode.loading;
+
+        saveState();
+        updateMindmap(state.mindmapData);
+
+        // Render isi penjelasan baru
+        renderNodeDetail(nodeName, state.nodeCache[nodeName].explanation);
+
+        const msg = state.language === 'en'
+            ? `Successfully regenerated material for **${nodeName}**! 🔄`
+            : `Berhasil membangun ulang materi untuk **${nodeName}**! 🔄`;
+        appendChatMessage('bot', msg);
+
+    } catch (error) {
+        console.error('Regeneration error:', error);
+        delete state.activeNode.loading;
+        updateMindmap(state.mindmapData);
+        
+        const msg = state.language === 'en'
+            ? `Sorry, I failed to regenerate material for **${nodeName}**. Error message: *${error.message}*.`
+            : `Maaf, aku gagal membangun ulang materi untuk **${nodeName}**. Masalah: *${error.message}*.`;
+        appendChatMessage('bot', msg);
+        renderDrawerError(nodeName, error.message);
+    }
 }

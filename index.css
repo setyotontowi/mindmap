@@ -907,7 +907,8 @@ a:hover { text-decoration: underline; }
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
@@ -917,10 +918,12 @@ a:hover { text-decoration: underline; }
     transition: border-color var(--t), box-shadow var(--t);
     outline: none;
     font-family: inherit;
+    resize: vertical;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
     border-color: var(--accent);
     background: var(--bg);
     box-shadow: 0 0 0 3px rgba(24,24,27,0.06);
@@ -1002,6 +1005,89 @@ a:hover { text-decoration: underline; }
     border: 1px solid var(--border);
     transition: all var(--t);
     white-space: nowrap;
+}
+
+/* ==========================================================================
+   SIDEBAR LAYOUT MODES (HISTORY VS CHAT)
+   ========================================================================== */
+.chat-mode-header {
+    display: none;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.back-to-history-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-2);
+    font-weight: 500;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    transition: background var(--t), color var(--t);
+}
+
+.back-to-history-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.back-to-history-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+/* History Mode active styles */
+.chat-sidebar.mode-history .history-section {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border-bottom: none;
+}
+
+.chat-sidebar.mode-history .history-content {
+    flex-grow: 1;
+    max-height: none;
+    overflow-y: auto;
+}
+
+.chat-sidebar.mode-history .history-toggle-btn {
+    cursor: default;
+    pointer-events: none;
+}
+
+.chat-sidebar.mode-history .chevron-icon {
+    display: none !important;
+}
+
+.chat-sidebar.mode-history .chat-mode-header,
+.chat-sidebar.mode-history .chat-messages,
+.chat-sidebar.mode-history .chat-input-wrapper {
+    display: none !important;
+}
+
+/* Chat Mode active styles */
+.chat-sidebar.mode-chat .history-section {
+    display: none !important;
+}
+
+.chat-sidebar.mode-chat .chat-mode-header {
+    display: flex;
+}
+
+.chat-sidebar.mode-chat .chat-messages {
+    display: flex;
+}
+
+.chat-sidebar.mode-chat .chat-input-wrapper {
+    display: block;
 }
 
 /* ==========================================================================

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
@@ -132,6 +133,55 @@ app.delete('/api/mindmap/:id', (req, res) => {
         }
         res.json({ success: true, message: 'Mindmap berhasil dihapus dari SQLite' });
     });
+});
+
+// Proxy endpoint untuk callRouterAI (keamanan API Key)
+app.post('/api/ai/completions', async (req, res) => {
+    try {
+        const { messages, response_format, temperature, stream, max_tokens } = req.body;
+        
+        // Ambil API Key dari .env, fallback ke Authorization header dari client
+        let apiKey = process.env.ROUTER_API_KEY;
+        if (!apiKey && req.headers.authorization) {
+            apiKey = req.headers.authorization.replace('Bearer ', '');
+        }
+
+        if (!apiKey) {
+            return res.status(401).json({ 
+                error: { message: 'API Key Router belum dikonfigurasi di server (.env) maupun client.' } 
+            });
+        }
+
+        const url = 'http://localhost:20128/v1/chat/completions';
+        const model = 'kr/claude-sonnet-4.5';
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model,
+                messages,
+                response_format,
+                temperature,
+                stream,
+                max_tokens
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            return res.status(response.status).send(errText);
+        }
+
+        const rawText = await response.text();
+        res.send(rawText);
+    } catch (error) {
+        console.error('Error on AI proxy endpoint:', error);
+        res.status(500).json({ error: { message: error.message || 'Internal Server Error' } });
+    }
 });
 
 // Jalankan Server
