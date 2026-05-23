@@ -37,6 +37,19 @@ function initUIEventListeners() {
     const btnToggleChat = document.getElementById('btn-toggle-chat');
     if (btnToggleChat) btnToggleChat.addEventListener('click', toggleChatSidebar);
 
+    // 4.5. Mobile Close Chat Sidebar
+    const btnCloseChatMobile = document.getElementById('btn-close-chat-mobile');
+    if (btnCloseChatMobile) btnCloseChatMobile.addEventListener('click', toggleChatSidebar);
+
+    // Inisialisasi status collapse sidebar sesuai dengan ukuran layar
+    if (window.innerWidth <= 768) {
+        state.collapsedSidebar = true;
+        const sidebar = document.getElementById('chat-sidebar-section');
+        if (sidebar) sidebar.classList.add('collapsed');
+        const toggleIcon = document.querySelector('#btn-toggle-chat i');
+        if (toggleIcon) toggleIcon.setAttribute('data-lucide', 'menu');
+    }
+
     // 5. Drawer Close
     const btnCloseDrawer = document.getElementById('btn-close-drawer');
     if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDetailDrawer);
