@@ -1,0 +1,6 @@
+node_modules
+mindmap.db
+.git
+.env
+docs
+*.log

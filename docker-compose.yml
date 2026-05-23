@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  mindmap:
+    build: .
+    container_name: mindmap-app
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DB_PATH=/app/data/mindmap.db
+      - ROUTER_API_KEY=${ROUTER_API_KEY}
+    volumes:
+      - ./data:/app/data

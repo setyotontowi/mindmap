@@ -5,7 +5,7 @@ const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const DB_PATH = path.join(__dirname, 'mindmap.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'mindmap.db');
 
 // Middleware
 app.use(express.json({ limit: '50mb' })); // Mendukung data berukuran besar (penjelasan AI & cache)
