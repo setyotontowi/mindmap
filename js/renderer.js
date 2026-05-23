@@ -242,29 +242,51 @@ function getNodeStatusClass(nodeName) {
 async function handleNodeClick(d3Node) {
     const nodeName = d3Node.data.name;
     const nodeDesc = d3Node.data.description || '';
-    state.activeNode = d3Node.data;
-
-    // Highlight link & node aktif
-    updateMindmap(state.mindmapData);
-
-    // Buka Slide-out Drawer
-    openDetailDrawer(nodeName);
 
     // Jika data sudah tercache (pernah di-deep dive sebelumnya)
     if (state.nodeCache[nodeName]) {
+        state.activeNode = d3Node.data;
+        updateMindmap(state.mindmapData);
+        openDetailDrawer(nodeName);
         renderNodeDetail(nodeName, state.nodeCache[nodeName].explanation);
         return;
     }
 
-    // Tampilkan loading di drawer dan node mindmap
-    renderDrawerLoading(nodeName);
-    d3Node.data.loading = true;
-    updateMindmap(state.mindmapData);
+    // Jika data sedang diload (sedang disusun di latar belakang)
+    if (d3Node.data.loading) {
+        state.activeNode = d3Node.data;
+        updateMindmap(state.mindmapData);
+        openDetailDrawer(nodeName);
+        renderDrawerLoading(nodeName);
+        return;
+    }
+
+    const drawer = document.getElementById('detail-drawer');
+    const isDrawerOpen = drawer && drawer.classList.contains('open');
+    const isReadingAnotherNode = isDrawerOpen && state.activeNode && (state.activeNode.name !== nodeName);
+
+    if (isReadingAnotherNode) {
+        // HANYA update status loading pada node di mindmap tanpa mengubah activeNode atau membuka drawer
+        d3Node.data.loading = true;
+        updateMindmap(state.mindmapData);
+    } else {
+        // Biasa: buka drawer & tampilkan loading di drawer
+        state.activeNode = d3Node.data;
+        updateMindmap(state.mindmapData);
+        openDetailDrawer(nodeName);
+        renderDrawerLoading(nodeName);
+        d3Node.data.loading = true;
+        updateMindmap(state.mindmapData);
+    }
 
     // Tulis pesan robot di chat
-    const exploringMsg = state.language === 'en'
-        ? `Opening the rabbit hole portal for **${nodeName}**... I am digging up the explanation for you. 🔍`
-        : `Membuka portal rabbit hole untuk **${nodeName}**... Aku sedang menggali penjelasannya untukmu. 🔍`;
+    const exploringMsg = isReadingAnotherNode
+        ? (state.language === 'en'
+            ? `Opening the rabbit hole portal for **${nodeName}** in the background... I am digging up the explanation for you. 🔍`
+            : `Membuka portal rabbit hole untuk **${nodeName}** di latar belakang... Aku sedang menggali penjelasannya untukmu. 🔍`)
+        : (state.language === 'en'
+            ? `Opening the rabbit hole portal for **${nodeName}**... I am digging up the explanation for you. 🔍`
+            : `Membuka portal rabbit hole untuk **${nodeName}**... Aku sedang menggali penjelasannya untukmu. 🔍`);
     appendChatMessage('bot', exploringMsg);
 
     try {
@@ -286,7 +308,7 @@ async function handleNodeClick(d3Node) {
         }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin melakukan deep-dive ke sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
         
         Tugasmu adalah:
-        1. Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik. Jika terdapat sub-list atau daftar bertingkat/nested list, wajib gunakan indentasi spasi yang benar seperti 2 atau 4 spasi agar terjemahan markdown rapi dan terindentasi dengan benar).
+        1. Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik. Jika terdapat sub-list atau daftar bertingkat/nested list, wajib gunakan indentasi spasi yang benar seperti 2 or 4 spasi agar terjemahan markdown rapi dan terindentasi dengan benar).
            PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
         2. Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
 
@@ -333,13 +355,26 @@ async function handleNodeClick(d3Node) {
                 saveState();
             }
 
-            // Render isi penjelasan ke drawer
-            renderNodeDetail(nodeName, result.explanation);
+            // Render isi penjelasan ke drawer JIKA user sedang aktif membuka node ini atau tidak sedang membaca node lain
+            const isCurrentlyActive = state.activeNode && (state.activeNode.name === nodeName || state.activeNode.id === d3Node.data.id);
+            if (isCurrentlyActive || !isReadingAnotherNode) {
+                // Pastikan node diaktifkan jika tidak sedang membaca node lain
+                if (!state.activeNode) {
+                    state.activeNode = d3Node.data;
+                    updateMindmap(state.mindmapData);
+                    openDetailDrawer(nodeName);
+                }
+                renderNodeDetail(nodeName, result.explanation);
+            }
 
             // Beri tahu di chat
-            const msg = state.language === 'en'
-                ? `Explanation for **${nodeName}** is ready! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click those new nodes to dig deeper! 🚀`
-                : `Penjelasan materi untuk **${nodeName}** telah siap! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node baru tersebut untuk menggali lebih dalam! 🚀`;
+            const msg = isReadingAnotherNode
+                ? (state.language === 'en'
+                    ? `Explanation for **${nodeName}** is ready in the background! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click that node to read it when you are ready! 🚀`
+                    : `Penjelasan materi untuk **${nodeName}** telah siap di latar belakang! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node tersebut untuk membacanya kapan saja Anda siap! 🚀`)
+                : (state.language === 'en'
+                    ? `Explanation for **${nodeName}** is ready! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click those new nodes to dig deeper! 🚀`
+                    : `Penjelasan materi untuk **${nodeName}** telah siap! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node baru tersebut untuk menggali lebih dalam! 🚀`);
             appendChatMessage('bot', msg);
         } else {
             throw new Error("Respon AI tidak sesuai format");
@@ -348,11 +383,17 @@ async function handleNodeClick(d3Node) {
         console.error('Deep dive error:', error);
         delete d3Node.data.loading;
         updateMindmap(state.mindmapData);
+        
         const msg = state.language === 'en'
             ? `Sorry, I failed to explore the rabbit hole for **${nodeName}**. Error message: *${error.message}*. Try clicking again later!`
             : `Maaf, aku gagal menjelajahi rabbit hole untuk **${nodeName}**. Pesan error: *${error.message}*. Coba klik lagi nanti!`;
         appendChatMessage('bot', msg);
-        renderDrawerError(nodeName, error.message);
+
+        // Hanya render error ke drawer jika user sedang membuka node ini
+        const isCurrentlyActive = state.activeNode && (state.activeNode.name === nodeName || state.activeNode.id === d3Node.data.id);
+        if (isCurrentlyActive || !isReadingAnotherNode) {
+            renderDrawerError(nodeName, error.message);
+        }
     }
 }
 
