@@ -756,15 +756,28 @@ a:hover { text-decoration: underline; }
     box-shadow: 0 0 0 2px rgba(24,24,27,0.05);
 }
 
-.drawer-qa-form input {
+.drawer-qa-form input,
+.drawer-qa-form textarea {
     flex-grow: 1;
     background: transparent;
     color: var(--text);
     padding: 4px 0;
     font-size: 0.8rem;
+    border: none;
+    outline: none;
 }
 
-.drawer-qa-form input::placeholder {
+.drawer-qa-form textarea {
+    resize: none;
+    font-family: inherit;
+    line-height: 1.4;
+    height: 24px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.drawer-qa-form input::placeholder,
+.drawer-qa-form textarea::placeholder {
     color: var(--text-3);
 }
 

@@ -68,6 +68,25 @@ function initUIEventListeners() {
     if (qaForm) {
         qaForm.addEventListener('submit', handleQaSubmit);
     }
+    const qaInput = document.getElementById('drawer-qa-input');
+    if (qaInput) {
+        qaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (e.shiftKey || e.ctrlKey) {
+                    // Biarkan default textarea membuat baris baru
+                } else {
+                    e.preventDefault();
+                    if (qaForm) {
+                        qaForm.requestSubmit ? qaForm.requestSubmit() : qaForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+            }
+        });
+        qaInput.addEventListener('input', () => {
+            qaInput.style.height = '24px';
+            qaInput.style.height = (qaInput.scrollHeight - 4) + 'px';
+        });
+    }
     const btnToggleQa = document.getElementById('btn-toggle-drawer-qa');
     if (btnToggleQa) {
         btnToggleQa.addEventListener('click', toggleDrawerQa);
@@ -162,6 +181,42 @@ function initUIEventListeners() {
     if (regenerateNodeModal) {
         regenerateNodeModal.addEventListener('click', (e) => {
             if (e.target === regenerateNodeModal) closeRegenerateNodeModal();
+        });
+    }
+
+    // 15. Modal Export Controls
+    const btnExportSession = document.getElementById('btn-export-session');
+    const btnCloseExport = document.getElementById('btn-close-export');
+    const btnCancelExport = document.getElementById('btn-cancel-export');
+    const exportModal = document.getElementById('export-modal');
+    const btnExportPngAction = document.getElementById('btn-export-png-action');
+    const btnExportSvgAction = document.getElementById('btn-export-svg-action');
+    const btnExportMdAction = document.getElementById('btn-export-md-action');
+
+    if (btnExportSession) btnExportSession.addEventListener('click', openExportModal);
+    if (btnCloseExport) btnCloseExport.addEventListener('click', closeExportModal);
+    if (btnCancelExport) btnCancelExport.addEventListener('click', closeExportModal);
+    if (exportModal) {
+        exportModal.addEventListener('click', (e) => {
+            if (e.target === exportModal) closeExportModal();
+        });
+    }
+    if (btnExportPngAction) {
+        btnExportPngAction.addEventListener('click', () => {
+            exportToPNG();
+            closeExportModal();
+        });
+    }
+    if (btnExportSvgAction) {
+        btnExportSvgAction.addEventListener('click', () => {
+            exportToSVG();
+            closeExportModal();
+        });
+    }
+    if (btnExportMdAction) {
+        btnExportMdAction.addEventListener('click', () => {
+            exportToMarkdown();
+            closeExportModal();
         });
     }
 }
@@ -492,6 +547,7 @@ function renderNodeQa(nodeName) {
 
     qaList.innerHTML = '';
     qaInput.value = '';
+    qaInput.style.height = '24px';
 
     const nodeData = state.nodeCache[nodeName];
     if (!nodeData) return;
@@ -644,6 +700,7 @@ async function handleQaSubmit(e) {
 
     // Bersihkan input
     qaInput.value = '';
+    qaInput.style.height = '24px';
 
     // Simpan ke cache & localstorage
     nodeData.qaHistory.push({ role: 'user', content: question });
@@ -1158,12 +1215,16 @@ function openRegenerateNodeModal() {
     if (!state.activeNode) return;
     const modal = document.getElementById('regenerate-node-modal');
     const displayEl = document.getElementById('regenerate-node-title-display');
+    const promptInput = document.getElementById('regenerate-custom-prompt');
     if (displayEl) displayEl.innerText = state.activeNode.name;
+    if (promptInput) promptInput.value = '';
     if (modal) modal.classList.add('open');
 }
 
 function closeRegenerateNodeModal() {
     const modal = document.getElementById('regenerate-node-modal');
+    const promptInput = document.getElementById('regenerate-custom-prompt');
+    if (promptInput) promptInput.value = '';
     if (modal) modal.classList.remove('open');
 }
 
@@ -1174,6 +1235,10 @@ async function submitRegenerateNode(e) {
     const nodeName = state.activeNode.name;
     const nodeDesc = state.activeNode.description || '';
     const rootTopicName = state.mindmapData.name;
+
+    // Ambil instruksi eksplorasi khusus
+    const promptInput = document.getElementById('regenerate-custom-prompt');
+    const customPrompt = promptInput ? promptInput.value.trim() : '';
 
     // Ambil opsi dari radio input
     const radios = document.getElementsByName('regenerate-scope');
@@ -1197,10 +1262,11 @@ async function submitRegenerateNode(e) {
     try {
         let result;
         if (scope === 'keep') {
-            // Hanya buat ulang penjelasan, pertahankan sub-node di bawahnya
+            // Hanya buat ulang penjelasan, pertahaman sub-node di bawahnya
             const existingSubtopicList = state.activeNode.children ? state.activeNode.children.map(c => c.name).join(', ') : '';
             const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants you to regenerate the deep-dive explanation for the subtopic "${nodeName}" (Description: "${nodeDesc}").
             The existing subtopics under this node are: [${existingSubtopicList}].
+            ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
             
             Your task is:
             Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes).
@@ -1211,6 +1277,7 @@ async function submitRegenerateNode(e) {
               "explanation": "Full explanation content in Markdown format here..."
             }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin Anda membuat ulang penjelasan materi yang mendalam untuk sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
             Sub-topik yang sudah ada di bawah node ini adalah: [${existingSubtopicList}].
+            ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
             
             Tugasmu adalah:
             Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik).
@@ -1236,6 +1303,7 @@ async function submitRegenerateNode(e) {
         } else {
             // Buat ulang penjelasan & buat ulang sub-node baru
             const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants to deep-dive into the subtopic "${nodeName}" (Description: "${nodeDesc}").
+            ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
             
             Your tasks are:
             1. Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes).
@@ -1250,6 +1318,7 @@ async function submitRegenerateNode(e) {
                 { "name": "Specific Subtopic 2", "description": "Brief description 2" }
               ]
             }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin melakukan deep-dive ke sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
+            ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
             
             Tugasmu adalah:
             1. Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik).
@@ -1331,4 +1400,307 @@ async function submitRegenerateNode(e) {
         appendChatMessage('bot', msg);
         renderDrawerError(nodeName, error.message);
     }
+}
+
+function openExportModal() {
+    const modal = document.getElementById('export-modal');
+    if (modal) modal.classList.add('open');
+}
+
+function closeExportModal() {
+    const modal = document.getElementById('export-modal');
+    if (modal) modal.classList.remove('open');
+}
+
+function exportToSVG() {
+    // [ignoring loop detection]
+    if (!rootNodeData || !state.mindmapData) {
+        alert(state.language === 'en' ? 'No mindmap data to export.' : 'Tidak ada data mindmap untuk diekspor.');
+        return;
+    }
+    const originalSvg = document.getElementById('mindmap-svg');
+    if (!originalSvg) return;
+    const clonedSvg = originalSvg.cloneNode(true);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    let maxNode = null;
+    rootNodeData.descendants().forEach(d => {
+        if (d.y < minY) minY = d.y;
+        if (d.y > maxY) {
+            maxY = d.y;
+            maxNode = d;
+        }
+        if (d.x < minX) minX = d.x;
+        if (d.x > maxX) maxX = d.x;
+    });
+    const maxNodeWidth = maxNode ? getNodeWidth(maxNode.data) : 180;
+    const graphWidth = (maxY - minY) + maxNodeWidth + 100;
+    const graphHeight = (maxX - minX) + nodeHeight + 100;
+    clonedSvg.setAttribute('viewBox', `${minY - 50} ${minX - 50} ${graphWidth} ${graphHeight}`);
+    clonedSvg.setAttribute('width', graphWidth);
+    clonedSvg.setAttribute('height', graphHeight);
+    const mainGroup = clonedSvg.querySelector('.main-group');
+    if (mainGroup) {
+        mainGroup.removeAttribute('transform');
+    }
+    const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styleEl.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        svg {
+            background-color: #f9f9f9;
+        }
+        .link {
+            fill: none;
+            stroke: #d4d4d8;
+            stroke-width: 1.5px;
+            stroke-linecap: round;
+        }
+        .link.active {
+            stroke: #2563eb;
+        }
+        .node-card {
+            background: #ffffff;
+            border: 1px solid #e4e4e7;
+            border-radius: 6px;
+            padding: 0.5rem 0.65rem;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .node-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #09090b;
+            line-height: 1.25;
+        }
+        .node-desc {
+            font-size: 0.68rem;
+            color: #71717a;
+            line-height: 1.3;
+            margin-top: 3px;
+        }
+        .node-card.level-0 { border-left: 3px solid #18181b; }
+        .node-card.level-0 .node-title { color: #18181b; }
+        .node-card.level-1 { border-left: 3px solid #2563eb; }
+        .node-card.level-1 .node-title { color: #2563eb; }
+        .node-card.level-2 { border-left: 3px solid #16a34a; }
+        .node-card.level-2 .node-title { color: #16a34a; }
+        .node-card.level-3 { border-left: 3px solid #9333ea; }
+        .node-card.level-3 .node-title { color: #9333ea; }
+        .node-card.status-doing::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            right: 6px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #f59e0b;
+        }
+        .node-card.status-done::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            right: 6px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+    `;
+    clonedSvg.insertBefore(styleEl, clonedSvg.firstChild);
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(clonedSvg);
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mindmap-${state.mindmapData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function exportToPNG() {
+    if (!rootNodeData || !state.mindmapData) {
+        alert(state.language === 'en' ? 'No mindmap data to export.' : 'Tidak ada data mindmap untuk diekspor.');
+        return;
+    }
+    const originalSvg = document.getElementById('mindmap-svg');
+    if (!originalSvg) return;
+    const clonedSvg = originalSvg.cloneNode(true);
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    let maxNode = null;
+    rootNodeData.descendants().forEach(d => {
+        if (d.y < minY) minY = d.y;
+        if (d.y > maxY) {
+            maxY = d.y;
+            maxNode = d;
+        }
+        if (d.x < minX) minX = d.x;
+        if (d.x > maxX) maxX = d.x;
+    });
+    const maxNodeWidth = maxNode ? getNodeWidth(maxNode.data) : 180;
+    const graphWidth = (maxY - minY) + maxNodeWidth + 100;
+    const graphHeight = (maxX - minX) + nodeHeight + 100;
+    clonedSvg.setAttribute('viewBox', `${minY - 50} ${minX - 50} ${graphWidth} ${graphHeight}`);
+    clonedSvg.setAttribute('width', graphWidth);
+    clonedSvg.setAttribute('height', graphHeight);
+    const mainGroup = clonedSvg.querySelector('.main-group');
+    if (mainGroup) {
+        mainGroup.removeAttribute('transform');
+    }
+    const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styleEl.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        svg {
+            background-color: #f9f9f9;
+        }
+        .link {
+            fill: none;
+            stroke: #d4d4d8;
+            stroke-width: 1.5px;
+            stroke-linecap: round;
+        }
+        .link.active {
+            stroke: #2563eb;
+        }
+        .node-card {
+            background: #ffffff;
+            border: 1px solid #e4e4e7;
+            border-radius: 6px;
+            padding: 0.5rem 0.65rem;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .node-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #09090b;
+            line-height: 1.25;
+        }
+        .node-desc {
+            font-size: 0.68rem;
+            color: #71717a;
+            line-height: 1.3;
+            margin-top: 3px;
+        }
+        .node-card.level-0 { border-left: 3px solid #18181b; }
+        .node-card.level-0 .node-title { color: #18181b; }
+        .node-card.level-1 { border-left: 3px solid #2563eb; }
+        .node-card.level-1 .node-title { color: #2563eb; }
+        .node-card.level-2 { border-left: 3px solid #16a34a; }
+        .node-card.level-2 .node-title { color: #16a34a; }
+        .node-card.level-3 { border-left: 3px solid #9333ea; }
+        .node-card.level-3 .node-title { color: #9333ea; }
+        .node-card.status-doing::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            right: 6px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #f59e0b;
+        }
+        .node-card.status-done::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            right: 6px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+    `;
+    clonedSvg.insertBefore(styleEl, clonedSvg.firstChild);
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(clonedSvg);
+    const img = new Image();
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const scale = 2;
+        canvas.width = graphWidth * scale;
+        canvas.height = graphHeight * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#f9f9f9';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0, graphWidth, graphHeight);
+        const pngUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = pngUrl;
+        link.download = `mindmap-${state.mindmapData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+    img.onerror = function(err) {
+        console.error('Gagal merender gambar PNG:', err);
+        alert(state.language === 'en' ? 'Failed to export to PNG. Please try SVG format instead.' : 'Gagal mengekspor ke PNG. Silakan coba format SVG.');
+        URL.revokeObjectURL(url);
+    };
+    img.src = url;
+}
+
+function exportToMarkdown() {
+    if (!state.mindmapData) {
+        alert(state.language === 'en' ? 'No mindmap data to export.' : 'Tidak ada data mindmap untuk diekspor.');
+        return;
+    }
+    const exploredExplanations = [];
+    function traverse(node, depth = 0) {
+        if (!node) return;
+        const cache = state.nodeCache[node.name];
+        if (cache && cache.explanation) {
+            exploredExplanations.push({
+                name: node.name,
+                depth: depth,
+                explanation: cache.explanation
+            });
+        }
+        if (node.children) {
+            node.children.forEach(child => traverse(child, depth + 1));
+        }
+    }
+    traverse(state.mindmapData);
+    if (exploredExplanations.length === 0) {
+        alert(state.language === 'en' 
+            ? 'You have not explored any nodes in this mindmap yet.' 
+            : 'Anda belum mengeksplorasi node manapun di mindmap ini.');
+        return;
+    }
+    let markdownContent = `# Rangkuman Belajar: ${state.mindmapData.name}\n\n`;
+    markdownContent += `*Dokumen ini berisi kumpulan materi belajar terpadu yang diekspor dari sesi belajar **Rabbit Hole Mindmap Learner** pada ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}.*\n\n`;
+    markdownContent += `Jumlah Topik Dieksplorasi: **${exploredExplanations.length}**\n\n`;
+    markdownContent += `--- \n\n`;
+    exploredExplanations.forEach((item, index) => {
+        markdownContent += `## ${index + 1}. ${item.name} (Level ${item.depth})\n\n`;
+        markdownContent += `${item.explanation}\n\n`;
+        markdownContent += `--- \n\n`;
+    });
+    const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `materi-${state.mindmapData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }

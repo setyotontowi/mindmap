@@ -106,6 +106,10 @@
                     <i data-lucide="maximize-2"></i>
                 </button>
                 <div class="divider"></div>
+                <button class="control-btn" id="btn-export-session" title="Ekspor Peta Pikiran &amp; Materi">
+                    <i data-lucide="download"></i>
+                </button>
+                <div class="divider"></div>
                 <button class="control-btn toggle-chat-btn" id="btn-toggle-chat" title="Sembunyikan Chat">
                     <i data-lucide="menu"></i>
                 </button>
@@ -188,7 +192,7 @@
                         
                         <footer class="qa-footer">
                             <form id="drawer-qa-form" class="drawer-qa-form">
-                                <input type="text" id="drawer-qa-input" placeholder="Tanyakan detail materi di sini..." autocomplete="off" required>
+                                <textarea id="drawer-qa-input" placeholder="Tanyakan detail materi di sini..." autocomplete="off" required></textarea>
                                 <button type="submit" id="btn-send-qa" class="qa-send-btn" title="Kirim">
                                     <i data-lucide="send"></i>
                                 </button>
@@ -312,10 +316,62 @@
                         </label>
                     </div>
                 </div>
+
+                <div class="form-group" style="margin-top: 0.5rem;">
+                    <label for="regenerate-custom-prompt" style="font-weight: 600;">Instruksi Eksplorasi Khusus (Opsional):</label>
+                    <textarea id="regenerate-custom-prompt" placeholder="Misal: 'Ekspansi topik ini dengan fokus pada contoh kode Rust' atau 'Fokuskan sub-topik ke aspek efisiensi energi'" rows="3"></textarea>
+                </div>
             </div>
             <footer class="modal-footer">
                 <button class="btn-secondary" id="btn-cancel-regenerate-node">Batal</button>
                 <button class="btn-primary" id="btn-submit-regenerate-node" style="background: var(--accent);">Mulai Regenerasi</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal: Ekspor Peta Pikiran & Materi -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3><i data-lucide="download" class="icon-primary"></i> Ekspor Sesi Belajar</h3>
+                <button class="icon-btn" id="btn-close-export" title="Tutup">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+            <div class="modal-body">
+                <p>Pilih format ekspor yang Anda inginkan untuk peta pikiran dan materi belajar saat ini.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 5px;">
+                    <!-- Ekspor Gambar PNG -->
+                    <button class="btn-secondary" id="btn-export-png-action" style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px; width: 100%; text-align: left;">
+                        <i data-lucide="image" style="color: #3b82f6;"></i>
+                        <div>
+                            <strong>Ekspor Gambar PNG 🖼️</strong>
+                            <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Unduh peta pikiran sebagai gambar PNG resolusi tinggi.</div>
+                        </div>
+                    </button>
+                    
+                    <!-- Ekspor Gambar SVG -->
+                    <button class="btn-secondary" id="btn-export-svg-action" style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px; width: 100%; text-align: left;">
+                        <i data-lucide="file-code" style="color: #10b981;"></i>
+                        <div>
+                            <strong>Ekspor Gambar SVG 📐</strong>
+                            <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Unduh peta pikiran sebagai grafis vektor SVG (skala tak terbatas).</div>
+                        </div>
+                    </button>
+
+                    <!-- Ekspor Markdown -->
+                    <button class="btn-secondary" id="btn-export-md-action" style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px; width: 100%; text-align: left;">
+                        <i data-lucide="file-text" style="color: #f59e0b;"></i>
+                        <div>
+                            <strong>Ekspor Ringkasan Markdown 📝</strong>
+                            <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Unduh seluruh artikel materi pelajaran yang telah dijelajahi ke satu file Markdown terpadu.</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-export">Batal</button>
             </footer>
         </div>
     </div>
