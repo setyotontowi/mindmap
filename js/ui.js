@@ -276,6 +276,11 @@ function initUIEventListeners() {
             if (e.target === commentaryModal) closeCommentaryModal();
         });
     }
+    
+    // REDESIGN: Inisialisasi navigasi tab dan routing multi-screen
+    if (typeof initRedesignNavigation === 'function') {
+        initRedesignNavigation();
+    }
 }
 
 
@@ -478,6 +483,13 @@ async function handleChatSubmit(e) {
             initD3Canvas();
             updateMindmap(state.mindmapData);
             zoomFit();
+
+            if (typeof switchScreen === 'function') {
+                switchScreen('mindmaps');
+            }
+            if (typeof updateTableOfContents === 'function') {
+                updateTableOfContents();
+            }
 
             // Muat ulang daftar riwayat
             loadHistoryList();
@@ -880,65 +892,125 @@ function toggleDrawerQa() {
     }
 }
 
-/* ==========================================================================
-   HISTORY MANAGEMENT (SIDEBAR HISTORY LIST)
-   ========================================================================== */
 async function loadHistoryList() {
     try {
         const res = await fetch('/api/mindmaps');
         if (!res.ok) throw new Error('Gagal mengambil riwayat');
         const mindmaps = await res.json();
         
+        // Render to legacy sidebar container if it exists
         const container = document.getElementById('history-list-container');
-        if (!container) return;
-        
-        container.innerHTML = '';
-        if (mindmaps.length === 0) {
-            container.innerHTML = `<div style="font-size: 0.72rem; color: var(--text-3); text-align: center; padding: 10px 0;">Belum ada mindmap.</div>`;
-            return;
-        }
-        
-        mindmaps.forEach(mm => {
-            const item = document.createElement('div');
-            const isActive = mm.id === state.currentMindmapId;
-            item.className = `history-item ${isActive ? 'active' : ''}`;
-            
-            // Format date nicely
-            let dateStr = '';
-            try {
-                const date = new Date(mm.updated_at);
-                dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-            } catch (e) {
-                dateStr = mm.updated_at;
+        if (container) {
+            container.innerHTML = '';
+            if (mindmaps.length === 0) {
+                container.innerHTML = `<div style="font-size: 0.72rem; color: var(--text-3); text-align: center; padding: 10px 0;">Belum ada mindmap.</div>`;
+            } else {
+                mindmaps.forEach(mm => {
+                    const item = document.createElement('div');
+                    const isActive = mm.id === state.currentMindmapId;
+                    item.className = `history-item ${isActive ? 'active' : ''}`;
+                    
+                    let dateStr = '';
+                    try {
+                        const date = new Date(mm.updated_at);
+                        dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                    } catch (e) {
+                        dateStr = mm.updated_at;
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="history-item-left">
+                            <span class="history-item-title" title="${mm.name}">${mm.name}</span>
+                            <span class="history-item-date">${dateStr}</span>
+                        </div>
+                        <button class="history-item-delete" title="Hapus mindmap ini" data-id="${mm.id}">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    `;
+                    
+                    item.addEventListener('click', (e) => {
+                        if (e.target.closest('.history-item-delete')) return;
+                        loadMindmapById(mm.id);
+                    });
+                    
+                    const deleteBtn = item.querySelector('.history-item-delete');
+                    deleteBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        if (confirm(`Apakah Anda yakin ingin menghapus mindmap "${mm.name}"?`)) {
+                            await deleteMindmapById(mm.id);
+                        }
+                    });
+                    
+                    container.appendChild(item);
+                });
             }
-            
-            item.innerHTML = `
-                <div class="history-item-left">
-                    <span class="history-item-title" title="${mm.name}">${mm.name}</span>
-                    <span class="history-item-date">${dateStr}</span>
-                </div>
-                <button class="history-item-delete" title="Hapus mindmap ini" data-id="${mm.id}">
-                    <i data-lucide="trash-2"></i>
-                </button>
-            `;
-            
-            // Click to load
-            item.addEventListener('click', (e) => {
-                if (e.target.closest('.history-item-delete')) return;
-                loadMindmapById(mm.id);
-            });
-            
-            // Delete handler
-            const deleteBtn = item.querySelector('.history-item-delete');
-            deleteBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                if (confirm(`Apakah Anda yakin ingin menghapus mindmap "${mm.name}"?`)) {
-                    await deleteMindmapById(mm.id);
-                }
-            });
-            
-            container.appendChild(item);
-        });
+        }
+
+        // REDESIGN: Render cards to the main Dashboard page
+        const cardsContainer = document.getElementById('redesign-history-cards-container');
+        if (cardsContainer) {
+            cardsContainer.innerHTML = '';
+            if (mindmaps.length === 0) {
+                cardsContainer.innerHTML = `<div style="font-size: 0.88rem; color: var(--text-3); text-align: center; padding: 3rem 0; width: 100%;">Belum ada riwayat eksplorasi. Silakan cari topik baru untuk memulai!</div>`;
+            } else {
+                mindmaps.forEach(mm => {
+                    const card = document.createElement('div');
+                    card.className = 'history-progress-card';
+                    
+                    let dateStr = '';
+                    try {
+                        const date = new Date(mm.updated_at);
+                        dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                    } catch (e) {
+                        dateStr = mm.updated_at;
+                    }
+                    
+                    // Hitung jumlah node & progress done
+                    let totalNodes = 1;
+                    let doneNodes = 0;
+                    if (mm.node_statuses) {
+                        totalNodes = Object.keys(mm.node_statuses).length || 1;
+                        doneNodes = Object.values(mm.node_statuses).filter(s => s === 'done').length || 0;
+                    } else if (mm.tree_data) {
+                        const countNodes = (node) => {
+                            let count = 1;
+                            if (node.children) {
+                                node.children.forEach(c => { count += countNodes(c); });
+                            }
+                            return count;
+                        };
+                        totalNodes = countNodes(mm.tree_data);
+                    }
+                    
+                    const progressPercent = Math.round((doneNodes / totalNodes) * 100) || 0;
+                    
+                    card.innerHTML = `
+                        <div class="card-info-left">
+                            <div class="card-topic-title">${mm.name}</div>
+                            <div class="card-meta-row">
+                                <div class="card-meta-item"><i data-lucide="calendar"></i><span>${dateStr}</span></div>
+                                <div class="card-meta-item"><i data-lucide="git-branch"></i><span>${totalNodes} Nodes</span></div>
+                            </div>
+                        </div>
+                        <div class="card-progress-right">
+                            <span class="progress-label-micro">Progress</span>
+                            <div class="progress-bar-outer">
+                                <div class="progress-bar-inner" style="width: ${progressPercent}%;"></div>
+                            </div>
+                            <span class="progress-percent-bold">${progressPercent}%</span>
+                        </div>
+                        <div class="card-chevron-btn"><i data-lucide="chevron-right"></i></div>
+                    `;
+                    
+                    card.addEventListener('click', () => {
+                        loadMindmapById(mm.id);
+                        switchScreen('mindmaps');
+                    });
+                    
+                    cardsContainer.appendChild(card);
+                });
+            }
+        }
         
         if (window.lucide) window.lucide.createIcons();
     } catch (e) {
@@ -2067,5 +2139,142 @@ function renderUserProfile() {
 
     if (window.lucide) {
         window.lucide.createIcons();
+    }
+}
+
+/* ==========================================================================
+   REDESIGN ROUTING & INTERACTIVE NAVIGATION STATE
+   ========================================================================== */
+
+function switchScreen(screenName) {
+    const tabs = {
+        'search': { tabId: 'tab-search', viewId: 'screen-search-view' },
+        'mindmaps': { tabId: 'tab-mindmaps', viewId: 'screen-mindmap-view' },
+        'content': { tabId: 'tab-content', viewId: 'screen-content-view' },
+        'dashboard': { tabId: 'tab-dashboard', viewId: 'screen-dashboard-view' }
+    };
+    
+    const selected = tabs[screenName];
+    if (!selected) return;
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    // Add active class to selected tab
+    const tabEl = document.getElementById(selected.tabId);
+    if (tabEl) tabEl.classList.add('active');
+    
+    // Hide all screens
+    document.querySelectorAll('.screen-container').forEach(screen => {
+        if (screen.id) {
+            screen.classList.add('hidden');
+        }
+    });
+    // Show selected screen
+    const viewEl = document.getElementById(selected.viewId);
+    if (viewEl) viewEl.classList.remove('hidden');
+    
+    // If switching to mindmaps, trigger a zoom fit to ensure canvas is perfectly sized
+    if (screenName === 'mindmaps' && typeof zoomFit === 'function') {
+        setTimeout(zoomFit, 100);
+    }
+}
+
+function initRedesignNavigation() {
+    // 1. Hook Header Navigation Tabs
+    const tabSearch = document.getElementById('tab-search');
+    const tabMindmaps = document.getElementById('tab-mindmaps');
+    const tabContent = document.getElementById('tab-content');
+    const tabDashboard = document.getElementById('tab-dashboard');
+    
+    if (tabSearch) tabSearch.addEventListener('click', () => switchScreen('search'));
+    if (tabMindmaps) tabMindmaps.addEventListener('click', () => switchScreen('mindmaps'));
+    if (tabContent) tabContent.addEventListener('click', () => switchScreen('content'));
+    if (tabDashboard) tabDashboard.addEventListener('click', () => switchScreen('dashboard'));
+    
+    // 2. Hook "New Research" Buttons
+    const btnNewTopicSearch = document.getElementById('btn-new-topic');
+    const btnNewTopicDashboard = document.getElementById('btn-new-topic-dashboard');
+    
+    if (btnNewTopicSearch) btnNewTopicSearch.addEventListener('click', () => switchScreen('search'));
+    if (btnNewTopicDashboard) btnNewTopicDashboard.addEventListener('click', () => switchScreen('search'));
+    
+    // 3. Hook Suggested Pills
+    const suggestedPills = document.querySelectorAll('.suggested-pill');
+    suggestedPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            const inputEl = document.getElementById('chat-input');
+            const formEl = document.getElementById('chat-form');
+            if (inputEl && formEl) {
+                inputEl.value = pill.innerText.replace(/^[✨🧠💻🌱📊🧪🏛️] /, '').trim();
+                formEl.dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+    
+    // 4. Set Default Screen
+    if (state.mindmapData) {
+        switchScreen('mindmaps');
+        updateTableOfContents();
+    } else {
+        switchScreen('search');
+    }
+}
+
+function updateTableOfContents() {
+    const tocContainer = document.getElementById('redesign-toc-container');
+    if (!tocContainer) return;
+    
+    tocContainer.innerHTML = '';
+    
+    if (!state.mindmapData) {
+        tocContainer.innerHTML = `<div style="font-size:0.75rem; color:var(--text-3); padding:10px 12px; text-align:center;">No active research</div>`;
+        return;
+    }
+    
+    // Set Exploration Title in Content Sidebar
+    const researchTitle = document.getElementById('sidebar-research-title');
+    if (researchTitle) {
+        researchTitle.innerText = state.mindmapData.name;
+    }
+    
+    // Traverse hierarchical state.mindmapData to get pre-order list of nodes
+    const nodeList = [];
+    const traverse = (node, depth = 0) => {
+        nodeList.push({ name: node.name, depth: depth, data: node });
+        if (node.children) {
+            node.children.forEach(c => traverse(c, depth + 1));
+        }
+    };
+    traverse(state.mindmapData);
+    
+    nodeList.forEach(item => {
+        const btn = document.createElement('button');
+        const isActive = state.activeNode && state.activeNode.name === item.name;
+        btn.className = `toc-item ${isActive ? 'active' : ''}`;
+        
+        // Add indentation margin based on node level/depth
+        btn.style.paddingLeft = `${12 + item.depth * 12}px`;
+        
+        // Add indicator based on node status
+        const status = state.nodeStatuses[item.name] || 'todo';
+        let statusEmoji = '🌱 ';
+        if (status === 'doing') statusEmoji = '📖 ';
+        if (status === 'done') statusEmoji = '✅ ';
+        
+        btn.innerText = statusEmoji + item.name;
+        
+        btn.addEventListener('click', () => {
+            selectAndOpenNode(item.name);
+        });
+        
+        tocContainer.appendChild(btn);
+    });
+}
+
+function selectAndOpenNode(nodeName) {
+    if (!rootNodeData) return;
+    const foundD3Node = rootNodeData.descendants().find(d => d.data.name === nodeName);
+    if (foundD3Node) {
+        handleNodeClick(foundD3Node);
     }
 }

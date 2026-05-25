@@ -96,6 +96,9 @@ async function syncFromDatabase(id = state.currentMindmapId) {
                 }
                 updateMindmap(state.mindmapData);
                 setTimeout(zoomFit, 100);
+                if (typeof updateTableOfContents === 'function') {
+                    updateTableOfContents();
+                }
             } else {
                 // Bersihkan canvas
                 d3.select('#mindmap-svg').selectAll('*').remove();

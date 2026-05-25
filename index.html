@@ -17,193 +17,276 @@
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-</head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar Kiri: Chat Agent & Kontrol -->
-        <aside class="chat-sidebar mode-history" id="chat-sidebar-section">
-            <header class="app-header">
-                <div class="logo-area">
-                    <span class="logo-emoji">🧠</span>
-                    <div class="logo-text">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <h1>Rabbit Hole</h1>
-                            <span id="sync-status" class="sync-status" title="Status Sinkronisasi PostgreSQL">Menghubungkan... 🔌</span>
+    <div class="app-container-redesign">
+        <!-- Global Header -->
+        <header class="global-header">
+            <div class="header-left">
+                <span class="brand-logo">Rabbit Hole 🧠</span>
+                <nav class="global-nav">
+                    <button class="nav-tab active" id="tab-search">Search</button>
+                    <button class="nav-tab" id="tab-mindmaps">Mind Maps</button>
+                    <button class="nav-tab" id="tab-dashboard">Dashboard</button>
+                </nav>
+            </div>
+            <div class="header-right">
+                <span id="sync-status" class="sync-status" title="Status Sinkronisasi PostgreSQL" style="font-size: 0.72rem; margin-right: 8px;">Menghubungkan... 🔌</span>
+                <div id="user-profile-area" style="display: flex; align-items: center; gap: 8px; margin-right: 4px;"></div>
+                <button class="icon-btn" id="btn-open-settings" title="Pengaturan Aplikasi">
+                    <i data-lucide="settings"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Screen Containers -->
+        <div class="screen-container">
+            
+            <!-- 1. Halaman Search -->
+            <div class="screen-container" id="screen-search-view">
+                <div class="search-screen-wrapper">
+                    <div class="enhanced-badge">
+                        <i data-lucide="sparkles"></i>
+                        <span>Enhanced exploration active</span>
+                    </div>
+                    
+                    <h2 class="search-hero-title">Go down the Rabbit Hole.</h2>
+                    
+                    <form id="chat-form" class="search-box-container">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="chat-input" placeholder="Search topics, maps, or research..." autocomplete="off" required>
+                        <span class="kbd-shortcut">⌘K</span>
+                        <button type="submit" id="btn-send-message" class="btn-search-redesign">Search</button>
+                    </form>
+                    
+                    <div class="search-columns-grid">
+                        <div>
+                            <div class="search-column-title">
+                                <span>Recent Searches</span>
+                                <span class="clear-all-link" id="btn-clear-recent">Clear all</span>
+                            </div>
+                            <div class="recent-searches-list" id="recent-searches-container">
+                                <div class="recent-search-item">Neural architectures for LLMs</div>
+                                <div class="recent-search-item">Modernist architectural theory 1920-1940</div>
+                                <div class="recent-search-item">Quantum cryptography basics</div>
+                                <div class="recent-search-item">History of semantic web protocols</div>
+                            </div>
                         </div>
-                        <p>Mindmap Learner</p>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 4px; align-items: center;">
-                    <div id="user-profile-area" style="display: flex; align-items: center; gap: 8px; margin-right: 4px;"></div>
-                    <button class="icon-btn mobile-only-close-chat" id="btn-close-chat-mobile" title="Tutup Chat" style="display: none;">
-                        <i data-lucide="x"></i>
-                    </button>
-                    <button class="icon-btn" id="btn-open-settings" title="Pengaturan API Key">
-                        <i data-lucide="settings"></i>
-                    </button>
-                </div>
-            </header>
-
-            <!-- Sub-Header khusus mode Chat (Back Button) -->
-            <div class="chat-mode-header" id="chat-mode-header">
-                <button class="back-to-history-btn" id="btn-back-to-history" title="Kembali ke Riwayat Belajar">
-                    <i data-lucide="arrow-left"></i>
-                    <span>Kembali ke Riwayat</span>
-                </button>
-            </div>
-
-            <!-- Riwayat Mindmap Collapsible -->
-            <div class="history-section" id="history-section">
-                <button class="history-toggle-btn open" id="btn-toggle-history">
-                    <span class="history-toggle-title">
-                        <i data-lucide="history"></i>
-                        <span>Riwayat Belajar</span>
-                    </span>
-                    <i data-lucide="chevron-down" class="chevron-icon" id="history-chevron"></i>
-                </button>
-                <div class="history-content" id="history-content-list">
-                    <div class="history-list" id="history-list-container">
-                        <!-- List item akan dirender secara dinamis di sini -->
-                    </div>
-                    <button class="new-topic-btn" id="btn-new-topic" style="margin-top: 8px;">
-                        <i data-lucide="plus"></i>
-                        <span>Buat Mindmap Baru</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Pesan Chat -->
-            <div class="chat-messages" id="chat-messages-container">
-                <div class="chat-bubble bot-message">
-                    <div class="message-content">
-                        Halo! Aku adalah Chat Agent belajarmu. 👋 <br><br>
-                        Topik apa yang ingin kamu pelajari hari ini? Tulis saja (misalnya: *Web Development*, *Quantum Physics*, atau *Seni Memasak*), dan aku akan buatkan peta jalan belajarmu!
-                    </div>
-                    <span class="message-time" id="welcome-message-time">19:15</span>
-                </div>
-            </div>
-
-            <!-- Area Input Chat -->
-            <div class="chat-input-wrapper">
-                <form id="chat-form" class="chat-form">
-                    <input type="text" id="chat-input" placeholder="Tulis topik atau pertanyaan di sini..." autocomplete="off" required>
-                    <button type="submit" id="btn-send-message" class="send-btn" title="Kirim pesan">
-                        <i data-lucide="send"></i>
-                    </button>
-                </form>
-            </div>
-        </aside>
-
-        <!-- Main Area Kanan: Visualisasi Mindmap -->
-        <main class="mindmap-main" id="mindmap-main-section">
-            <!-- Floating Navigation Controls -->
-            <div class="floating-controls">
-                <button class="control-btn" id="btn-zoom-in" title="Perbesar">
-                    <i data-lucide="plus"></i>
-                </button>
-                <button class="control-btn" id="btn-zoom-out" title="Perkecil">
-                    <i data-lucide="minus"></i>
-                </button>
-                <button class="control-btn" id="btn-zoom-fit" title="Pas Layar">
-                    <i data-lucide="maximize-2"></i>
-                </button>
-                <div class="divider"></div>
-                <button class="control-btn" id="btn-export-session" title="Ekspor Peta Pikiran &amp; Materi">
-                    <i data-lucide="download"></i>
-                </button>
-                <div class="divider"></div>
-                <button class="control-btn toggle-chat-btn" id="btn-toggle-chat" title="Sembunyikan Chat">
-                    <i data-lucide="menu"></i>
-                </button>
-            </div>
-
-            <!-- Mindmap Canvas Container -->
-            <div class="mindmap-canvas-container" id="mindmap-canvas-container">
-                <!-- SVG Canvas for D3 -->
-                <svg id="mindmap-svg" class="mindmap-svg"></svg>
-                
-                <!-- Hint Overlay -->
-                <div class="mindmap-hint" id="mindmap-hint-text">
-                    <i data-lucide="mouse-pointer-click"></i>
-                    <span>Tulis topik di kolom chat untuk memulai. Klik node di mindmap untuk masuk ke rabbit hole.</span>
-                </div>
-            </div>
-
-            <!-- Slide-out Detail Panel (Rabbit Hole Content) -->
-            <div class="detail-drawer" id="detail-drawer">
-                <div class="drawer-resize-handle" id="drawer-resize-handle"></div>
-                
-                <div class="drawer-main-wrapper">
-                    <!-- Kolom Kiri: Detail Materi -->
-                    <div class="drawer-col-materi">
-                        <header class="drawer-header">
-                            <div class="drawer-header-left">
-                                <span class="node-tag" id="drawer-node-level">Level 1</span>
-                                <h2 id="drawer-node-title">Judul Topik</h2>
-                            </div>
-                            <div class="drawer-header-actions" style="display: flex; gap: 4px;">
-                                <button class="icon-btn" id="btn-add-subnode" title="Tambah Sub-Node Manual">
-                                    <i data-lucide="plus-circle"></i>
-                                </button>
-                                <button class="icon-btn" id="btn-edit-node" title="Edit Node Ini">
-                                    <i data-lucide="edit-3"></i>
-                                </button>
-                                <button class="icon-btn" id="btn-regenerate-node" title="Buat Ulang (Regenerasi) Materi">
-                                    <i data-lucide="refresh-cw"></i>
-                                </button>
-                                <button class="icon-btn" id="btn-delete-node" title="Hapus Node & Cabangnya">
-                                    <i data-lucide="trash-2"></i>
-                                </button>
-                                <button class="icon-btn" id="btn-toggle-drawer-qa" title="Tanya Jawab Topik">
-                                    <i data-lucide="message-square"></i>
-                                </button>
-                                <button class="icon-btn" id="btn-close-drawer" title="Tutup">
-                                    <i data-lucide="x"></i>
-                                </button>
-                            </div>
-                        </header>
                         
-                        <div class="drawer-content" id="drawer-content-body">
-                            <!-- Penjelasan Markdown akan dirender di sini -->
+                        <div>
+                            <div class="search-column-title">Suggested Topics</div>
+                            <div class="suggested-pills-wrap">
+                                <span class="suggested-pill">Bioinformatics</span>
+                                <span class="suggested-pill">Ethical AI</span>
+                                <span class="suggested-pill">Distributed Systems</span>
+                                <span class="suggested-pill">Macroeconomics</span>
+                                <span class="suggested-pill">Linguistics</span>
+                                <span class="suggested-pill">Renewable Energy</span>
+                                <span class="suggested-pill">Game Theory</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Faded SVG preview at bottom -->
+                    <div class="search-footer-mockup">
+                        <svg width="200" height="60" viewBox="0 0 200 60" fill="none" style="opacity: 0.15; margin: 0 auto; display: block;">
+                            <rect width="200" height="60" rx="6" fill="var(--border-mid)"/>
+                            <circle cx="40" cy="30" r="8" fill="var(--bg)"/>
+                            <line x1="40" y1="30" x2="85" y2="18" stroke="var(--bg)" stroke-width="2"/>
+                            <line x1="40" y1="30" x2="85" y2="42" stroke="var(--bg)" stroke-width="2"/>
+                            <circle cx="85" cy="18" r="5" fill="var(--bg)"/>
+                            <circle cx="85" cy="42" r="5" fill="var(--bg)"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Halaman Mind Maps -->
+            <div class="screen-container hidden" id="screen-mindmap-view">
+                <div class="mindmap-page-wrapper">
+                    <!-- Dotted Canvas Grid -->
+                    <div class="mindmap-canvas-container dot-grid-canvas" id="mindmap-canvas-container" style="width: 100%; height: 100%;">
+                        <!-- SVG Canvas for D3 -->
+                        <svg id="mindmap-svg" class="mindmap-svg"></svg>
+                        
+                        <!-- Hint Overlay -->
+                        <div class="mindmap-hint" id="mindmap-hint-text">
+                            <i data-lucide="mouse-pointer-click"></i>
+                            <span>Cari topik di menu Search untuk memulai. Klik node di mindmap untuk membaca detail materinya.</span>
+                        </div>
+                    </div>
+
+                    <!-- Find a node search input at top left of canvas -->
+                    <div class="mindmap-search-bar">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="mindmap-node-search" placeholder="Find a node...">
+                    </div>
+
+                    <!-- Zoom Controls bottom left -->
+                    <div class="floating-controls" style="left: 1.25rem; bottom: 1.25rem;">
+                        <button class="control-btn" id="btn-zoom-in" title="Perbesar">
+                            <i data-lucide="plus"></i>
+                        </button>
+                        <button class="control-btn" id="btn-zoom-out" title="Perkecil">
+                            <i data-lucide="minus"></i>
+                        </button>
+                        <button class="control-btn" id="btn-zoom-fit" title="Pas Layar">
+                            <i data-lucide="maximize-2"></i>
+                        </button>
+                        <div class="divider"></div>
+                        <button class="control-btn" id="btn-export-session" title="Ekspor Peta Pikiran &amp; Materi">
+                            <i data-lucide="download"></i>
+                        </button>
+                    </div>
+
+                    <!-- Filter toggles & help button bottom right -->
+                    <div class="floating-toggle-controls">
+                        <div class="toggle-filter-group">
+                            <button class="toggle-option-btn active" id="toggle-direct-link">Direct Link</button>
+                            <button class="toggle-option-btn" id="toggle-reference">Reference</button>
+                        </div>
+                        <div class="help-bubble-btn" title="Bantuan">
+                            <i data-lucide="help-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Modal: Node Detail (Popup Minimalis) -->
+            <div class="modal-overlay" id="detail-drawer-overlay">
+                <div class="modal-card" id="detail-drawer" style="max-width: 800px; height: 80vh; display: flex; flex-direction: column; transition: max-width 0.3s ease, width 0.3s ease;">
+                    <!-- Modal Header -->
+                    <header class="modal-header" style="padding: 0 1.5rem; height: 60px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg);">
+                        <div class="drawer-header-left" style="display: flex; align-items: center; gap: 8px;">
+                            <span class="node-tag" id="drawer-node-level" style="background: var(--accent-light); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">Level 0</span>
+                            <h3 id="drawer-node-title" style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text);">Judul Topik</h3>
+                        </div>
+                        <div class="drawer-header-actions" style="display: flex; gap: 6px; align-items: center;">
+                            <button class="icon-btn" id="btn-add-subnode" title="Tambah Sub-Node Manual">
+                                <i data-lucide="plus-circle"></i>
+                            </button>
+                            <button class="icon-btn" id="btn-edit-node" title="Edit Node Ini">
+                                <i data-lucide="edit-3"></i>
+                            </button>
+                            <button class="icon-btn" id="btn-regenerate-node" title="Buat Ulang (Regenerasi) Materi">
+                                <i data-lucide="refresh-cw"></i>
+                            </button>
+                            <button class="icon-btn" id="btn-delete-node" title="Hapus Node & Cabangnya">
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                            <button class="icon-btn" id="btn-toggle-drawer-qa" title="Tanya Jawab Topik">
+                                <i data-lucide="message-square"></i>
+                            </button>
+                            <div style="width: 1px; height: 16px; background: var(--border); margin: 0 4px;"></div>
+                            <button class="icon-btn" id="btn-close-drawer" title="Tutup">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    </header>
+                    
+                    <!-- Modal Body (Article & Collapsible Q&A) -->
+                    <div class="detail-modal-body-wrapper" style="display: flex; height: calc(100% - 60px - 56px); overflow: hidden; position: relative;">
+                        <!-- Article Content Column -->
+                        <div class="drawer-col-materi" style="flex: 1; overflow-y: auto; padding: 2rem 2.5rem; background: var(--bg);">
+                            <div class="article-category" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 0.75rem;">ARTICLE DEEP-DIVE</div>
                             <div id="drawer-markdown-content" class="markdown-body">
-                                Pilih node untuk membaca penjelasan materi mendalam.
+                                Pilih salah satu node di halaman Mind Map untuk mulai membaca penjelasan materi secara mendalam.
                             </div>
                         </div>
-                        
-                        <footer class="drawer-footer">
-                            <div class="progress-selector">
-                                <span>Status Belajar:</span>
-                                <div class="status-options">
-                                    <button class="status-btn active" data-status="todo" id="status-todo-btn">Belum Mulai</button>
-                                    <button class="status-btn" data-status="doing" id="status-doing-btn">Sedang Belajar</button>
-                                    <button class="status-btn" data-status="done" id="status-done-btn">Selesai</button>
-                                </div>
+
+                        <!-- Side Collapsible Q&A Column -->
+                        <div class="drawer-col-qa collapsed" id="drawer-col-qa" style="width: 0px; border-left: 0px solid var(--border); background: var(--bg-subtle); display: flex; flex-direction: column; transition: all 0.3s ease; overflow: hidden;">
+                            <header class="qa-header" style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; gap: 8px;">
+                                <h4 style="margin: 0; font-size: 0.88rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px;"><i data-lucide="help-circle" style="color: var(--accent); width: 16px; height: 16px;"></i> Tanya Jawab Tutor</h4>
+                            </header>
+                            
+                            <div class="qa-content-body" style="flex: 1; overflow-y: auto; padding: 16px;">
+                                <div class="qa-messages-list" id="qa-messages-list" style="display: flex; flex-direction: column; gap: 12px;"></div>
                             </div>
-                        </footer>
+                            
+                            <footer class="qa-footer" style="padding: 12px; background: var(--bg); border-top: 1px solid var(--border);">
+                                <form id="drawer-qa-form" class="drawer-qa-form" style="display: flex; gap: 8px; align-items: flex-end;">
+                                    <textarea id="drawer-qa-input" placeholder="Tanyakan detail materi..." autocomplete="off" required style="flex: 1; height: 36px; min-height: 36px; max-height: 120px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; resize: none; font-size: 0.8rem; background: var(--bg-subtle);"></textarea>
+                                    <button type="submit" id="btn-send-qa" class="qa-send-btn" title="Kirim" style="background: var(--accent); color: white; border: none; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                                        <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                </form>
+                            </footer>
+                        </div>
                     </div>
 
-                    <!-- Kolom Kanan: Tanya Jawab (Q&A) -->
-                    <div class="drawer-col-qa collapsed" id="drawer-col-qa">
-                        <header class="qa-header">
-                            <h3><i data-lucide="help-circle"></i> Tanya Jawab Tutor</h3>
-                        </header>
-                        
-                        <div class="qa-content-body">
-                            <div class="qa-messages-list" id="qa-messages-list"></div>
+                    <!-- Modal Footer for Study Status -->
+                    <footer class="modal-footer" style="padding: 12px 24px; background: var(--bg-subtle); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; height: 56px;">
+                        <div class="status-selector-wrap" style="display: flex; align-items: center; gap: 12px;">
+                            <span class="status-label" style="font-size: 0.78rem; font-weight: 600; color: var(--text-2);">Study Status:</span>
+                            <div class="status-pills" style="display: flex; gap: 6px;">
+                                <button class="status-btn active" data-status="todo" id="status-todo-btn">Belum Mulai</button>
+                                <button class="status-btn" data-status="doing" id="status-doing-btn">Sedang Belajar</button>
+                                <button class="status-btn" data-status="done" id="status-done-btn">Selesai</button>
+                            </div>
+                        </div>
+                        <div class="footer-widget-learners" style="font-size: 0.72rem; color: var(--text-3); display: flex; align-items: center; gap: 6px;">
+                            <span style="font-weight: 500;">Interactive AI Tutor</span>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+
+            <!-- 4. Halaman Dashboard / History -->
+            <div class="screen-container hidden" id="screen-dashboard-view">
+                <div class="history-screen-wrapper">
+                    <!-- History Sub-Sidebar -->
+                    <aside class="history-sub-sidebar">
+                        <div class="history-profile-card">
+                            <div class="user-avatar" style="background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; border-radius: 50%;">RH</div>
+                            <div>
+                                <div class="history-profile-title">Rabbit Hole</div>
+                                <div class="history-profile-subtitle">Deep Learning</div>
+                            </div>
                         </div>
                         
-                        <footer class="qa-footer">
-                            <form id="drawer-qa-form" class="drawer-qa-form">
-                                <textarea id="drawer-qa-input" placeholder="Tanyakan detail materi di sini..." autocomplete="off" required></textarea>
-                                <button type="submit" id="btn-send-qa" class="qa-send-btn" title="Kirim">
-                                    <i data-lucide="send"></i>
-                                </button>
-                            </form>
-                        </footer>
+                        <button class="btn-new-research-history" id="btn-new-topic-dashboard">
+                            <i data-lucide="plus"></i>
+                            <span>New Research</span>
+                        </button>
+                        
+                        <div class="history-menu-list">
+                            <button class="history-menu-item active" id="history-menu-item-history">
+                                <i data-lucide="history"></i>
+                                <span>History</span>
+                            </button>
+                            <button class="history-menu-item" id="history-menu-item-exploration">
+                                <i data-lucide="compass"></i>
+                                <span>Exploration</span>
+                            </button>
+                            <button class="history-menu-item" id="history-menu-item-reader">
+                                <i data-lucide="book-open"></i>
+                                <span>Reader</span>
+                            </button>
+                            <button class="history-menu-item" id="history-menu-item-library">
+                                <i data-lucide="library"></i>
+                                <span>Library</span>
+                            </button>
+                        </div>
+                    </aside>
+
+                    <!-- History Content -->
+                    <div class="history-main-content">
+                        <div class="history-header-block">
+                            <h2 class="history-title-redesign">Research History</h2>
+                            <p class="history-subtitle-redesign">Review your past explorations and continue diving into complex topics. Your journey through the rabbit hole is preserved here.</p>
+                        </div>
+                        
+                        <!-- Dynamically populated card list -->
+                        <div class="history-cards-list" id="redesign-history-cards-container">
+                            <!-- Populated dynamically via JS -->
+                            <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 3rem 0;">Loading research history...</div>
+                        </div>
+                        
+                        <button class="btn-view-all-history" id="btn-view-all-history-action">View Full History</button>
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 
     <!-- Modal Settings -->

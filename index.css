@@ -2519,5 +2519,101 @@ mark[data-note]::after {
     color: var(--text);
 }
 
+/* ==========================================================================
+   MINIMALIST POP-UP MODAL OVERLAY (FOR DETAIL DRAWER)
+   ========================================================================== */
+
+#detail-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Open state using CSS :has() */
+#detail-drawer-overlay:has(#detail-drawer.open) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Modal card specific styling */
+#detail-drawer {
+    width: 800px;
+    max-width: 90vw;
+    height: 80vh;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.3s ease, width 0.3s ease;
+    overflow: hidden;
+}
+
+#detail-drawer.open {
+    transform: translateY(0) scale(1);
+}
+
+/* Style for study status pills in footer */
+.status-pills .status-btn {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    padding: 6px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--t);
+}
+
+.status-pills .status-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.status-pills .status-btn.active[data-status="todo"] {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.status-pills .status-btn.active[data-status="doing"] {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #b45309;
+}
+
+.status-pills .status-btn.active[data-status="done"] {
+    background: #d1fae5;
+    border-color: #10b981;
+    color: #047857;
+}
+
+/* Support for collapsed/expanded Q&A inside the modal */
+#detail-drawer #drawer-col-qa {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-left 0.3s ease;
+}
+
+#detail-drawer #drawer-col-qa.collapsed {
+    width: 0px !important;
+    border-left: 0px solid transparent !important;
+}
+
+#detail-drawer #drawer-col-qa:not(.collapsed) {
+    width: 380px !important;
+    border-left: 1px solid var(--border) !important;
+}
+
 
 
