@@ -1109,6 +1109,10 @@ async function loadMindmapById(id) {
     if (state.mindmapData) {
         appendChatMessage('bot', `Mindmap **${state.mindmapData.name}** berhasil dimuat! Mari lanjutkan belajar. 📚`);
     }
+    
+    if (typeof updateMobileHeaderTitle === 'function') {
+        updateMobileHeaderTitle();
+    }
 }
 
 async function deleteMindmapById(id) {
@@ -2219,6 +2223,19 @@ function renderUserProfile() {
    REDESIGN ROUTING & INTERACTIVE NAVIGATION STATE
    ========================================================================== */
 
+function updateMobileHeaderTitle() {
+    const brandLogo = document.querySelector('.brand-logo');
+    if (brandLogo) {
+        const mindmapView = document.getElementById('screen-mindmap-view');
+        const isMindmapScreen = mindmapView && !mindmapView.classList.contains('hidden');
+        if (isMindmapScreen && state.mindmapData && state.mindmapData.name) {
+            brandLogo.textContent = state.mindmapData.name;
+        } else {
+            brandLogo.textContent = 'Rabbit Hole 🧠';
+        }
+    }
+}
+
 function switchScreen(screenName) {
     const tabs = {
         'search': { tabId: 'tab-search', viewId: 'screen-search-view' },
@@ -2260,6 +2277,9 @@ function switchScreen(screenName) {
         const activeNav = document.getElementById('btn-mobile-nav-history');
         if (activeNav) activeNav.classList.add('active');
     }
+    
+    // Perbarui judul header mobile
+    updateMobileHeaderTitle();
 }
 
 function switchDashboardSubview(subviewName) {

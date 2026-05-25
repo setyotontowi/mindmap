@@ -41,6 +41,16 @@ function initD3Canvas() {
 
     svg.call(zoomBehavior);
 
+    // Setup window resize listener to dynamically recalculate layout bounds
+    if (!window.hasMindmapResizeListener) {
+        window.addEventListener('resize', () => {
+            if (state.mindmapData && typeof zoomFit === 'function') {
+                zoomFit();
+            }
+        });
+        window.hasMindmapResizeListener = true;
+    }
+
     // Tree Layout Generator (Horizontal)
     treeLayout = d3.tree()
         .nodeSize([95, 270]) // Jarak dasar vertikal 95px, horizontal 270px
