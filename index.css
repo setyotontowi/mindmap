@@ -2421,6 +2421,7 @@ mark[data-note]::after {
     flex-direction: column;
     gap: 6px;
     min-width: 0;
+    flex: 1; /* Penuhi sisa ruang horizontal agar kolom progress di kanan sejajar tegak lurus */
 }
 
 .card-topic-title {
@@ -2613,6 +2614,31 @@ mark[data-note]::after {
 #detail-drawer #drawer-col-qa:not(.collapsed) {
     width: 380px !important;
     border-left: 1px solid var(--border) !important;
+}
+
+/* Card Delete Button (History Cards) */
+.card-delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    padding: 8px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--t), background-color var(--t);
+    margin-left: 10px;
+}
+
+.card-delete-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.card-delete-btn i {
+    width: 16px;
+    height: 16px;
 }
 
 

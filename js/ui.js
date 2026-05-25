@@ -965,22 +965,51 @@ async function loadHistoryList() {
                         dateStr = mm.updated_at;
                     }
                     
-                    // Hitung jumlah node & progress done
+                    // Hitung jumlah node, progress done, & tingkat kedalaman (level) maksimum
                     let totalNodes = 1;
                     let doneNodes = 0;
-                    if (mm.node_statuses) {
-                        totalNodes = Object.keys(mm.node_statuses).length || 1;
-                        doneNodes = Object.values(mm.node_statuses).filter(s => s === 'done').length || 0;
-                    } else if (mm.tree_data) {
-                        const countNodes = (node) => {
-                            let count = 1;
-                            if (node.children) {
-                                node.children.forEach(c => { count += countNodes(c); });
-                            }
-                            return count;
-                        };
-                        totalNodes = countNodes(mm.tree_data);
+                    let maxDepth = 1;
+                    
+                    const getTreeDepth = (node) => {
+                        if (!node) return 0;
+                        if (!node.children || node.children.length === 0) {
+                            return 1;
+                        }
+                        let maxChildDepth = 0;
+                        node.children.forEach(c => {
+                            const d = getTreeDepth(c);
+                            if (d > maxChildDepth) maxChildDepth = d;
+                        });
+                        return maxChildDepth + 1;
+                    };
+                    
+                    if (mm.tree_data) {
+                        try {
+                            const treeObj = typeof mm.tree_data === 'string' ? JSON.parse(mm.tree_data) : mm.tree_data;
+                            maxDepth = getTreeDepth(treeObj);
+                            
+                            const countNodes = (node) => {
+                                let count = 1;
+                                if (node.children) {
+                                    node.children.forEach(c => { count += countNodes(c); });
+                                }
+                                return count;
+                            };
+                            totalNodes = countNodes(treeObj);
+                        } catch (e) {
+                            console.error(e);
+                        }
                     }
+                    
+                    let statusesObj = {};
+                    if (mm.node_statuses) {
+                        try {
+                            statusesObj = typeof mm.node_statuses === 'string' ? JSON.parse(mm.node_statuses) : mm.node_statuses;
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                    doneNodes = Object.values(statusesObj).filter(s => s === 'done').length || 0;
                     
                     const progressPercent = Math.round((doneNodes / totalNodes) * 100) || 0;
                     
@@ -999,12 +1028,24 @@ async function loadHistoryList() {
                             </div>
                             <span class="progress-percent-bold">${progressPercent}%</span>
                         </div>
+                        <button class="card-delete-btn" title="Hapus mindmap ini">
+                            <i data-lucide="trash-2"></i>
+                        </button>
                         <div class="card-chevron-btn"><i data-lucide="chevron-right"></i></div>
                     `;
                     
-                    card.addEventListener('click', () => {
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('.card-delete-btn')) return;
                         loadMindmapById(mm.id);
                         switchScreen('mindmaps');
+                    });
+                    
+                    const cardDeleteBtn = card.querySelector('.card-delete-btn');
+                    cardDeleteBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        if (confirm(`Apakah Anda yakin ingin menghapus mindmap "${mm.name}"?`)) {
+                            await deleteMindmapById(mm.id);
+                        }
                     });
                     
                     cardsContainer.appendChild(card);
@@ -1054,7 +1095,7 @@ async function deleteMindmapById(id) {
                     await loadMindmapById(list[0].id);
                 } else {
                     // DB benar-benar kosong
-                    state.currentMindmapId = 'default';
+                    state.currentMindmapId = null;
                     localStorage.removeItem('current_mindmap_id');
                     state.mindmapData = null;
                     state.nodeCache = {};
@@ -2119,8 +2160,8 @@ function renderUserProfile() {
                     const res = await fetch('/api/auth/logout', { method: 'POST' });
                     if (res.ok) {
                         state.currentUser = null;
-                        state.currentMindmapId = 'default';
-                        localStorage.setItem('current_mindmap_id', 'default');
+                        state.currentMindmapId = null;
+                        localStorage.removeItem('current_mindmap_id');
                         window.location.reload();
                     }
                 } catch (err) {

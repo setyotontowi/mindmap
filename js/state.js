@@ -3,7 +3,7 @@
    ========================================================================== */
 const state = {
     language: localStorage.getItem('ai_language') || 'id',
-    currentMindmapId: localStorage.getItem('current_mindmap_id') || 'default',
+    currentMindmapId: localStorage.getItem('current_mindmap_id') || null,
     mindmapData: null,       // Data pohon (tree) D3
     activeNode: null,        // Node yang sedang aktif di drawer
     nodeStatuses: JSON.parse(localStorage.getItem('node_statuses') || '{}'), // nodeName -> 'todo' | 'doing' | 'done'

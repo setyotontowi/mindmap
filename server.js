@@ -99,8 +99,8 @@ app.use(async (req, res, next) => {
 app.get('/api/mindmaps', (req, res) => {
     const userId = req.user ? req.user.id : null;
     const query = userId 
-        ? 'SELECT id, name, updated_at FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC'
-        : 'SELECT id, name, updated_at FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC';
+        ? 'SELECT id, name, tree_data, node_statuses, updated_at FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC'
+        : 'SELECT id, name, tree_data, node_statuses, updated_at FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC';
     const params = userId ? [userId] : [];
 
     pool.query(query, params, (err, result) => {
@@ -171,7 +171,7 @@ app.get('/api/mindmap', (req, res) => {
 // POST endpoint - Simpan / Sinkronisasi mindmap ke database
 app.post('/api/mindmap', (req, res) => {
     const { id, name, tree_data, node_cache, node_statuses } = req.body;
-    const targetId = id || 'default';
+    const targetId = id || ('mm_' + Date.now());
     const userId = req.user ? req.user.id : null;
 
     const query = `
