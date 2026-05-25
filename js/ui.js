@@ -1053,6 +1053,27 @@ async function loadHistoryList() {
             }
         }
         
+        // REDESIGN: Render recent searches on the Dashboard Exploration subview dynamically
+        const recentContainer = document.getElementById('recent-searches-dashboard-container');
+        if (recentContainer) {
+            recentContainer.innerHTML = '';
+            if (mindmaps.length === 0) {
+                recentContainer.innerHTML = `<div style="font-size: 0.78rem; color: var(--text-3); font-style: italic; padding: 0.5rem 0;">Belum ada pencarian terakhir</div>`;
+            } else {
+                mindmaps.slice(0, 3).forEach(mm => {
+                    const item = document.createElement('div');
+                    item.className = 'recent-search-item';
+                    item.style.cssText = 'padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-card); font-size: 0.8rem; color: var(--text-main); cursor: pointer; transition: background var(--t), border-color var(--t);';
+                    item.innerText = mm.name;
+                    item.addEventListener('click', () => {
+                        loadMindmapById(mm.id);
+                        switchScreen('mindmaps');
+                    });
+                    recentContainer.appendChild(item);
+                });
+            }
+        }
+        
         if (window.lucide) window.lucide.createIcons();
     } catch (e) {
         console.error('Gagal memuat daftar riwayat:', e);
@@ -2220,6 +2241,37 @@ function switchScreen(screenName) {
     }
 }
 
+function switchDashboardSubview(subviewName) {
+    const subviews = {
+        'history': { menuItemId: 'history-menu-item-history', elementId: 'subview-history' },
+        'exploration': { menuItemId: 'history-menu-item-exploration', elementId: 'subview-exploration' },
+        'reader': { menuItemId: 'history-menu-item-reader', elementId: 'subview-reader' },
+        'library': { menuItemId: 'history-menu-item-library', elementId: 'subview-library' }
+    };
+    
+    const selected = subviews[subviewName];
+    if (!selected) return;
+    
+    // Remove active class from all dashboard sub-menu items
+    document.querySelectorAll('.history-menu-item').forEach(btn => btn.classList.remove('active'));
+    // Add active class to selected menu item
+    const btnEl = document.getElementById(selected.menuItemId);
+    if (btnEl) btnEl.classList.add('active');
+    
+    // Hide all subview content areas
+    document.querySelectorAll('#screen-dashboard-view .history-main-content').forEach(view => {
+        view.classList.add('hidden');
+    });
+    // Show selected subview
+    const viewEl = document.getElementById(selected.elementId);
+    if (viewEl) viewEl.classList.remove('hidden');
+    
+    // If switching to exploration, make sure icons are rendered
+    if (subviewName === 'exploration' && window.lucide) {
+        window.lucide.createIcons();
+    }
+}
+
 function initRedesignNavigation() {
     // 1. Hook Header Navigation Tabs
     const tabSearch = document.getElementById('tab-search');
@@ -2231,6 +2283,17 @@ function initRedesignNavigation() {
     if (tabMindmaps) tabMindmaps.addEventListener('click', () => switchScreen('mindmaps'));
     if (tabContent) tabContent.addEventListener('click', () => switchScreen('content'));
     if (tabDashboard) tabDashboard.addEventListener('click', () => switchScreen('dashboard'));
+
+    // 1.5. Hook Dashboard Sub-sidebar Items
+    const menuHistory = document.getElementById('history-menu-item-history');
+    const menuExploration = document.getElementById('history-menu-item-exploration');
+    const menuReader = document.getElementById('history-menu-item-reader');
+    const menuLibrary = document.getElementById('history-menu-item-library');
+    
+    if (menuHistory) menuHistory.addEventListener('click', () => switchDashboardSubview('history'));
+    if (menuExploration) menuExploration.addEventListener('click', () => switchDashboardSubview('exploration'));
+    if (menuReader) menuReader.addEventListener('click', () => switchDashboardSubview('reader'));
+    if (menuLibrary) menuLibrary.addEventListener('click', () => switchDashboardSubview('library'));
     
     // 2. Hook "New Research" Buttons
     const btnNewTopicSearch = document.getElementById('btn-new-topic');
@@ -2251,6 +2314,45 @@ function initRedesignNavigation() {
             }
         });
     });
+    
+    // 3.6. Hook Dashboard Exploration Form
+    const explorationForm = document.getElementById('dashboard-exploration-form');
+    if (explorationForm) {
+        explorationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const inputDashboard = document.getElementById('dashboard-exploration-input');
+            const inputChat = document.getElementById('chat-input');
+            const formChat = document.getElementById('chat-form');
+            if (inputDashboard && inputChat && formChat) {
+                inputChat.value = inputDashboard.value;
+                inputDashboard.value = '';
+                formChat.dispatchEvent(new Event('submit'));
+            }
+        });
+    }
+
+    // 3.7. Hook Dashboard Suggested Topic Pills
+    const suggestedPillsDashboard = document.querySelectorAll('.suggested-pill-dashboard');
+    suggestedPillsDashboard.forEach(pill => {
+        pill.addEventListener('click', () => {
+            const inputDashboard = document.getElementById('dashboard-exploration-input');
+            const formDashboard = document.getElementById('dashboard-exploration-form');
+            if (inputDashboard && formDashboard) {
+                inputDashboard.value = pill.innerText.trim();
+                formDashboard.dispatchEvent(new Event('submit'));
+            }
+        });
+    });
+    // 3.8. Hook Clear Searches Button
+    const btnClearRecent = document.getElementById('btn-clear-recent-dashboard');
+    if (btnClearRecent) {
+        btnClearRecent.addEventListener('click', () => {
+            const recentContainer = document.getElementById('recent-searches-dashboard-container');
+            if (recentContainer) {
+                recentContainer.innerHTML = `<div style="font-size: 0.78rem; color: var(--text-3); font-style: italic; padding: 0.5rem 0;">Belum ada pencarian terakhir</div>`;
+            }
+        });
+    }
     
     // 4. Set Default Screen
     if (state.mindmapData) {

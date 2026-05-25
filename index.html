@@ -269,8 +269,8 @@
                         </div>
                     </aside>
 
-                    <!-- History Content -->
-                    <div class="history-main-content">
+                    <!-- History Content (Subview 1) -->
+                    <div class="history-main-content" id="subview-history">
                         <div class="history-header-block">
                             <h2 class="history-title-redesign">Research History</h2>
                             <p class="history-subtitle-redesign">Review your past explorations and continue diving into complex topics. Your journey through the rabbit hole is preserved here.</p>
@@ -283,6 +283,76 @@
                         </div>
                         
                         <button class="btn-view-all-history" id="btn-view-all-history-action">View Full History</button>
+                    </div>
+
+                    <!-- Exploration Content (Subview 2) -->
+                    <div class="history-main-content hidden" id="subview-exploration">
+                        <div class="exploration-header-block">
+                            <div class="enhanced-badge" style="margin-bottom: 0.5rem; display: inline-flex; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: var(--radius-pill); font-size: 0.72rem; font-weight: 600; align-items: center; gap: 4px; border: 1px solid var(--border-color);">
+                                <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+                                <span>Enhanced exploration active</span>
+                            </div>
+                            <h2 class="history-title-redesign" style="margin-top: 0.5rem;">Go down the Rabbit Hole.</h2>
+                            <p class="history-subtitle-redesign">Embark on a new learning adventure. Enter a topic below to generate an interactive conceptual mindmap path instantly.</p>
+                        </div>
+                        
+                        <!-- Exploration Search Bar -->
+                        <form id="dashboard-exploration-form" class="search-box-container" style="margin: 1.5rem 0 2rem 0; width: 100%; max-width: 680px; display: flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); padding: 6px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: border-color var(--t), box-shadow var(--t);">
+                            <i data-lucide="search" style="color: var(--text-muted); margin-right: 8px; width: 18px; height: 18px;"></i>
+                            <input type="text" id="dashboard-exploration-input" placeholder="Search topics, books, maps, or skills..." autocomplete="off" required style="flex: 1; border: none; background: transparent; padding: 8px 0; font-size: 0.88rem; color: var(--text-main); outline: none;">
+                            <button type="submit" class="btn-search-redesign" style="background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: var(--radius-pill); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background var(--t);">Search</button>
+                        </form>
+                        
+                        <div class="search-columns-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+                            <div>
+                                <div class="search-column-title" style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Recent Searches</span>
+                                    <span class="clear-all-link" id="btn-clear-recent-dashboard" style="text-transform: none; font-weight: 500; font-size: 0.72rem; color: #ef4444; cursor: pointer;">Clear all</span>
+                                </div>
+                                <div class="recent-searches-list" id="recent-searches-dashboard-container" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div class="recent-search-item" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-card); font-size: 0.8rem; color: var(--text-main); cursor: pointer; transition: background var(--t), border-color var(--t);">Neural architectures for LLMs</div>
+                                    <div class="recent-search-item" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-card); font-size: 0.8rem; color: var(--text-main); cursor: pointer; transition: background var(--t), border-color var(--t);">Quantum cryptography basics</div>
+                                    <div class="recent-search-item" style="padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-card); font-size: 0.8rem; color: var(--text-main); cursor: pointer; transition: background var(--t), border-color var(--t);">History of semantic web protocols</div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="search-column-title" style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">Suggested Topics</div>
+                                <div class="suggested-pills-wrap" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="dna" style="width: 13px; height: 13px; color: var(--primary);"></i> Bioinformatics</span>
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="shield-alert" style="width: 13px; height: 13px; color: var(--primary);"></i> Ethical AI</span>
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="network" style="width: 13px; height: 13px; color: var(--primary);"></i> Distributed Systems</span>
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="trending-up" style="width: 13px; height: 13px; color: var(--primary);"></i> Macroeconomics</span>
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="languages" style="width: 13px; height: 13px; color: var(--primary);"></i> Linguistics</span>
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="sun" style="width: 13px; height: 13px; color: var(--primary);"></i> Renewable Energy</span>
+                                    <span class="suggested-pill-dashboard" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-pill); font-size: 0.78rem; color: var(--text-main); font-weight: 500; cursor: pointer; transition: background var(--t), border-color var(--t), transform var(--t);"><i data-lucide="sword" style="width: 13px; height: 13px; color: var(--primary);"></i> Game Theory</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reader Content (Subview 3) -->
+                    <div class="history-main-content hidden" id="subview-reader">
+                        <div class="history-header-block">
+                            <h2 class="history-title-redesign">Materi Reader</h2>
+                            <p class="history-subtitle-redesign">Pengalaman membaca materi deep-dive yang fokus dan terstruktur akan muncul di sini.</p>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0;">
+                            <i data-lucide="book-open" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px;"></i>
+                            <div>Pilih materi di mindmap untuk membaca di halaman Reader.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Library Content (Subview 4) -->
+                    <div class="history-main-content hidden" id="subview-library">
+                        <div class="history-header-block">
+                            <h2 class="history-title-redesign">Library</h2>
+                            <p class="history-subtitle-redesign">Koleksi rangkuman buku, materi akademik, dan catatan belajar Anda.</p>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0;">
+                            <i data-lucide="library" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px;"></i>
+                            <div>Koleksi belajar Anda akan dikurasi di sini.</div>
+                        </div>
                     </div>
                 </div>
             </div>
