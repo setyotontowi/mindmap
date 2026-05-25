@@ -15,6 +15,7 @@ const { Pool } = require('pg');
 const crypto = require('crypto');
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 4000;
 
 // Helper to parse cookies
@@ -377,7 +378,8 @@ app.get('/api/auth/google', (req, res) => {
     if (!clientId) {
         return res.status(500).send('GOOGLE_CLIENT_ID belum dikonfigurasi di file .env Anda.');
     }
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const appUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const redirectUri = `${appUrl}/api/auth/google/callback`;
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + new URLSearchParams({
         client_id: clientId,
         redirect_uri: redirectUri,
@@ -397,7 +399,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
     
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const appUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const redirectUri = `${appUrl}/api/auth/google/callback`;
     
     try {
         // Tukar kode autentikasi dengan access_token
