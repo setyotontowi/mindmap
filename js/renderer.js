@@ -43,7 +43,16 @@ function initD3Canvas() {
 
     // Tree Layout Generator (Horizontal)
     treeLayout = d3.tree()
-        .nodeSize([100, 260]); // Lebar vertikal antar node ditingkatkan ke 100px agar lega
+        .nodeSize([95, 270]) // Jarak dasar vertikal 95px, horizontal 270px
+        .separation((a, b) => {
+            // Jika mereka memiliki induk (parent) yang sama
+            if (a.parent === b.parent) {
+                return 1.2; // Jarak vertikal 1.2 * 95px = 114px
+            }
+            // Jika berbeda induk (cabang bersebelahan), beri jarak yang lapang
+            // untuk mencegah tabrakan ketika salah satu cabang memiliki anak yang banyak
+            return 2.5; // Jarak vertikal 2.5 * 95px = 237.5px
+        });
 }
 
 // Fungsi helper untuk menghitung tinggi node secara dinamis berdasarkan konten teksnya
@@ -84,14 +93,27 @@ function updateMindmap(sourceData) {
     // Hitung posisi pohon
     treeLayout(rootNodeData);
 
-    // Kustomisasi koordinat y (horizontal) secara dinamis agar jarak antar node
-    // memperhitungkan lebar dinamis dari node induknya (mencegah overlapping)
+    // 1. Hitung lebar maksimum node untuk setiap tingkat kedalaman (depth)
+    const maxWidthsAtDepth = {};
+    rootNodeData.descendants().forEach(d => {
+        const w = getNodeWidth(d.data);
+        if (!maxWidthsAtDepth[d.depth] || w > maxWidthsAtDepth[d.depth]) {
+            maxWidthsAtDepth[d.depth] = w;
+        }
+    });
+
+    // 2. Tentukan koordinat y (horizontal) secara kumulatif berdasarkan lebar maksimum level sebelumnya
+    const levelPositions = { 0: 0 };
     rootNodeData.eachBefore(d => {
         if (d.depth === 0) {
             d.y = 0;
         } else {
-            const parentWidth = getNodeWidth(d.parent.data);
-            d.y = d.parent.y + parentWidth + 60; // 60px adalah gap horizontal antar tingkat
+            if (levelPositions[d.depth] === undefined) {
+                const prevLevel = d.depth - 1;
+                const prevMaxWidth = maxWidthsAtDepth[prevLevel] || 180;
+                levelPositions[d.depth] = levelPositions[prevLevel] + prevMaxWidth + 75; // 75px adalah gap horizontal dinamis yang lapang
+            }
+            d.y = levelPositions[d.depth];
         }
     });
 
