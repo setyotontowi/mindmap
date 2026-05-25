@@ -197,6 +197,33 @@
                         </div>
                     </header>
                     
+                    <!-- Mobile Immersive Header (Mobile Only) -->
+                    <header class="mobile-drawer-header">
+                        <button class="mobile-back-btn" id="btn-mobile-drawer-back" title="Kembali">
+                            <i data-lucide="arrow-left"></i>
+                        </button>
+                        <h3 class="mobile-drawer-title" id="mobile-drawer-node-title">Judul Topik</h3>
+                        <div class="mobile-drawer-actions">
+                            <button class="icon-btn" id="btn-mobile-share" title="Bagikan">
+                                <i data-lucide="share-2"></i>
+                            </button>
+                            <button class="icon-btn" id="btn-mobile-more" title="Opsi">
+                                <i data-lucide="more-vertical"></i>
+                            </button>
+                        </div>
+                    </header>
+
+                    <!-- Reading Progress Area (Mobile Only) -->
+                    <div class="mobile-reading-progress-container">
+                        <div class="mobile-reading-stats">
+                            <span id="mobile-reading-percent">Bacaan: 0%</span>
+                            <span id="mobile-reading-eta">4 min lagi</span>
+                        </div>
+                        <div class="mobile-reading-progress-bar-outer">
+                            <div class="mobile-reading-progress-bar-inner" id="mobile-reading-progress-bar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    
                     <!-- Modal Body (Article & Collapsible Q&A) -->
                     <div class="detail-modal-body-wrapper" style="display: flex; height: calc(100% - 60px - 56px); overflow: hidden; position: relative;">
                         <!-- Article Content Column -->

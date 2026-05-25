@@ -2729,7 +2729,9 @@ mark[data-note]::after {
 /* Desktop default styles */
 .card-mobile-icon-wrapper,
 .card-badge-completed,
-.mobile-live-sync-badge {
+.mobile-live-sync-badge,
+.mobile-drawer-header,
+.mobile-reading-progress-container {
     display: none;
 }
 
@@ -3144,6 +3146,205 @@ mark[data-note]::after {
     /* Hide desktop toggles on mobile */
     .floating-toggle-controls {
         display: none !important;
+    }
+    
+    /* ==========================================================================
+       TASK #4: MATERIAL DRAWER IMMERSIVE MOBILE READING
+       ========================================================================== */
+    #detail-drawer-overlay {
+        padding: 0 !important;
+        background: #ffffff !important;
+        align-items: stretch !important;
+        justify-content: stretch !important;
+        z-index: 2000 !important;
+    }
+    
+    #detail-drawer {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+    }
+    
+    /* Hide default desktop header */
+    #detail-drawer .modal-header {
+        display: none !important;
+    }
+    
+    /* Show mobile custom header */
+    .mobile-drawer-header {
+        display: flex !important;
+        height: 56px;
+        padding: 0 1rem;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+    }
+    
+    .mobile-back-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-2);
+        cursor: pointer;
+    }
+    
+    .mobile-back-btn:active {
+        background: var(--bg-hover);
+        color: var(--primary-green);
+    }
+    
+    .mobile-back-btn i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .mobile-drawer-title {
+        font-family: var(--font-header);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--primary-green-dark);
+        margin: 0;
+        text-align: center;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 12px;
+    }
+    
+    .mobile-drawer-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .mobile-drawer-actions .icon-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: var(--text-2);
+    }
+    
+    .mobile-drawer-actions .icon-btn i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Reading Progress Area */
+    .mobile-reading-progress-container {
+        display: flex !important;
+        flex-direction: column;
+        padding: 8px 16px;
+        background: #ffffff;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+    
+    .mobile-reading-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        color: var(--text-3);
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+    
+    .mobile-reading-progress-bar-outer {
+        width: 100%;
+        height: 4px;
+        background: #f1f5f9;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    
+    .mobile-reading-progress-bar-inner {
+        height: 100%;
+        background: var(--primary-green);
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.15s ease-out;
+    }
+    
+    /* Material body wrapper & Content area size adjustments */
+    #detail-drawer .detail-modal-body-wrapper {
+        height: calc(100% - 56px - 44px) !important;
+    }
+    
+    .drawer-col-materi {
+        padding: 1.5rem 1.25rem 6rem 1.25rem !important;
+        background: #ffffff !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Typography customizations for comfortable mobile reading */
+    .drawer-col-materi .markdown-body {
+        font-size: 1.05rem !important;
+        line-height: 1.65 !important;
+        color: #2d3748 !important;
+        font-family: var(--font) !important;
+    }
+    
+    .drawer-col-materi .markdown-body p {
+        margin-bottom: 1.25rem !important;
+    }
+    
+    .drawer-col-materi .markdown-body h3,
+    .drawer-col-materi .markdown-body h4 {
+        font-family: var(--font-header) !important;
+        color: var(--primary-green-dark) !important;
+        font-weight: 700 !important;
+        margin-top: 1.75rem !important;
+        margin-bottom: 0.75rem !important;
+        letter-spacing: -0.2px !important;
+    }
+    
+    .drawer-col-materi .markdown-body h3 {
+        font-size: 1.25rem !important;
+    }
+    
+    .drawer-col-materi .markdown-body h4 {
+        font-size: 1.1rem !important;
+    }
+    
+    /* Customized Green Blockquote */
+    .drawer-col-materi .markdown-body blockquote {
+        background: var(--primary-green-light) !important;
+        border-left: 4px solid var(--primary-green) !important;
+        padding: 14px 18px !important;
+        border-radius: 0 12px 12px 0 !important;
+        margin: 1.5rem 0 !important;
+        color: var(--primary-green-dark) !important;
+        font-style: italic !important;
+        font-weight: 500 !important;
+    }
+    
+    .drawer-col-materi .markdown-body blockquote p {
+        margin-bottom: 0 !important;
+        font-size: 0.98rem !important;
+        line-height: 1.55 !important;
+    }
+    
+    .drawer-col-materi .article-category {
+        font-size: 0.65rem !important;
+        margin-bottom: 0.5rem !important;
     }
 }
 

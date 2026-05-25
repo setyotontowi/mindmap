@@ -542,6 +542,22 @@ function openDetailDrawer(title) {
 
     drawerTitle.innerText = title;
     
+    // Update mobile drawer title if exists
+    const mobileDrawerTitle = document.getElementById('mobile-drawer-node-title');
+    if (mobileDrawerTitle) mobileDrawerTitle.innerText = title;
+    
+    // Reset scroll progress and bar on open
+    const colMateri = document.querySelector('.drawer-col-materi');
+    if (colMateri) {
+        colMateri.scrollTop = 0;
+    }
+    const bar = document.getElementById('mobile-reading-progress-bar');
+    const percentLabel = document.getElementById('mobile-reading-percent');
+    const etaLabel = document.getElementById('mobile-reading-eta');
+    if (bar) bar.style.width = '0%';
+    if (percentLabel) percentLabel.textContent = 'Bacaan: 0%';
+    if (etaLabel) etaLabel.textContent = '4 min lagi';
+    
     // Cari level kedalaman node
     let depth = 0;
     if (rootNodeData) {
@@ -552,6 +568,11 @@ function openDetailDrawer(title) {
     
     // Setup status tombol belajar aktif
     updateDrawerStatusSelector(title);
+
+    // Render Lucide icons if available
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 
     drawer.classList.add('open');
 }
@@ -2461,6 +2482,42 @@ function initRedesignNavigation() {
         updateTableOfContents();
     } else {
         switchScreen('search');
+    }
+    
+    // 5. Scroll Progress Listener for Mobile Reading (Task #4)
+    const colMateri = document.querySelector('.drawer-col-materi');
+    if (colMateri) {
+        colMateri.addEventListener('scroll', () => {
+            const scrollTop = colMateri.scrollTop;
+            const scrollHeight = colMateri.scrollHeight;
+            const clientHeight = colMateri.clientHeight;
+            const totalScrollable = scrollHeight - clientHeight;
+            
+            let percent = 0;
+            if (totalScrollable > 0) {
+                percent = Math.round((scrollTop / totalScrollable) * 100);
+            }
+            
+            const bar = document.getElementById('mobile-reading-progress-bar');
+            const percentLabel = document.getElementById('mobile-reading-percent');
+            const etaLabel = document.getElementById('mobile-reading-eta');
+            
+            if (bar) bar.style.width = `${percent}%`;
+            if (percentLabel) percentLabel.textContent = `Bacaan: ${percent}%`;
+            
+            if (etaLabel) {
+                const remainingMin = Math.max(1, Math.ceil((1 - (percent / 100)) * 4));
+                etaLabel.textContent = percent === 100 ? 'Selesai' : `${remainingMin} min lagi`;
+            }
+        });
+    }
+
+    // 6. Mobile Drawer Back Button
+    const mobileBackBtn = document.getElementById('btn-mobile-drawer-back');
+    if (mobileBackBtn) {
+        mobileBackBtn.addEventListener('click', () => {
+            closeDetailDrawer();
+        });
     }
 }
 
