@@ -31,6 +31,9 @@
             </div>
             <div class="header-right">
                 <span id="sync-status" class="sync-status" title="Status Sinkronisasi PostgreSQL" style="font-size: 0.72rem; margin-right: 8px;">Menghubungkan... 🔌</span>
+                <button class="icon-btn" id="btn-mobile-header-search" title="Cari Topik" style="display: none;">
+                    <i data-lucide="search"></i>
+                </button>
                 <div id="user-profile-area" style="display: flex; align-items: center; gap: 8px; margin-right: 4px;"></div>
                 <button class="icon-btn" id="btn-open-settings" title="Pengaturan Aplikasi">
                     <i data-lucide="settings"></i>
@@ -272,8 +275,8 @@
                     <!-- History Content (Subview 1) -->
                     <div class="history-main-content" id="subview-history">
                         <div class="history-header-block">
-                            <h2 class="history-title-redesign">Research History</h2>
-                            <p class="history-subtitle-redesign">Review your past explorations and continue diving into complex topics. Your journey through the rabbit hole is preserved here.</p>
+                            <h2 class="history-title-redesign">Riwayat Belajar (Simple)</h2>
+                            <p class="history-subtitle-redesign">Review your recent intellectual explorations.</p>
                         </div>
                         
                         <!-- Dynamically populated card list -->
@@ -355,6 +358,10 @@
                         </div>
                     </div>
                 </div>
+                <!-- Floating Action Button for Mobile History Screen -->
+                <button class="mobile-fab" id="btn-mobile-fab" title="Mulai Eksplorasi Baru">
+                    <i data-lucide="plus"></i>
+                </button>
             </div>
         </div>
         

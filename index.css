@@ -2678,15 +2678,63 @@ mark[data-note]::after {
    MOBILE GLOBAL LAYOUT & BOTTOM NAVIGATION (TASK #1)
    ========================================================================== */
 
+/* Desktop default styles */
+.card-mobile-icon-wrapper,
+.card-badge-completed {
+    display: none;
+}
+
+.mobile-fab {
+    display: none;
+}
+
 /* Hide mobile navigation by default on desktop */
 .mobile-bottom-nav {
     display: none;
 }
 
 @media (max-width: 768px) {
-    /* Hide desktop-only navigation in header */
+    /* Hide desktop-only elements in header */
     .global-header .global-nav {
         display: none !important;
+    }
+    
+    .global-header {
+        height: 56px;
+        padding: 0 1rem;
+        border-bottom: 1px solid var(--border);
+        background: #ffffff;
+        z-index: 1001;
+    }
+    
+    .global-header .brand-logo {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary-green-dark);
+    }
+    
+    #btn-mobile-header-search {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        color: var(--text-2);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+    
+    #sync-status, #btn-open-settings {
+        display: none !important;
+    }
+    
+    .user-avatar-wrapper .user-avatar {
+        width: 32px;
+        height: 32px;
+        border: 2px solid var(--primary-green-light);
+        border-radius: 50%;
     }
     
     /* Make the app container fit mobile viewport */
@@ -2758,6 +2806,184 @@ mark[data-note]::after {
     .mobile-nav-item.active i {
         transform: scale(1.1);
         color: var(--primary-green);
+    }
+    
+    /* Hide dashboard sub-sidebar */
+    .history-sub-sidebar {
+        display: none !important;
+    }
+    
+    .history-screen-wrapper {
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .history-main-content {
+        padding: 1.5rem 1rem 5rem 1rem !important;
+        background: var(--bg-mobile) !important;
+        overflow-y: auto;
+    }
+    
+    /* Header Block */
+    .history-header-block {
+        margin-bottom: 1.5rem;
+    }
+    
+    .history-title-redesign {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--primary-green-dark);
+        margin-bottom: 0.25rem;
+    }
+    
+    .history-subtitle-redesign {
+        font-size: 0.8rem;
+        color: var(--text-3);
+        max-width: 100%;
+    }
+    
+    /* Floating Action Button (FAB) */
+    .mobile-fab {
+        display: flex;
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--primary-green);
+        color: #ffffff;
+        border: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 16px rgba(0, 163, 116, 0.4);
+        z-index: 999;
+        cursor: pointer;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .mobile-fab:active {
+        transform: scale(0.92);
+        background: #008f65;
+    }
+    
+    .mobile-fab i {
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* History Progress Card Mobile */
+    .history-progress-card {
+        background: #ffffff !important;
+        border: none !important;
+        border-radius: 16px !important;
+        padding: 1rem !important;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02), 0 0 1px rgba(0, 0, 0, 0.05);
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        position: relative;
+    }
+    
+    .card-mobile-icon-wrapper {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .card-mobile-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--primary-green-light);
+        color: var(--primary-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .card-mobile-icon i {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .card-info-left {
+        flex: 1;
+        gap: 4px !important;
+    }
+    
+    .card-topic-title {
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        color: var(--primary-green-dark) !important;
+    }
+    
+    .card-meta-row {
+        gap: 8px !important;
+    }
+    
+    .card-meta-item:not(.card-meta-calendar) {
+        display: none !important; /* Keep it clean by showing only date on mobile */
+    }
+    
+    /* Progress styling for mobile */
+    .card-progress-right {
+        width: auto !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 4px !important;
+        min-width: 70px;
+    }
+    
+    .progress-label-micro {
+        display: none !important;
+    }
+    
+    .progress-bar-outer {
+        width: 60px !important;
+        height: 5px !important;
+        background: #f1f5f9 !important;
+        border-radius: 3px !important;
+    }
+    
+    .progress-bar-inner {
+        background: var(--primary-green) !important;
+        border-radius: 3px !important;
+    }
+    
+    .progress-percent-bold {
+        font-size: 0.8rem !important;
+        color: var(--text-2) !important;
+    }
+    
+    /* Completed badge */
+    .card-badge-completed {
+        display: flex !important;
+        align-items: center;
+        gap: 4px;
+        color: var(--primary-green);
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--primary-green-light);
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+    
+    .card-badge-completed i {
+        width: 14px;
+        height: 14px;
+    }
+    
+    /* Hide progress elements when completed badge is visible */
+    .card-badge-completed ~ .progress-bar-outer,
+    .card-badge-completed ~ .progress-percent-bold {
+        display: none !important;
+    }
+    
+    .card-chevron-btn, .card-delete-btn {
+        display: none !important; /* Keep mobile card clean, click triggers detail anyway */
     }
 }
 

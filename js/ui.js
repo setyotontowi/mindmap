@@ -1014,10 +1014,15 @@ async function loadHistoryList() {
                     const progressPercent = Math.round((doneNodes / totalNodes) * 100) || 0;
                     
                     card.innerHTML = `
+                        <div class="card-mobile-icon-wrapper">
+                            <div class="card-mobile-icon">
+                                <i data-lucide="book-open"></i>
+                            </div>
+                        </div>
                         <div class="card-info-left">
                             <div class="card-topic-title">${mm.name}</div>
                             <div class="card-meta-row">
-                                <div class="card-meta-item"><i data-lucide="calendar"></i><span>${dateStr}</span></div>
+                                <div class="card-meta-item card-meta-calendar"><i data-lucide="calendar"></i><span>${dateStr}</span></div>
                                 <div class="card-meta-item"><i data-lucide="git-branch"></i><span>${totalNodes} Nodes</span></div>
                             </div>
                         </div>
@@ -1027,6 +1032,12 @@ async function loadHistoryList() {
                                 <div class="progress-bar-inner" style="width: ${progressPercent}%;"></div>
                             </div>
                             <span class="progress-percent-bold">${progressPercent}%</span>
+                            ${progressPercent === 100 ? `
+                            <div class="card-badge-completed">
+                                <i data-lucide="check-circle-2"></i>
+                                <span>Selesai</span>
+                            </div>
+                            ` : ''}
                         </div>
                         <button class="card-delete-btn" title="Hapus mindmap ini">
                             <i data-lucide="trash-2"></i>
@@ -2312,6 +2323,25 @@ function initRedesignNavigation() {
     }
     if (btnMobileNavCreate) {
         btnMobileNavCreate.addEventListener('click', () => {
+            switchScreen('search');
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) setTimeout(() => chatInput.focus(), 150);
+        });
+    }
+    
+    // Hook Mobile Header Search & Floating Action Button
+    const btnMobileHeaderSearch = document.getElementById('btn-mobile-header-search');
+    const btnMobileFab = document.getElementById('btn-mobile-fab');
+    
+    if (btnMobileHeaderSearch) {
+        btnMobileHeaderSearch.addEventListener('click', () => {
+            switchScreen('search');
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) setTimeout(() => chatInput.focus(), 150);
+        });
+    }
+    if (btnMobileFab) {
+        btnMobileFab.addEventListener('click', () => {
             switchScreen('search');
             const chatInput = document.getElementById('chat-input');
             if (chatInput) setTimeout(() => chatInput.focus(), 150);
