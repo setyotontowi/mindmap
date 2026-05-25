@@ -8,7 +8,8 @@ const state = {
     activeNode: null,        // Node yang sedang aktif di drawer
     nodeStatuses: JSON.parse(localStorage.getItem('node_statuses') || '{}'), // nodeName -> 'todo' | 'doing' | 'done'
     nodeCache: {},           // nodeName -> { explanation, subtopics } (cache untuk rabbit hole)
-    collapsedSidebar: false
+    collapsedSidebar: false,
+    currentUser: null        // User yang sedang login (OAuth)
 };
 
 /* ==========================================================================

@@ -1557,4 +1557,92 @@ mark[data-note]::after {
     opacity: 0.8;
 }
 
+/* ==========================================================================
+   GOOGLE AUTH & USER PROFILE
+   ========================================================================== */
+.login-btn-google {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-hover);
+    color: var(--text-2);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--t), color var(--t);
+    border: 1px solid var(--border);
+}
+
+.login-btn-google:hover {
+    background: var(--accent);
+    color: var(--accent-inv);
+    border-color: var(--accent);
+    text-decoration: none;
+}
+
+.login-btn-google i {
+    width: 14px;
+    height: 14px;
+}
+
+.user-avatar-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-mid);
+    transition: border-color var(--t);
+}
+
+.user-avatar-wrapper:hover .user-avatar {
+    border-color: var(--accent);
+}
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-md);
+    padding: 6px;
+    z-index: 1000;
+    min-width: 140px;
+}
+
+.user-dropdown.open {
+    display: block !important;
+}
+
+.dropdown-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-2);
+    padding: 6px 8px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 4px;
+    transition: background var(--t), color var(--t);
+}
+
+.dropdown-item:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
 

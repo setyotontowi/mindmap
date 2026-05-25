@@ -2,9 +2,21 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+// Helper to parse cookies
+const parseCookies = (cookieHeader) => {
+    const list = {};
+    if (!cookieHeader) return list;
+    cookieHeader.split(';').forEach((cookie) => {
+        const parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+    return list;
+};
 
 // Middleware
 app.use(express.json({ limit: '50mb' })); // Mendukung data berukuran besar (penjelasan AI & cache)
@@ -15,26 +27,83 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-pool.query(`
-    CREATE TABLE IF NOT EXISTS mindmaps (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255),
-        tree_data TEXT,
-        node_cache TEXT,
-        node_statuses TEXT,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-`, (tableErr) => {
-    if (tableErr) {
-        console.error('Gagal membuat tabel mindmaps di PostgreSQL:', tableErr.message);
-    } else {
-        console.log('Tabel database mindmaps di PostgreSQL siap digunakan.');
+// Database Schema Initialization
+const initDb = async () => {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                google_id VARCHAR(255) UNIQUE,
+                email VARCHAR(255) UNIQUE,
+                name VARCHAR(255),
+                picture VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Tabel database users siap/berhasil dibuat.');
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS sessions (
+                id VARCHAR(255) PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                expires_at TIMESTAMP
+            )
+        `);
+        console.log('Tabel database sessions siap/berhasil dibuat.');
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS mindmaps (
+                id VARCHAR(255) PRIMARY KEY,
+                name VARCHAR(255),
+                tree_data TEXT,
+                node_cache TEXT,
+                node_statuses TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        await pool.query(`
+            ALTER TABLE mindmaps ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
+        `);
+        console.log('Tabel database mindmaps dan relasi siap digunakan.');
+    } catch (err) {
+        console.error('Gagal menginisialisasi skema database:', err.message);
     }
+};
+initDb();
+
+// Session Authenticator Middleware
+app.use(async (req, res, next) => {
+    req.user = null;
+    const cookies = parseCookies(req.headers.cookie);
+    const sessionId = cookies.session_id;
+    if (sessionId) {
+        try {
+            const result = await pool.query(
+                `SELECT u.* FROM sessions s 
+                 JOIN users u ON s.user_id = u.id 
+                 WHERE s.id = $1 AND s.expires_at > CURRENT_TIMESTAMP`,
+                [sessionId]
+            );
+            if (result.rows.length > 0) {
+                req.user = result.rows[0];
+            }
+        } catch (e) {
+            console.error('Error validating session:', e.message);
+        }
+    }
+    next();
 });
 
 // GET endpoint - Ambil semua mindmap (untuk history)
 app.get('/api/mindmaps', (req, res) => {
-    pool.query('SELECT id, name, updated_at FROM mindmaps ORDER BY updated_at DESC', (err, result) => {
+    const userId = req.user ? req.user.id : null;
+    const query = userId 
+        ? 'SELECT id, name, updated_at FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC'
+        : 'SELECT id, name, updated_at FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC';
+    const params = userId ? [userId] : [];
+
+    pool.query(query, params, (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Gagal mengambil daftar mindmap' });
@@ -46,9 +115,15 @@ app.get('/api/mindmaps', (req, res) => {
 // GET endpoint - Ambil mindmap aktif berdasarkan ID, atau paling terakhir diupdate jika tanpa ID
 app.get('/api/mindmap', (req, res) => {
     const id = req.query.id;
+    const userId = req.user ? req.user.id : null;
     
     if (id) {
-        pool.query('SELECT * FROM mindmaps WHERE id = $1', [id], (err, result) => {
+        const query = userId
+            ? 'SELECT * FROM mindmaps WHERE id = $1 AND user_id = $2'
+            : 'SELECT * FROM mindmaps WHERE id = $1 AND user_id IS NULL';
+        const params = userId ? [id, userId] : [id];
+
+        pool.query(query, params, (err, result) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Gagal mengambil data dari database PostgreSQL' });
@@ -67,7 +142,12 @@ app.get('/api/mindmap', (req, res) => {
             });
         });
     } else {
-        pool.query('SELECT * FROM mindmaps ORDER BY updated_at DESC LIMIT 1', (err, result) => {
+        const query = userId
+            ? 'SELECT * FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC LIMIT 1'
+            : 'SELECT * FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC LIMIT 1';
+        const params = userId ? [userId] : [];
+
+        pool.query(query, params, (err, result) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Gagal mengambil data dari database PostgreSQL' });
@@ -92,15 +172,17 @@ app.get('/api/mindmap', (req, res) => {
 app.post('/api/mindmap', (req, res) => {
     const { id, name, tree_data, node_cache, node_statuses } = req.body;
     const targetId = id || 'default';
+    const userId = req.user ? req.user.id : null;
 
     const query = `
-        INSERT INTO mindmaps (id, name, tree_data, node_cache, node_statuses, updated_at)
-        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+        INSERT INTO mindmaps (id, name, tree_data, node_cache, node_statuses, user_id, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
         ON CONFLICT(id) DO UPDATE SET
             name = EXCLUDED.name,
             tree_data = EXCLUDED.tree_data,
             node_cache = EXCLUDED.node_cache,
             node_statuses = EXCLUDED.node_statuses,
+            user_id = EXCLUDED.user_id,
             updated_at = CURRENT_TIMESTAMP
     `;
 
@@ -109,7 +191,8 @@ app.post('/api/mindmap', (req, res) => {
         name || '',
         JSON.stringify(tree_data || null),
         JSON.stringify(node_cache || {}),
-        JSON.stringify(node_statuses || {})
+        JSON.stringify(node_statuses || {}),
+        userId
     ];
 
     pool.query(query, params, (err, result) => {
@@ -124,7 +207,14 @@ app.post('/api/mindmap', (req, res) => {
 // DELETE endpoint - Hapus mindmap berdasarkan ID
 app.delete('/api/mindmap/:id', (req, res) => {
     const id = req.params.id;
-    pool.query('DELETE FROM mindmaps WHERE id = $1', [id], (err, result) => {
+    const userId = req.user ? req.user.id : null;
+
+    const query = userId
+        ? 'DELETE FROM mindmaps WHERE id = $1 AND user_id = $2'
+        : 'DELETE FROM mindmaps WHERE id = $1 AND user_id IS NULL';
+    const params = userId ? [id, userId] : [id];
+
+    pool.query(query, params, (err, result) => {
         if (err) {
             console.error('Gagal menghapus mindmap:', err.message);
             return res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
@@ -182,6 +272,124 @@ app.post('/api/ai/completions', async (req, res) => {
     }
 });
 
+
+// --- AUTH ENDPOINTS ---
+
+// GET /api/auth/google - Mulai OAuth login
+app.get('/api/auth/google', (req, res) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+        return res.status(500).send('GOOGLE_CLIENT_ID belum dikonfigurasi di file .env Anda.');
+    }
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'openid profile email',
+        prompt: 'select_account'
+    }).toString();
+    res.redirect(authUrl);
+});
+
+// GET /api/auth/google/callback - Callback OAuth Google
+app.get('/api/auth/google/callback', async (req, res) => {
+    const { code } = req.query;
+    if (!code) {
+        return res.redirect('/');
+    }
+    
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    
+    try {
+        // Tukar kode autentikasi dengan access_token
+        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                code,
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code'
+            })
+        });
+        
+        if (!tokenRes.ok) {
+            const errText = await tokenRes.text();
+            console.error('Tukar token gagal:', errText);
+            return res.status(400).send('Autentikasi gagal.');
+        }
+        
+        const tokenData = await tokenRes.json();
+        
+        // Ambil data profil user dari Google API
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+        });
+        
+        if (!userRes.ok) {
+            return res.status(400).send('Gagal mengambil data profil Google.');
+        }
+        
+        const userData = await userRes.json();
+        const { sub: google_id, name, email, picture } = userData;
+        
+        // Simpan / update user ke database PostgreSQL
+        const userQuery = `
+            INSERT INTO users (google_id, email, name, picture)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (google_id) DO UPDATE SET
+                name = EXCLUDED.name,
+                picture = EXCLUDED.picture,
+                email = EXCLUDED.email
+            RETURNING *
+        `;
+        const dbUserRes = await pool.query(userQuery, [google_id, email, name, picture]);
+        const user = dbUserRes.rows[0];
+        
+        // Buat session baru di database
+        const sessionId = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 Hari
+        await pool.query(
+            'INSERT INTO sessions (id, user_id, expires_at) VALUES ($1, $2, $3)',
+            [sessionId, user.id, expiresAt]
+        );
+        
+        // Set cookie session dan redirect ke homepage
+        res.setHeader('Set-Cookie', `session_id=${sessionId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`);
+        res.redirect('/');
+    } catch (err) {
+        console.error('Error di Callback OAuth:', err);
+        res.status(500).send('Kesalahan sistem internal saat login.');
+    }
+});
+
+// GET /api/auth/me - Cek status login
+app.get('/api/auth/me', (req, res) => {
+    if (req.user) {
+        res.json({ authenticated: true, user: req.user });
+    } else {
+        res.json({ authenticated: false });
+    }
+});
+
+// POST /api/auth/logout - Logout user
+app.post('/api/auth/logout', async (req, res) => {
+    const cookies = parseCookies(req.headers.cookie);
+    const sessionId = cookies.session_id;
+    if (sessionId) {
+        try {
+            await pool.query('DELETE FROM sessions WHERE id = $1', [sessionId]);
+        } catch (e) {
+            console.error('Gagal menghapus session saat logout:', e.message);
+        }
+    }
+    res.setHeader('Set-Cookie', 'session_id=; Path=/; HttpOnly; Max-Age=0');
+    res.json({ success: true });
+});
 
 // Jalankan Server
 app.listen(PORT, () => {

@@ -13,16 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inisialisasi Canvas D3
     initD3Canvas();
 
-    // Restore mindmap dari sesi sebelumnya jika ada
-    loadState();
-    if (state.mindmapData) {
-        updateMindmap(state.mindmapData);
-        setTimeout(zoomFit, 100);
-        
-        // Welcome message
-        const welcomeText = state.language === 'en'
-            ? `Welcome back! Mindmap **${state.mindmapData.name}** has been restored from your last session. Let's continue learning! 📚`
-            : `Selamat datang kembali! Mindmap **${state.mindmapData.name}** telah dipulihkan dari sesi terakhirmu. Lanjutkan belajar! 📚`;
-        appendChatMessage('bot', welcomeText);
+    // Periksa status login sebelum loadState
+    if (typeof checkAuthStatus === 'function') {
+        checkAuthStatus().then(() => {
+            // Restore mindmap dari sesi sebelumnya jika ada
+            loadState();
+            if (state.mindmapData) {
+                updateMindmap(state.mindmapData);
+                setTimeout(zoomFit, 100);
+                
+                // Welcome message
+                const welcomeText = state.language === 'en'
+                    ? `Welcome back! Mindmap **${state.mindmapData.name}** has been restored from your last session. Let's continue learning! 📚`
+                    : `Selamat datang kembali! Mindmap **${state.mindmapData.name}** telah dipulihkan dari sesi terakhirmu. Lanjutkan belajar! 📚`;
+                appendChatMessage('bot', welcomeText);
+            }
+        });
+    } else {
+        // Restore mindmap dari sesi sebelumnya jika ada
+        loadState();
+        if (state.mindmapData) {
+            updateMindmap(state.mindmapData);
+            setTimeout(zoomFit, 100);
+        }
     }
 });

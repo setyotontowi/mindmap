@@ -1981,3 +1981,91 @@ function highlightTextInDOM(container, searchText, id, color, note) {
         textNode.parentNode.replaceChild(fragment, textNode);
     });
 }
+
+/* ==========================================================================
+   AUTHENTICATION & PROFILE HANDLING
+   ========================================================================== */
+async function checkAuthStatus() {
+    try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.authenticated) {
+                state.currentUser = data.user;
+            } else {
+                state.currentUser = null;
+            }
+        }
+    } catch (e) {
+        console.warn('Gagal memverifikasi status autentikasi:', e);
+        state.currentUser = null;
+    }
+    renderUserProfile();
+}
+
+function renderUserProfile() {
+    const profileArea = document.getElementById('user-profile-area');
+    if (!profileArea) return;
+
+    if (state.currentUser) {
+        profileArea.innerHTML = `
+            <div class="user-avatar-wrapper" id="user-avatar-wrapper">
+                <img src="${state.currentUser.picture || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}" alt="${state.currentUser.name}" class="user-avatar" id="user-avatar-img" />
+                <div class="user-dropdown" id="user-dropdown">
+                    <div style="font-size: 0.72rem; font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                        ${state.currentUser.name}
+                    </div>
+                    <button id="btn-logout" class="dropdown-item">
+                        <i data-lucide="log-out"></i>
+                        <span>Keluar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Toggle dropdown on avatar click
+        const avatarWrapper = document.getElementById('user-avatar-wrapper');
+        const dropdown = document.getElementById('user-dropdown');
+        if (avatarWrapper && dropdown) {
+            avatarWrapper.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            if (dropdown) dropdown.classList.remove('open');
+        });
+
+        // Logout event listener
+        const btnLogout = document.getElementById('btn-logout');
+        if (btnLogout) {
+            btnLogout.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    const res = await fetch('/api/auth/logout', { method: 'POST' });
+                    if (res.ok) {
+                        state.currentUser = null;
+                        state.currentMindmapId = 'default';
+                        localStorage.setItem('current_mindmap_id', 'default');
+                        window.location.reload();
+                    }
+                } catch (err) {
+                    console.error('Logout failed:', err);
+                }
+            });
+        }
+    } else {
+        profileArea.innerHTML = `
+            <a href="/api/auth/google" class="login-btn-google" title="Masuk dengan Google">
+                <i data-lucide="log-in"></i>
+                <span>Masuk</span>
+            </a>
+        `;
+    }
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+}
