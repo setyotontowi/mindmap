@@ -42,7 +42,14 @@
     --shadow-lg: 0 8px 24px rgba(0, 102, 68, 0.08), 0 0 0 1px rgba(0, 102, 68, 0.03);
 
     --t: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Green Emerald Mobile variables */
+    --primary-green: #00a374;
+    --primary-green-dark: #0d5240;
+    --primary-green-light: #e6f7f3;
+    --bg-mobile: #f4f6f5;
 }
+
 
 /* ==========================================================================
    BASE
@@ -2666,6 +2673,94 @@ mark[data-note]::after {
 .hidden {
     display: none !important;
 }
+
+/* ==========================================================================
+   MOBILE GLOBAL LAYOUT & BOTTOM NAVIGATION (TASK #1)
+   ========================================================================== */
+
+/* Hide mobile navigation by default on desktop */
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Hide desktop-only navigation in header */
+    .global-header .global-nav {
+        display: none !important;
+    }
+    
+    /* Make the app container fit mobile viewport */
+    .app-container-redesign {
+        height: 100vh;
+        height: -webkit-fill-available;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-mobile);
+        padding-bottom: 60px; /* Space for fixed bottom navigation */
+    }
+    
+    .screen-container {
+        height: calc(100vh - 56px - 60px); /* 56px header + 60px bottom nav */
+        overflow-y: auto;
+    }
+    
+    /* Mobile Bottom Navigation Bar styling */
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-top: 1px solid var(--border);
+        justify-content: space-around;
+        align-items: center;
+        padding-bottom: env(safe-area-inset-bottom);
+        z-index: 1000;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+    }
+    
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--text-2);
+        gap: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: color var(--t);
+        flex: 1;
+        height: 100%;
+    }
+    
+    .mobile-nav-item i {
+        width: 20px;
+        height: 20px;
+        transition: transform var(--t);
+    }
+    
+    .mobile-nav-item:hover {
+        color: var(--primary-green);
+    }
+    
+    .mobile-nav-item.active {
+        color: var(--primary-green);
+        font-weight: 600;
+    }
+    
+    .mobile-nav-item.active i {
+        transform: scale(1.1);
+        color: var(--primary-green);
+    }
+}
+
 
 
 

@@ -2239,6 +2239,16 @@ function switchScreen(screenName) {
     if (screenName === 'mindmaps' && typeof zoomFit === 'function') {
         setTimeout(zoomFit, 100);
     }
+    
+    // Sinkronisasi status aktif tombol navigasi bawah mobile
+    document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
+    if (screenName === 'search' || screenName === 'mindmaps') {
+        const activeNav = document.getElementById('btn-mobile-nav-search');
+        if (activeNav) activeNav.classList.add('active');
+    } else if (screenName === 'dashboard') {
+        const activeNav = document.getElementById('btn-mobile-nav-history');
+        if (activeNav) activeNav.classList.add('active');
+    }
 }
 
 function switchDashboardSubview(subviewName) {
@@ -2283,6 +2293,30 @@ function initRedesignNavigation() {
     if (tabMindmaps) tabMindmaps.addEventListener('click', () => switchScreen('mindmaps'));
     if (tabContent) tabContent.addEventListener('click', () => switchScreen('content'));
     if (tabDashboard) tabDashboard.addEventListener('click', () => switchScreen('dashboard'));
+
+    // 1.8. Hook Mobile Bottom Navigation Items
+    const btnMobileNavHistory = document.getElementById('btn-mobile-nav-history');
+    const btnMobileNavSearch = document.getElementById('btn-mobile-nav-search');
+    const btnMobileNavCreate = document.getElementById('btn-mobile-nav-create');
+    
+    if (btnMobileNavHistory) {
+        btnMobileNavHistory.addEventListener('click', () => {
+            switchScreen('dashboard');
+            switchDashboardSubview('history');
+        });
+    }
+    if (btnMobileNavSearch) {
+        btnMobileNavSearch.addEventListener('click', () => {
+            switchScreen('search');
+        });
+    }
+    if (btnMobileNavCreate) {
+        btnMobileNavCreate.addEventListener('click', () => {
+            switchScreen('search');
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) setTimeout(() => chatInput.focus(), 150);
+        });
+    }
 
     // 1.5. Hook Dashboard Sub-sidebar Items
     const menuHistory = document.getElementById('history-menu-item-history');
