@@ -1,7 +1,7 @@
 {
   "name": "rabbit-hole-mindmap-learner",
   "version": "1.0.0",
-  "description": "Interactive AI-powered mindmap learning tool with SQLite storage",
+  "description": "Interactive AI-powered mindmap learning tool with PostgreSQL storage",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -9,6 +9,7 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^4.19.2",
+    "pg": "^8.11.5",
     "sqlite3": "^6.0.1"
   }
 }

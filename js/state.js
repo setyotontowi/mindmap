@@ -12,7 +12,7 @@ const state = {
 };
 
 /* ==========================================================================
-   PERSISTENCE — Save & Restore from localStorage & SQLite
+   PERSISTENCE — Save & Restore from localStorage & PostgreSQL
    ========================================================================== */
 function showSyncStatus(statusText) {
     const el = document.getElementById('sync-status');
@@ -66,7 +66,7 @@ function loadState() {
     } catch (e) {
         console.warn('Gagal memuat state dari localStorage:', e);
     }
-    // Sinkronisasi data secara asinkron dari SQLite database
+    // Sinkronisasi data secara asinkron dari PostgreSQL database
     syncFromDatabase();
 }
 
@@ -102,7 +102,7 @@ async function syncFromDatabase(id = state.currentMindmapId) {
             }
             showSyncStatus('Tersinkronisasi 💾');
         } else {
-            // Jika DB Kosong tetapi localStorage berisi data, otomatis migrasikan ke SQLite!
+            // Jika DB Kosong tetapi localStorage berisi data, otomatis migrasikan ke PostgreSQL!
             if (state.mindmapData) {
                 showSyncStatus('Migrasi ke DB... ⏳');
                 await saveState(false);
@@ -113,7 +113,7 @@ async function syncFromDatabase(id = state.currentMindmapId) {
         // Muat daftar riwayat
         await loadHistoryList();
     } catch (error) {
-        console.warn('Gagal sinkron dari database SQLite:', error);
+        console.warn('Gagal sinkron dari database PostgreSQL:', error);
         showSyncStatus('Offline (Lokal) 🔌');
     }
 }

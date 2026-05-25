@@ -12,12 +12,9 @@ RUN npm ci --omit=dev
 # Copy the rest of the application files
 COPY . .
 
-# Create a directory to store the SQLite database
-RUN mkdir -p /app/data
-
 # Default environment variables
 ENV PORT=4000
-ENV DB_PATH=/app/data/mindmap.db
+ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mindmap
 ENV NODE_ENV=production
 
 # Expose the application port

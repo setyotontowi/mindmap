@@ -1,49 +1,45 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'mindmap.db');
 
 // Middleware
 app.use(express.json({ limit: '50mb' })); // Mendukung data berukuran besar (penjelasan AI & cache)
 app.use(express.static(__dirname)); // Sajikan frontend static files langsung dari root directory
 
-// Inisialisasi Database SQLite
-const db = new sqlite3.Database(DB_PATH, (err) => {
-    if (err) {
-        console.error('Gagal membuka database SQLite:', err.message);
+// Inisialisasi Database PostgreSQL
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL
+});
+
+pool.query(`
+    CREATE TABLE IF NOT EXISTS mindmaps (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255),
+        tree_data TEXT,
+        node_cache TEXT,
+        node_statuses TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`, (tableErr) => {
+    if (tableErr) {
+        console.error('Gagal membuat tabel mindmaps di PostgreSQL:', tableErr.message);
     } else {
-        console.log('Terhubung dengan database SQLite.');
-        db.run(`
-            CREATE TABLE IF NOT EXISTS mindmaps (
-                id TEXT PRIMARY KEY,
-                name TEXT,
-                tree_data TEXT,
-                node_cache TEXT,
-                node_statuses TEXT,
-                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        `, (tableErr) => {
-            if (tableErr) {
-                console.error('Gagal membuat tabel mindmaps:', tableErr.message);
-            } else {
-                console.log('Tabel database mindmaps siap digunakan.');
-            }
-        });
+        console.log('Tabel database mindmaps di PostgreSQL siap digunakan.');
     }
 });
 
 // GET endpoint - Ambil semua mindmap (untuk history)
 app.get('/api/mindmaps', (req, res) => {
-    db.all('SELECT id, name, updated_at FROM mindmaps ORDER BY updated_at DESC', [], (err, rows) => {
+    pool.query('SELECT id, name, updated_at FROM mindmaps ORDER BY updated_at DESC', (err, result) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Gagal mengambil daftar mindmap' });
         }
-        res.json(rows || []);
+        res.json(result.rows || []);
     });
 });
 
@@ -52,11 +48,12 @@ app.get('/api/mindmap', (req, res) => {
     const id = req.query.id;
     
     if (id) {
-        db.get('SELECT * FROM mindmaps WHERE id = ?', [id], (err, row) => {
+        pool.query('SELECT * FROM mindmaps WHERE id = $1', [id], (err, result) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ error: 'Gagal mengambil data dari database SQLite' });
+                return res.status(500).json({ error: 'Gagal mengambil data dari database PostgreSQL' });
             }
+            const row = result.rows[0];
             if (!row) {
                 return res.json(null);
             }
@@ -70,11 +67,12 @@ app.get('/api/mindmap', (req, res) => {
             });
         });
     } else {
-        db.get('SELECT * FROM mindmaps ORDER BY updated_at DESC LIMIT 1', [], (err, row) => {
+        pool.query('SELECT * FROM mindmaps ORDER BY updated_at DESC LIMIT 1', (err, result) => {
             if (err) {
                 console.error(err);
-                return res.status(500).json({ error: 'Gagal mengambil data dari database SQLite' });
+                return res.status(500).json({ error: 'Gagal mengambil data dari database PostgreSQL' });
             }
+            const row = result.rows[0];
             if (!row) {
                 return res.json(null);
             }
@@ -97,12 +95,12 @@ app.post('/api/mindmap', (req, res) => {
 
     const query = `
         INSERT INTO mindmaps (id, name, tree_data, node_cache, node_statuses, updated_at)
-        VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
         ON CONFLICT(id) DO UPDATE SET
-            name = excluded.name,
-            tree_data = excluded.tree_data,
-            node_cache = excluded.node_cache,
-            node_statuses = excluded.node_statuses,
+            name = EXCLUDED.name,
+            tree_data = EXCLUDED.tree_data,
+            node_cache = EXCLUDED.node_cache,
+            node_statuses = EXCLUDED.node_statuses,
             updated_at = CURRENT_TIMESTAMP
     `;
 
@@ -114,24 +112,24 @@ app.post('/api/mindmap', (req, res) => {
         JSON.stringify(node_statuses || {})
     ];
 
-    db.run(query, params, function (err) {
+    pool.query(query, params, (err, result) => {
         if (err) {
             console.error('Gagal menyimpan mindmap:', err.message);
-            return res.status(500).json({ error: 'Gagal menyimpan data ke database SQLite' });
+            return res.status(500).json({ error: 'Gagal menyimpan data ke database PostgreSQL' });
         }
-        res.json({ success: true, message: 'Mindmap berhasil disinkronisasi ke SQLite' });
+        res.json({ success: true, message: 'Mindmap berhasil disinkronisasi ke PostgreSQL' });
     });
 });
 
 // DELETE endpoint - Hapus mindmap berdasarkan ID
 app.delete('/api/mindmap/:id', (req, res) => {
     const id = req.params.id;
-    db.run('DELETE FROM mindmaps WHERE id = ?', [id], function (err) {
+    pool.query('DELETE FROM mindmaps WHERE id = $1', [id], (err, result) => {
         if (err) {
             console.error('Gagal menghapus mindmap:', err.message);
-            return res.status(500).json({ error: 'Gagal menghapus mindmap dari database SQLite' });
+            return res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
         }
-        res.json({ success: true, message: 'Mindmap berhasil dihapus dari SQLite' });
+        res.json({ success: true, message: 'Mindmap berhasil dihapus dari PostgreSQL' });
     });
 });
 
