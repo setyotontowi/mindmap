@@ -219,6 +219,63 @@ function initUIEventListeners() {
             closeExportModal();
         });
     }
+
+    // 16. Highlight & Commentary Events
+    document.addEventListener('selectionchange', handleTextSelection);
+    
+    document.addEventListener('mousedown', (e) => {
+        const toolbar = document.getElementById('highlight-toolbar');
+        if (toolbar && !toolbar.classList.contains('hidden')) {
+            if (!toolbar.contains(e.target)) {
+                toolbar.classList.add('hidden');
+                window.getSelection().removeAllRanges();
+            }
+        }
+    });
+
+    const colorBtns = document.querySelectorAll('.hl-color-btn');
+    colorBtns.forEach(btn => {
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // prevent selection clearing
+            const color = btn.getAttribute('data-color');
+            addHighlight(color);
+        });
+    });
+
+    const btnHlNote = document.getElementById('btn-hl-note');
+    if (btnHlNote) {
+        btnHlNote.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            addHighlightWithNote();
+        });
+    }
+
+    const drawerMdContent = document.getElementById('drawer-markdown-content');
+    if (drawerMdContent) {
+        drawerMdContent.addEventListener('click', (e) => {
+            const mark = e.target.closest('mark[data-highlight="true"]');
+            if (mark) {
+                const hlId = mark.getAttribute('data-id');
+                openCommentaryModalById(hlId);
+            }
+        });
+    }
+
+    const btnCloseCommentary = document.getElementById('btn-close-commentary');
+    const btnCancelCommentary = document.getElementById('btn-cancel-commentary');
+    const btnSaveCommentary = document.getElementById('btn-save-commentary');
+    const btnDeleteCommentary = document.getElementById('btn-delete-commentary');
+    const commentaryModal = document.getElementById('commentary-modal');
+
+    if (btnCloseCommentary) btnCloseCommentary.addEventListener('click', closeCommentaryModal);
+    if (btnCancelCommentary) btnCancelCommentary.addEventListener('click', closeCommentaryModal);
+    if (btnSaveCommentary) btnSaveCommentary.addEventListener('click', saveCommentary);
+    if (btnDeleteCommentary) btnDeleteCommentary.addEventListener('click', deleteHighlightFromModal);
+    if (commentaryModal) {
+        commentaryModal.addEventListener('click', (e) => {
+            if (e.target === commentaryModal) closeCommentaryModal();
+        });
+    }
 }
 
 
@@ -363,8 +420,7 @@ async function handleChatSubmit(e) {
     try {
         const prompt = state.language === 'en' ? `Create a structured learning roadmap for the topic: "${topic}". Generate valid JSON format with a single root node and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
  
-        Additionally, create a deep, structured, practical, and engaging introductory explanation/article for the main topic "${topic}" (layer 0) in rich Markdown format (including examples, analogies, small h3 headings, lists, and interesting blockquotes. If there are sub-lists or nested lists, you must use correct spacing indentation like 2 or 4 spaces so that the markdown rendering is neat and properly indented).
-        IMPORTANT: To prevent the explanation from being truncated by token limits, write the explanation concisely, focusing on the most important core concepts, and limit the explanation length to a maximum of about 800-1000 words.
+        Additionally, create an in-depth introductory explanation/article for the main topic "${topic}" (layer 0) in rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
 
         The JSON structure must be exactly like this:
         {
@@ -377,8 +433,7 @@ async function handleChatSubmit(e) {
           ]
         }` : `Buatlah peta jalan (roadmap) belajar terstruktur untuk topik: "${topic}". Hasilkan dalam format JSON yang valid dengan satu node akar (root) dan beberapa sub-topik utama sebagai anaknya secara dinamis. Tentukan sendiri jumlah sub-topik utama yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas topik tersebut. Berikan deskripsi yang singkat namun jelas (maksimal 10 kata) untuk tiap node. 
  
-        Selain itu, buat juga penjelasan/artikel pengantar yang mendalam, terstruktur, praktis, dan menarik untuk topik utama "${topic}" tersebut (layer 0) dalam format Markdown yang kaya (termasuk contoh, analogi, judul-judul kecil h3, list, dan blockquote yang menarik. Jika terdapat sub-list atau daftar bertingkat/nested list, wajib gunakan indentasi spasi yang benar seperti 2 atau 4 spasi agar terjemahan markdown rapi dan terindentasi dengan benar).
-        PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
+        Selain itu, buat juga penjelasan/artikel pengantar yang mendalam untuk topik utama "${topic}" tersebut (layer 0) dalam format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik. Jika terdapat sub-list, gunakan indentasi 2 atau 4 spasi). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
 
         Struktur JSON harus persis seperti ini:
         {
@@ -532,6 +587,9 @@ function renderNodeDetail(title, markdownText) {
     if (!content) return;
     // Gunakan marked.js untuk merender Markdown ke HTML
     content.innerHTML = marked.parse(markdownText);
+    
+    // Terapkan sorotan (highlight) dan catatan tempel
+    applyHighlights(title);
     
     // Render Q&A khusus jika kolom Q&A sedang terbuka
     const qaCol = document.getElementById('drawer-col-qa');
@@ -798,7 +856,7 @@ function toggleDrawerQa() {
     if (!qaCol || !drawer || !toggleBtn || !state.activeNode) return;
 
     const isCollapsed = qaCol.classList.contains('collapsed');
-    const baseWidth = 520; // Default drawer width
+    const baseWidth = 780; // Default drawer width
 
     if (isCollapsed) {
         // Buka panel Q&A ke samping
@@ -1269,8 +1327,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
             
             Your task is:
-            Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes).
-            IMPORTANT: To prevent the explanation from being truncated by token limits, write the explanation concisely, focusing on the most important core concepts, and limit the explanation length to a maximum of about 800-1000 words.
+            Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
             
             Return the result in JSON with exactly this format:
             {
@@ -1280,8 +1337,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
             
             Tugasmu adalah:
-            Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik).
-            PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
+            Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
             
             Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
             {
@@ -1306,8 +1362,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
             
             Your tasks are:
-            1. Create a deep, practical, structured, and easy-to-understand explanation/material in English using rich Markdown format (including code examples/analogies if relevant, use small h3 headings, lists, and interesting blockquotes).
-               IMPORTANT: To prevent the explanation from being truncated by token limits, write the explanation concisely, focusing on the most important core concepts, and limit the explanation length to a maximum of about 800-1000 words.
+            1. Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
             2. Generate several next, more specific subtopics/milestones under "${nodeName}" to dynamically expand their mindmap. Decide the most relevant number of subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the material. Do not make subtopics that are too generic.
     
             Return the result in JSON with exactly this format:
@@ -1321,8 +1376,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
             
             Tugasmu adalah:
-            1. Buat penjelasan materi yang mendalam, praktis, terstruktur, dan mudah dipahami dalam Bahasa Indonesia menggunakan format Markdown yang kaya (termasuk contoh kode/analogi jika relevan, gunakan judul-judul kecil h3, list, dan blockquote yang menarik).
-               PENTING: Agar penjelasan tidak terpotong (truncated) oleh batas token, tulis penjelasan secara padat, fokus pada konsep inti yang paling penting, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata.
+            1. Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
             2. Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
     
             Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
@@ -1703,4 +1757,227 @@ function exportToMarkdown() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+}
+
+// ==========================================================================
+// HIGHLIGHT & COMMENTARY (STICKY NOTES) HELPERS
+// ==========================================================================
+let activeHighlightId = null;
+
+function handleTextSelection() {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    const toolbar = document.getElementById('highlight-toolbar');
+    
+    if (selectedText.length > 1) {
+        const container = document.getElementById('drawer-markdown-content');
+        if (container && selection.anchorNode && container.contains(selection.anchorNode)) {
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            if (toolbar) {
+                toolbar.classList.remove('hidden');
+                const toolbarHeight = 40;
+                const toolbarWidth = toolbar.offsetWidth || 180;
+                
+                const top = rect.top + window.scrollY - toolbarHeight - 8;
+                const left = rect.left + window.scrollX + (rect.width / 2) - (toolbarWidth / 2);
+                
+                toolbar.style.top = `${Math.max(top, 10)}px`;
+                toolbar.style.left = `${Math.max(left, 10)}px`;
+            }
+            return;
+        }
+    }
+    
+    if (toolbar && !toolbar.classList.contains('hidden')) {
+        toolbar.classList.add('hidden');
+    }
+}
+
+function addHighlight(color) {
+    if (!state.activeNode) return;
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    if (!selectedText) return;
+    
+    const nodeName = state.activeNode.name;
+    const cache = state.nodeCache[nodeName];
+    if (!cache) return;
+    
+    if (!cache.highlights) {
+        cache.highlights = [];
+    }
+    
+    const hlId = `hl-${Date.now()}`;
+    const newHl = {
+        id: hlId,
+        text: selectedText,
+        color: color,
+        note: ""
+    };
+    
+    cache.highlights.push(newHl);
+    saveState();
+    
+    // Re-render to apply immediately
+    renderNodeDetail(nodeName, cache.explanation);
+    
+    // Hapus selection & sembunyikan toolbar
+    const toolbar = document.getElementById('highlight-toolbar');
+    if (toolbar) toolbar.classList.add('hidden');
+    selection.removeAllRanges();
+}
+
+function addHighlightWithNote() {
+    if (!state.activeNode) return;
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    if (!selectedText) return;
+    
+    const nodeName = state.activeNode.name;
+    const cache = state.nodeCache[nodeName];
+    if (!cache) return;
+    
+    if (!cache.highlights) {
+        cache.highlights = [];
+    }
+    
+    const hlId = `hl-${Date.now()}`;
+    const newHl = {
+        id: hlId,
+        text: selectedText,
+        color: "yellow", // default color
+        note: ""
+    };
+    
+    cache.highlights.push(newHl);
+    saveState();
+    
+    renderNodeDetail(nodeName, cache.explanation);
+    
+    const toolbar = document.getElementById('highlight-toolbar');
+    if (toolbar) toolbar.classList.add('hidden');
+    selection.removeAllRanges();
+    
+    // Langsung buka modal catatan
+    setTimeout(() => {
+        openCommentaryModalById(hlId);
+    }, 50);
+}
+
+function openCommentaryModalById(hlId) {
+    if (!state.activeNode) return;
+    const nodeName = state.activeNode.name;
+    const cache = state.nodeCache[nodeName];
+    if (!cache || !cache.highlights) return;
+    
+    const hl = cache.highlights.find(h => h.id === hlId);
+    if (!hl) return;
+    
+    activeHighlightId = hlId;
+    
+    const modal = document.getElementById('commentary-modal');
+    const textDisplay = document.getElementById('commentary-highlight-text');
+    const noteInput = document.getElementById('commentary-note-input');
+    
+    if (textDisplay) textDisplay.textContent = `"${hl.text}"`;
+    if (noteInput) noteInput.value = hl.note || '';
+    
+    if (modal) modal.classList.add('open');
+}
+
+function closeCommentaryModal() {
+    const modal = document.getElementById('commentary-modal');
+    if (modal) modal.classList.remove('open');
+    activeHighlightId = null;
+}
+
+function saveCommentary() {
+    if (!state.activeNode || !activeHighlightId) return;
+    const nodeName = state.activeNode.name;
+    const cache = state.nodeCache[nodeName];
+    if (!cache || !cache.highlights) return;
+    
+    const hl = cache.highlights.find(h => h.id === activeHighlightId);
+    if (hl) {
+        const noteInput = document.getElementById('commentary-note-input');
+        hl.note = noteInput ? noteInput.value.trim() : '';
+        saveState();
+        renderNodeDetail(nodeName, cache.explanation);
+    }
+    closeCommentaryModal();
+}
+
+function deleteHighlightFromModal() {
+    if (!state.activeNode || !activeHighlightId) return;
+    const nodeName = state.activeNode.name;
+    const cache = state.nodeCache[nodeName];
+    if (!cache || !cache.highlights) return;
+    
+    cache.highlights = cache.highlights.filter(h => h.id !== activeHighlightId);
+    saveState();
+    renderNodeDetail(nodeName, cache.explanation);
+    closeCommentaryModal();
+}
+
+function applyHighlights(nodeName) {
+    const container = document.getElementById('drawer-markdown-content');
+    if (!container) return;
+    
+    const cache = state.nodeCache[nodeName];
+    if (!cache || !cache.highlights || cache.highlights.length === 0) return;
+    
+    cache.highlights.forEach(hl => {
+        highlightTextInDOM(container, hl.text, hl.id, hl.color, hl.note);
+    });
+}
+
+function highlightTextInDOM(container, searchText, id, color, note) {
+    if (!searchText) return;
+    
+    const walk = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    const nodesToProcess = [];
+    
+    while (node = walk.nextNode()) {
+        if (node.parentElement.tagName === 'MARK' || node.parentElement.closest('button, form, input, textarea')) {
+            continue;
+        }
+        if (node.nodeValue.includes(searchText)) {
+            nodesToProcess.push(node);
+        }
+    }
+    
+    nodesToProcess.forEach(textNode => {
+        const val = textNode.nodeValue;
+        const index = val.indexOf(searchText);
+        if (index === -1) return;
+        
+        const before = val.substring(0, index);
+        const match = val.substring(index, index + searchText.length);
+        const after = val.substring(index + searchText.length);
+        
+        const fragment = document.createDocumentFragment();
+        
+        if (before) {
+            fragment.appendChild(document.createTextNode(before));
+        }
+        
+        const mark = document.createElement('mark');
+        mark.className = `hl-${color}`;
+        mark.setAttribute('data-id', id);
+        mark.setAttribute('data-highlight', 'true');
+        if (note) {
+            mark.setAttribute('data-note', note);
+            mark.setAttribute('title', note);
+        }
+        mark.textContent = match;
+        fragment.appendChild(mark);
+        
+        if (after) {
+            fragment.appendChild(document.createTextNode(after));
+        }
+        
+        textNode.parentNode.replaceChild(fragment, textNode);
+    });
 }

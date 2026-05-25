@@ -33,7 +33,7 @@
 
     --font: 'Inter', system-ui, -apple-system, sans-serif;
     --chat-width: 340px;
-    --drawer-width: 520px;
+    --drawer-width: 780px;
 
     --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
     --shadow-sm: 0 1px 4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
@@ -1464,4 +1464,97 @@ a:hover { text-decoration: underline; }
         border-top: 1px solid var(--border);
     }
 }
+
+/* ==========================================================================
+   HIGHLIGHT & ANNOTATIONS (STICKY NOTES)
+   ========================================================================== */
+.highlight-toolbar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.3);
+    z-index: 1000;
+    pointer-events: auto;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    transform: translateY(0);
+}
+
+.highlight-toolbar.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+}
+
+.hl-color-btn {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform var(--t);
+    padding: 0;
+}
+
+.hl-color-btn:hover {
+    transform: scale(1.2);
+}
+
+.hl-color-btn.yellow { background: #fde047; }
+.hl-color-btn.green  { background: #86efac; }
+.hl-color-btn.blue   { background: #93c5fd; }
+.hl-color-btn.pink   { background: #fbcfe8; }
+
+.hl-divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 2px;
+}
+
+.hl-action-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    transition: color var(--t);
+}
+
+.hl-action-btn:hover {
+    color: #ffffff;
+}
+
+.hl-action-btn i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Style for highlights inside drawer */
+mark.hl-yellow { background: #fef08a; color: inherit; border-radius: 3px; cursor: pointer; padding: 1px 2px; transition: background 0.15s; }
+mark.hl-green  { background: #bbf7d0; color: inherit; border-radius: 3px; cursor: pointer; padding: 1px 2px; transition: background 0.15s; }
+mark.hl-blue   { background: #bfdbfe; color: inherit; border-radius: 3px; cursor: pointer; padding: 1px 2px; transition: background 0.15s; }
+mark.hl-pink   { background: #fbcfe8; color: inherit; border-radius: 3px; cursor: pointer; padding: 1px 2px; transition: background 0.15s; }
+
+mark.hl-yellow:hover { background: #fde047; }
+mark.hl-green:hover  { background: #86efac; }
+mark.hl-blue:hover   { background: #93c5fd; }
+mark.hl-pink:hover   { background: #fbcfe8; }
+
+/* Subtle indicator that highlight has commentary */
+mark[data-note]::after {
+    content: ' 💬';
+    font-size: 0.65rem;
+    vertical-align: super;
+    opacity: 0.8;
+}
+
 
