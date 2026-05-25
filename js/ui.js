@@ -410,6 +410,11 @@ async function handleChatSubmit(e) {
     const topic = inputEl.value.trim();
     if (!topic) return;
 
+    // Save to dynamic recent searches (Task #5)
+    if (typeof saveRecentSearch === 'function') {
+        saveRecentSearch(topic);
+    }
+
     // Reset input
     inputEl.value = '';
 
@@ -2476,6 +2481,17 @@ function initRedesignNavigation() {
         });
     }
     
+    const btnClearRecentMain = document.getElementById('btn-clear-recent');
+    if (btnClearRecentMain) {
+        btnClearRecentMain.addEventListener('click', () => {
+            localStorage.setItem('recentSearches', JSON.stringify([]));
+            renderRecentSearches();
+        });
+    }
+    
+    // Initialize dynamic recent searches (Task #5)
+    renderRecentSearches();
+    
     // 4. Set Default Screen
     if (state.mindmapData) {
         switchScreen('mindmaps');
@@ -2577,5 +2593,81 @@ function selectAndOpenNode(nodeName) {
     const foundD3Node = rootNodeData.descendants().find(d => d.data.name === nodeName);
     if (foundD3Node) {
         handleNodeClick(foundD3Node);
+    }
+}
+
+/* ==========================================================================
+   DYNAMIC RECENT SEARCHES (TASK #5)
+   ========================================================================== */
+function loadRecentSearches() {
+    let searches = [];
+    try {
+        const stored = localStorage.getItem('recentSearches');
+        if (stored) {
+            searches = JSON.parse(stored);
+        } else {
+            searches = [
+                "Neural architectures for LLMs",
+                "Modernist architectural theory 1920-1940",
+                "Quantum cryptography basics",
+                "History of semantic web protocols"
+            ];
+            localStorage.setItem('recentSearches', JSON.stringify(searches));
+        }
+    } catch (e) {
+        searches = [
+            "Neural architectures for LLMs",
+            "Modernist architectural theory 1920-1940",
+            "Quantum cryptography basics",
+            "History of semantic web protocols"
+        ];
+    }
+    return searches;
+}
+
+function saveRecentSearch(query) {
+    if (!query) return;
+    let searches = loadRecentSearches();
+    searches = searches.filter(s => s.toLowerCase() !== query.toLowerCase());
+    searches.unshift(query);
+    searches = searches.slice(0, 5);
+    localStorage.setItem('recentSearches', JSON.stringify(searches));
+    renderRecentSearches();
+}
+
+function renderRecentSearches() {
+    const container = document.getElementById('recent-searches-container');
+    if (!container) return;
+    const searches = loadRecentSearches();
+    container.innerHTML = '';
+    
+    if (searches.length === 0) {
+        container.innerHTML = `<div class="empty-recent-searches" style="font-size: 0.85rem; color: var(--text-3); font-style: italic; padding: 0.5rem 0;">Belum ada riwayat pencarian</div>`;
+        return;
+    }
+    
+    searches.forEach(search => {
+        const item = document.createElement('div');
+        item.className = 'recent-search-item';
+        
+        item.innerHTML = `
+            <i data-lucide="history" class="history-icon" style="width: 16px; height: 16px; margin-right: 12px; color: var(--text-3); flex-shrink: 0;"></i>
+            <span class="recent-search-text" style="flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${search}</span>
+            <i data-lucide="chevron-right" class="arrow-icon" style="width: 16px; height: 16px; color: var(--text-3); flex-shrink: 0;"></i>
+        `;
+        
+        item.addEventListener('click', () => {
+            const chatInput = document.getElementById('chat-input');
+            const chatForm = document.getElementById('chat-form');
+            if (chatInput && chatForm) {
+                chatInput.value = search;
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        container.appendChild(item);
+    });
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
     }
 }

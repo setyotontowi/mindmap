@@ -1366,8 +1366,9 @@ a:hover { text-decoration: underline; }
     }
 
     /* 2. Touch & Gesture Canvas Settings */
-    .mindmap-canvas-container {
-        touch-action: none; /* Cegah browser scrolling default saat drag canvas */
+    .mindmap-canvas-container,
+    .mindmap-svg {
+        touch-action: none !important; /* Cegah browser scrolling default saat drag canvas */
     }
 
     /* 3. Floating Controls Mobile Optimization */
@@ -1796,6 +1797,15 @@ mark[data-note]::after {
     margin-bottom: 2rem;
     text-align: center;
     letter-spacing: -0.5px;
+}
+
+.search-hero-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-3);
+    text-align: center;
+    margin-top: -1.5rem;
+    margin-bottom: 2rem;
+    font-weight: 400;
 }
 
 .search-box-container {
@@ -3345,6 +3355,170 @@ mark[data-note]::after {
     .drawer-col-materi .article-category {
         font-size: 0.65rem !important;
         margin-bottom: 0.5rem !important;
+    }
+    
+    /* ==========================================================================
+       TASK #5: SEARCH SCREEN RESPONSIVE MOBILE EXPLORATION
+       ========================================================================== */
+    .search-screen-wrapper {
+        padding: 2rem 1rem !important;
+    }
+    
+    .search-hero-title {
+        font-size: 1.6rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .search-hero-subtitle {
+        font-size: 0.85rem !important;
+        margin-top: 0 !important;
+        margin-bottom: 1.5rem !important;
+        color: var(--text-3) !important;
+        text-align: center !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Curved pill-shaped input box */
+    .search-box-container {
+        border-radius: var(--radius-pill) !important;
+        padding: 0 4px 0 16px !important;
+        height: 48px !important;
+        border: 1px solid var(--border) !important;
+        background: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        box-shadow: var(--shadow-sm) !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    .search-box-container input {
+        font-size: 0.9rem !important;
+        height: 100% !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    
+    .search-box-container .kbd-shortcut {
+        display: none !important;
+    }
+    
+    .btn-search-redesign {
+        border-radius: var(--radius-pill) !important;
+        background: var(--primary-green) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        font-size: 0.8rem !important;
+        padding: 0 16px !important;
+        height: 40px !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: background 0.2s ease !important;
+    }
+    
+    .btn-search-redesign:active {
+        background: var(--primary-green-dark) !important;
+    }
+    
+    /* Column Grid */
+    .search-columns-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2rem !important;
+        margin-top: 2rem !important;
+    }
+    
+    /* Uppercase sub-headers */
+    .search-column-title {
+        font-size: 0.7rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        color: var(--text-3) !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* Recent searches touch-friendly list items */
+    .recent-searches-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    
+    .recent-search-item {
+        display: flex !important;
+        align-items: center !important;
+        background: #ffffff !important;
+        border: 1px solid var(--border) !important;
+        padding: 10px 14px !important;
+        border-radius: 12px !important;
+        font-size: 0.85rem !important;
+        color: var(--text) !important;
+        font-weight: 500 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        line-height: 1.4 !important;
+    }
+    
+    .recent-search-item:active {
+        background: var(--bg-hover) !important;
+        border-color: var(--primary-green) !important;
+    }
+    
+    /* Horizontally scrollable tag pills */
+    .suggested-pills-wrap {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 8px !important;
+        padding: 4px 0 10px 0 !important;
+        scroll-behavior: smooth !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Hide Suggested scrollbar but retain gesture scroll */
+    .suggested-pills-wrap::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .suggested-pill {
+        flex-shrink: 0 !important;
+        background: #ffffff !important;
+        border: 1px solid var(--border) !important;
+        padding: 8px 14px !important;
+        border-radius: var(--radius-pill) !important;
+        font-size: 0.78rem !important;
+        color: var(--text-2) !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .suggested-pill:active {
+        background: var(--bg-hover) !important;
+        border-color: var(--primary-green) !important;
+        color: var(--primary-green) !important;
+    }
+    
+    /* Native-feeling tab screen transition (Task #6) */
+    .screen-container:not(.hidden) {
+        animation: mobileFadeInSlide 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+}
+
+/* Page Transition Keyframes (Task #6) */
+@keyframes mobileFadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
