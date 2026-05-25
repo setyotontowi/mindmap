@@ -402,6 +402,7 @@ function removeThinkingIndicator() {
 }
 
 // Submit Topik via Chat
+// Submit Topik via Chat
 async function handleChatSubmit(e) {
     e.preventDefault();
     const inputEl = document.getElementById('chat-input');
@@ -415,12 +416,25 @@ async function handleChatSubmit(e) {
     // Masukkan ke chat UI
     appendChatMessage('user', topic);
 
-    // Warning is disabled if we use backend key.
-    // If state.apiKey is not present, we will try to generate via backend env key.
-    // If backend doesn't have it either, it will throw an authorization error which we will catch.
-
     // Tampilkan thinking
     showThinkingIndicator();
+
+    // Segera arahkan ke halaman canvas dan tampilkan loading animation
+    if (typeof switchScreen === 'function') {
+        switchScreen('mindmaps');
+    }
+    const loadingOverlay = document.getElementById('mindmap-loading-overlay');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('hidden');
+        const loadingText = document.getElementById('mindmap-loading-text');
+        if (loadingText) {
+            loadingText.innerHTML = state.language === 'en'
+                ? `Exploring the rabbit hole of <strong>${topic}</strong>... 🧠✨`
+                : `Menyelam ke dalam rabbit hole <strong>${topic}</strong>... 🧠✨`;
+        }
+    }
+    const hintText = document.getElementById('mindmap-hint-text');
+    if (hintText) hintText.classList.add('hidden');
 
     try {
         const prompt = state.language === 'en' ? `Create a structured learning roadmap for the topic: "${topic}". Generate valid JSON format with a single root node and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
@@ -453,6 +467,7 @@ async function handleChatSubmit(e) {
 
         const result = await callRouterAI(prompt);
         removeThinkingIndicator();
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
 
         if (result && result.name) {
             // Set ID untuk node agar D3 dapat mengontrol transisi
@@ -477,7 +492,7 @@ async function handleChatSubmit(e) {
                 };
             }
             state.nodeStatuses = {};
-            saveState();
+            await saveState();
 
             // Render Mindmap
             initD3Canvas();
@@ -492,7 +507,7 @@ async function handleChatSubmit(e) {
             }
 
             // Muat ulang daftar riwayat
-            loadHistoryList();
+            await loadHistoryList();
 
             // Kembalikan ke mode riwayat
             switchSidebarMode('history');
@@ -506,6 +521,8 @@ async function handleChatSubmit(e) {
         }
     } catch (error) {
         removeThinkingIndicator();
+        const loadingOverlay = document.getElementById('mindmap-loading-overlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
         console.error('Initial generation error:', error);
         const msg = state.language === 'en'
             ? `Sorry, I had trouble creating a mindmap for that topic. Error: *${error.message}*. Please try again!`

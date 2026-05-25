@@ -1,10 +1,21 @@
-require('dotenv').config();
-const express = require('express');
 const path = require('path');
+const fs = require('fs');
+
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+const envPath = path.resolve(__dirname, envFile);
+if (fs.existsSync(envPath)) {
+    require('dotenv').config({ path: envPath });
+} else {
+    require('dotenv').config();
+}
+
+const express = require('express');
+
 const { Pool } = require('pg');
 const crypto = require('crypto');
 
 const app = express();
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 4000;
 
 // Helper to parse cookies
@@ -228,44 +239,131 @@ app.post('/api/ai/completions', async (req, res) => {
     try {
         const { messages, response_format, temperature, stream, max_tokens } = req.body;
         
-        // Ambil API Key dari .env, fallback ke Authorization header dari client
-        let apiKey = process.env.ROUTER_API_KEY;
-        if (!apiKey && req.headers.authorization) {
-            apiKey = req.headers.authorization.replace('Bearer ', '');
-        }
+        const isProduction = process.env.NODE_ENV === 'production';
+        const apiKey = process.env.GEMINI_API_KEY;
+        const useGemini = isProduction || (apiKey && apiKey !== 'your_google_gemini_api_key_here');
+        
+        if (useGemini) {
+            if (!apiKey || apiKey === 'your_google_gemini_api_key_here') {
+                return res.status(401).json({ 
+                    error: { message: 'GEMINI_API_KEY belum dikonfigurasi di file env (.env atau .env.production).' } 
+                });
+            }
 
-        if (!apiKey) {
-            return res.status(401).json({ 
-                error: { message: 'API Key Router belum dikonfigurasi di server (.env) maupun client.' } 
+            const systemInstructionText = messages.find(m => m.role === 'system')?.content || '';
+            const userMessageText = messages.find(m => m.role === 'user')?.content || '';
+
+            const geminiPayload = {
+                contents: [
+                    {
+                        role: "user",
+                        parts: [
+                            { text: userMessageText }
+                        ]
+                    }
+                ],
+                generationConfig: {
+                    temperature: temperature !== undefined ? temperature : 0.2,
+                    maxOutputTokens: max_tokens || 8192
+                }
+            };
+
+            if (systemInstructionText) {
+                geminiPayload.systemInstruction = {
+                    parts: [
+                        { text: systemInstructionText }
+                    ]
+                };
+            }
+
+            if (response_format && response_format.type === 'json_object') {
+                geminiPayload.generationConfig.responseMimeType = 'application/json';
+            }
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(geminiPayload)
             });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                let errMsg = 'Gagal terhubung ke Google Gemini API';
+                try {
+                    const errData = JSON.parse(errText);
+                    errMsg = errData.error?.message || errMsg;
+                } catch (e) {
+                    errMsg = errText || errMsg;
+                }
+                return res.status(response.status).json({ error: { message: errMsg } });
+            }
+
+            const responseData = await response.json();
+            
+            if (responseData.error) {
+                return res.status(responseData.error.code || 500).json({
+                    error: { message: responseData.error.message }
+                });
+            }
+
+            const responseText = responseData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            const mappedResponse = {
+                choices: [
+                    {
+                        message: {
+                            role: 'assistant',
+                            content: responseText
+                        }
+                    }
+                ]
+            };
+            res.json(mappedResponse);
+
+        } else {
+            // Ambil API Key dari .env, fallback ke Authorization header dari client
+            let apiKey = process.env.ROUTER_API_KEY;
+            if (!apiKey && req.headers.authorization) {
+                apiKey = req.headers.authorization.replace('Bearer ', '');
+            }
+
+            if (!apiKey) {
+                return res.status(401).json({ 
+                    error: { message: 'API Key Router belum dikonfigurasi di server (.env) maupun client.' } 
+                });
+            }
+
+            const url = 'http://localhost:20128/v1/chat/completions';
+            const model = 'kr/claude-sonnet-4.5';
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model,
+                    messages,
+                    response_format,
+                    temperature,
+                    stream,
+                    max_tokens
+                })
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                return res.status(response.status).send(errText);
+            }
+
+            const rawText = await response.text();
+            res.send(rawText);
         }
-
-        const url = 'http://localhost:20128/v1/chat/completions';
-        const model = 'kr/claude-sonnet-4.5';
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model,
-                messages,
-                response_format,
-                temperature,
-                stream,
-                max_tokens
-            })
-        });
-
-        if (!response.ok) {
-            const errText = await response.text();
-            return res.status(response.status).send(errText);
-        }
-
-        const rawText = await response.text();
-        res.send(rawText);
     } catch (error) {
         console.error('Error on AI proxy endpoint:', error);
         res.status(500).json({ error: { message: error.message || 'Internal Server Error' } });
@@ -281,7 +379,8 @@ app.get('/api/auth/google', (req, res) => {
     if (!clientId) {
         return res.status(500).send('GOOGLE_CLIENT_ID belum dikonfigurasi di file .env Anda.');
     }
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const appUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const redirectUri = `${appUrl}/api/auth/google/callback`;
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` + new URLSearchParams({
         client_id: clientId,
         redirect_uri: redirectUri,
@@ -301,7 +400,8 @@ app.get('/api/auth/google/callback', async (req, res) => {
     
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+    const appUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
+    const redirectUri = `${appUrl}/api/auth/google/callback`;
     
     try {
         // Tukar kode autentikasi dengan access_token
