@@ -264,7 +264,7 @@ app.post('/api/ai/completions', async (req, res) => {
                 ],
                 generationConfig: {
                     temperature: temperature !== undefined ? temperature : 0.2,
-                    maxOutputTokens: max_tokens || 4000
+                    maxOutputTokens: max_tokens || 8192
                 }
             };
 
