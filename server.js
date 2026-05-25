@@ -240,12 +240,13 @@ app.post('/api/ai/completions', async (req, res) => {
         const { messages, response_format, temperature, stream, max_tokens } = req.body;
         
         const isProduction = process.env.NODE_ENV === 'production';
+        const apiKey = process.env.GEMINI_API_KEY;
+        const useGemini = isProduction || (apiKey && apiKey !== 'your_google_gemini_api_key_here');
         
-        if (isProduction) {
-            const apiKey = process.env.GEMINI_API_KEY;
-            if (!apiKey) {
+        if (useGemini) {
+            if (!apiKey || apiKey === 'your_google_gemini_api_key_here') {
                 return res.status(401).json({ 
-                    error: { message: 'GEMINI_API_KEY belum dikonfigurasi di server (.env.production).' } 
+                    error: { message: 'GEMINI_API_KEY belum dikonfigurasi di file env (.env atau .env.production).' } 
                 });
             }
 
@@ -279,7 +280,7 @@ app.post('/api/ai/completions', async (req, res) => {
                 geminiPayload.generationConfig.responseMimeType = 'application/json';
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
             const response = await fetch(url, {
                 method: 'POST',
