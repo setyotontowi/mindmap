@@ -270,10 +270,48 @@ function getNodeStatusClass(nodeName) {
     return '';
 }
 
+// Fungsi helper untuk melipat node yang tidak bersinggungan
+function collapseNonIntersectingNodes(rawNode, activePathIds) {
+    if (!rawNode) return;
+    const isAncestor = activePathIds.has(rawNode.id) || activePathIds.has(rawNode.name);
+    if (!isAncestor) {
+        if (rawNode.children && rawNode.children.length > 0) {
+            rawNode.collapsed = true;
+        }
+    } else {
+        rawNode.collapsed = false;
+    }
+    if (rawNode.children) {
+        rawNode.children.forEach(child => collapseNonIntersectingNodes(child, activePathIds));
+    }
+}
+
 // Handler klik node untuk Deep Dive & Rabbit Hole
 async function handleNodeClick(d3Node) {
     const nodeName = d3Node.data.name;
     const nodeDesc = d3Node.data.description || '';
+
+    // Jika kedalaman melebihi 3, fold semua node yang tidak bersinggungan
+    if (d3Node.depth > 3) {
+        const activePathIds = new Set();
+        let current = d3Node;
+        while (current) {
+            if (current.data.id) activePathIds.add(current.data.id);
+            if (current.data.name) activePathIds.add(current.data.name);
+            current = current.parent;
+        }
+        collapseNonIntersectingNodes(state.mindmapData, activePathIds);
+        saveState();
+    }
+
+    // Batasi kedalaman maksimal 5 level untuk eksplorasi baru
+    if (d3Node.depth >= 5 && !state.nodeCache[nodeName]) {
+        const warningMsg = state.language === 'en'
+            ? 'Maximum depth of 5 levels reached. You cannot explore deeper than this.'
+            : 'Batas maksimal kedalaman 5 level tercapai. Anda tidak dapat menjelajah lebih dalam dari ini.';
+        alert(warningMsg);
+        return;
+    }
 
     // Jika data sudah tercache (pernah di-deep dive sebelumnya)
     if (state.nodeCache[nodeName]) {
@@ -473,4 +511,56 @@ function zoomFit() {
         .scale(scale);
 
     svg.transition().duration(500).call(zoomBehavior.transform, transform);
+}
+
+function searchNode(query) {
+    if (!rootNodeData) return;
+    
+    if (!query || query.trim() === '') {
+        d3.selectAll('.node-card').style('box-shadow', '').style('border-color', '');
+        return;
+    }
+    
+    const term = query.toLowerCase().trim();
+    let firstMatch = null;
+    
+    d3.selectAll('.node').each(function(d) {
+        const card = d3.select(this).select('.node-card');
+        const nodeName = d.data.name || '';
+        const nodeDesc = d.data.description || '';
+        
+        // Ambil materi penjelasan dari cache jika ada
+        const cache = state.nodeCache[nodeName];
+        const explanation = cache ? (cache.explanation || '') : '';
+        
+        // Cari kecocokan di nama, deskripsi, atau penjelasan materi
+        const isMatch = nodeName.toLowerCase().includes(term) || 
+                        nodeDesc.toLowerCase().includes(term) || 
+                        explanation.toLowerCase().includes(term);
+        
+        if (isMatch) {
+            card.style('box-shadow', '0 0 0 4px #0f172a');
+            card.style('border-color', '#0f172a');
+            if (!firstMatch) {
+                firstMatch = d;
+            }
+        } else {
+            card.style('box-shadow', '').style('border-color', '');
+        }
+    });
+    
+    if (firstMatch && svg && zoomBehavior) {
+        const container = document.getElementById('mindmap-canvas-container');
+        if (container) {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const scale = 1.1;
+            
+            const transform = d3.zoomIdentity
+                .translate(width / 2 - firstMatch.y * scale, height / 2 - firstMatch.x * scale)
+                .scale(scale);
+            
+            svg.transition().duration(500).call(zoomBehavior.transform, transform);
+        }
+    }
 }

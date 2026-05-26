@@ -1,10 +1,17 @@
-/* ==========================================================================
-   UI HANDLERS & NAVIGATION
-   ========================================================================== */
 function initUIEventListeners() {
     // 1. Form Chat
     const chatForm = document.getElementById('chat-form');
     if (chatForm) chatForm.addEventListener('submit', handleChatSubmit);
+
+    // 1b. Node Search
+    const nodeSearchInput = document.getElementById('mindmap-node-search');
+    if (nodeSearchInput) {
+        nodeSearchInput.addEventListener('input', (e) => {
+            if (typeof searchNode === 'function') {
+                searchNode(e.target.value);
+            }
+        });
+    }
 
     // 2. Settings Modal
     const btnOpenSettings = document.getElementById('btn-open-settings');
