@@ -11,7 +11,8 @@ const state = {
     nodeStatuses: JSON.parse(localStorage.getItem('node_statuses') || '{}'), // nodeName -> 'todo' | 'doing' | 'done'
     nodeCache: {},           // nodeName -> { explanation, subtopics } (cache untuk rabbit hole)
     collapsedSidebar: false,
-    currentUser: null        // User yang sedang login (OAuth)
+    currentUser: null,       // User yang sedang login (OAuth)
+    isOwner: true
 };
 
 /* ==========================================================================
@@ -24,6 +25,9 @@ function showSyncStatus(statusText) {
 
 async function saveState(skipDBSync = false) {
     try {
+        if (!state.isOwner) {
+            return;
+        }
         if (state.mindmapData) {
             localStorage.setItem('mindmap_data', JSON.stringify(state.mindmapData));
         }
@@ -58,12 +62,19 @@ async function saveState(skipDBSync = false) {
 function loadState() {
     try {
         localStorage.removeItem('router_api_key'); // Clean up from local storage
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlId = urlParams.get('id');
+        if (urlId) {
+            state.currentMindmapId = urlId;
+        }
+        
         const savedMindmap = localStorage.getItem('mindmap_data');
-        if (savedMindmap) {
+        if (savedMindmap && !urlId) {
             state.mindmapData = JSON.parse(savedMindmap);
         }
         const savedCache = localStorage.getItem('node_cache');
-        if (savedCache) {
+        if (savedCache && !urlId) {
             state.nodeCache = JSON.parse(savedCache);
         }
     } catch (e) {
@@ -83,14 +94,22 @@ async function syncFromDatabase(id = state.currentMindmapId) {
         
         if (dbData) {
             state.currentMindmapId = dbData.id || id;
-            localStorage.setItem('current_mindmap_id', state.currentMindmapId);
+            state.isOwner = dbData.is_owner !== undefined ? dbData.is_owner : true;
+            
+            if (state.isOwner) {
+                localStorage.setItem('current_mindmap_id', state.currentMindmapId);
+            }
             
             state.mindmapData = dbData.tree_data || null;
             state.nodeCache = dbData.node_cache || {};
             state.nodeStatuses = dbData.node_statuses || {};
             
-            // Simpan lokal agar sinkron
-            saveState(true); 
+            if (state.isOwner) {
+                saveState(true); 
+                showSyncStatus('Tersinkronisasi 💾');
+            } else {
+                showSyncStatus('Mode Lihat Saja 👁️');
+            }
             
             if (state.mindmapData) {
                 if (typeof initD3Canvas === 'function') {
@@ -101,15 +120,18 @@ async function syncFromDatabase(id = state.currentMindmapId) {
                 if (typeof updateTableOfContents === 'function') {
                     updateTableOfContents();
                 }
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('id') && typeof switchScreen === 'function') {
+                    switchScreen('mindmaps');
+                }
             } else {
                 // Bersihkan canvas
                 d3.select('#mindmap-svg').selectAll('*').remove();
                 document.getElementById('mindmap-hint-text').classList.remove('hidden');
             }
-            showSyncStatus('Tersinkronisasi 💾');
         } else {
-            // Jika DB Kosong tetapi localStorage berisi data, otomatis migrasikan ke PostgreSQL!
-            if (state.mindmapData) {
+            if (state.mindmapData && state.isOwner) {
                 showSyncStatus('Migrasi ke DB... ⏳');
                 await saveState(false);
             } else {
@@ -120,7 +142,11 @@ async function syncFromDatabase(id = state.currentMindmapId) {
         await loadHistoryList();
     } catch (error) {
         console.warn('Gagal sinkron dari database PostgreSQL:', error);
-        showSyncStatus('Offline (Lokal) 🔌');
+        if (state.isOwner) {
+            showSyncStatus('Offline (Lokal) 🔌');
+        } else {
+            showSyncStatus('Offline (View Only) 👁️');
+        }
     }
 }
 

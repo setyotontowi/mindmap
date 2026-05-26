@@ -213,6 +213,10 @@ function initUIEventListeners() {
     const btnExportMdAction = document.getElementById('btn-export-md-action');
 
     if (btnExportSession) btnExportSession.addEventListener('click', openExportModal);
+    const btnShareMindmap = document.getElementById('btn-share-mindmap');
+    const btnMobileShare = document.getElementById('btn-mobile-share');
+    if (btnShareMindmap) btnShareMindmap.addEventListener('click', shareMindmap);
+    if (btnMobileShare) btnMobileShare.addEventListener('click', shareMindmap);
     if (btnCloseExport) btnCloseExport.addEventListener('click', closeExportModal);
     if (btnCancelExport) btnCancelExport.addEventListener('click', closeExportModal);
     if (exportModal) {
@@ -676,6 +680,9 @@ function openDetailDrawer(title) {
     // Setup status tombol belajar aktif
     updateDrawerStatusSelector(title);
 
+    // Update UI based on ownership
+    updateOwnerUI();
+
     // Render Lucide icons if available
     if (window.lucide) {
         window.lucide.createIcons();
@@ -758,11 +765,20 @@ function renderNodeDetail(title, markdownText) {
 function renderNodeQa(nodeName) {
     const qaList = document.getElementById('qa-messages-list');
     const qaInput = document.getElementById('drawer-qa-input');
+    const qaForm = document.getElementById('drawer-qa-form');
     if (!qaList || !qaInput) return;
 
     qaList.innerHTML = '';
     qaInput.value = '';
     qaInput.style.height = '24px';
+
+    if (qaForm) {
+        if (!state.isOwner) {
+            qaForm.style.display = 'none';
+        } else {
+            qaForm.style.display = 'flex';
+        }
+    }
 
     const nodeData = state.nodeCache[nodeName];
     if (!nodeData) return;
@@ -772,9 +788,11 @@ function renderNodeQa(nodeName) {
     }
 
     if (nodeData.qaHistory.length === 0) {
-        const noDiskText = state.language === 'en'
-            ? 'No discussion yet for this topic. Ask your first question below!'
-            : 'Belum ada diskusi untuk topik ini. Ajukan pertanyaan pertamamu di bawah!';
+        const noDiskText = !state.isOwner
+            ? (state.language === 'en' ? 'Q&A is only available for the owner of the mindmap.' : 'Tanya jawab hanya tersedia untuk pemilik mindmap.')
+            : (state.language === 'en'
+                ? 'No discussion yet for this topic. Ask your first question below!'
+                : 'Belum ada diskusi untuk topik ini. Ajukan pertanyaan pertamamu di bawah!');
         qaList.innerHTML = `
             <div style="font-size:0.78rem; color:var(--text-3); text-align:center; padding:1.25rem 0; line-height: 1.45;">
                 ${noDiskText}
@@ -809,11 +827,19 @@ function updateDrawerStatusSelector(nodeName) {
         if (btn.getAttribute('data-status') === status) {
             btn.classList.add('active');
         }
+        if (!state.isOwner) {
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = btn.classList.contains('active') ? '1' : '0.5';
+        } else {
+            btn.style.pointerEvents = '';
+            btn.style.opacity = '';
+        }
     });
 }
 
 // Handler perubahan status progress belajar (todo, doing, done)
 function handleStatusChange(e) {
+    if (!state.isOwner) return;
     if (!state.activeNode) return;
     
     const nodeName = state.activeNode.name;
@@ -2059,6 +2085,7 @@ function exportToMarkdown() {
 let activeHighlightId = null;
 
 function handleTextSelection() {
+    if (!state.isOwner) return;
     const selection = window.getSelection();
     const selectedText = selection.toString().trim();
     const toolbar = document.getElementById('highlight-toolbar');
@@ -2212,6 +2239,50 @@ function deleteHighlightFromModal() {
     saveState();
     renderNodeDetail(nodeName, cache.explanation);
     closeCommentaryModal();
+}
+
+async function shareMindmap() {
+    if (!state.currentMindmapId) {
+        alert(state.language === 'en' ? 'No active mindmap to share!' : 'Tidak ada mindmap aktif untuk dibagikan!');
+        return;
+    }
+    const shareUrl = `${window.location.origin}${window.location.pathname}?id=${state.currentMindmapId}`;
+    try {
+        await navigator.clipboard.writeText(shareUrl);
+        const msg = state.language === 'en'
+            ? `🔗 **Link copied!** You can share this mindmap with others: <br><a href="${shareUrl}" target="_blank" class="share-link-toast">${shareUrl}</a>`
+            : `🔗 **Link berhasil disalin!** Kamu bisa membagikan mindmap ini ke orang lain: <br><a href="${shareUrl}" target="_blank" class="share-link-toast">${shareUrl}</a>`;
+        appendChatMessage('bot', msg);
+        alert(state.language === 'en' ? 'Share link copied to clipboard!' : 'Link bagikan telah disalin ke clipboard!');
+    } catch (err) {
+        console.error('Failed to copy share link:', err);
+        prompt(state.language === 'en' ? 'Copy this link to share:' : 'Salin link ini untuk membagikan:', shareUrl);
+    }
+}
+
+function updateOwnerUI() {
+    const ownerOnlyIds = [
+        'btn-add-subnode',
+        'btn-edit-node',
+        'btn-regenerate-node',
+        'btn-delete-node'
+    ];
+    
+    ownerOnlyIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (state.isOwner) {
+                el.style.display = '';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    });
+    
+    const mobileMore = document.getElementById('btn-mobile-more');
+    if (mobileMore) {
+        mobileMore.style.display = state.isOwner ? '' : 'none';
+    }
 }
 
 function applyHighlights(nodeName) {

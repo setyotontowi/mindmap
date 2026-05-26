@@ -129,10 +129,8 @@ app.get('/api/mindmap', (req, res) => {
     const userId = req.user ? req.user.id : null;
     
     if (id) {
-        const query = userId
-            ? 'SELECT * FROM mindmaps WHERE id = $1 AND user_id = $2'
-            : 'SELECT * FROM mindmaps WHERE id = $1 AND user_id IS NULL';
-        const params = userId ? [id, userId] : [id];
+        const query = 'SELECT * FROM mindmaps WHERE id = $1';
+        const params = [id];
 
         pool.query(query, params, (err, result) => {
             if (err) {
@@ -143,12 +141,17 @@ app.get('/api/mindmap', (req, res) => {
             if (!row) {
                 return res.json(null);
             }
+            
+            const isOwner = row.user_id ? (row.user_id === userId) : true;
+
             res.json({
                 id: row.id,
                 name: row.name,
                 tree_data: JSON.parse(row.tree_data || 'null'),
                 node_cache: JSON.parse(row.node_cache || '{}'),
                 node_statuses: JSON.parse(row.node_statuses || '{}'),
+                user_id: row.user_id,
+                is_owner: isOwner,
                 updated_at: row.updated_at
             });
         });
@@ -173,6 +176,8 @@ app.get('/api/mindmap', (req, res) => {
                 tree_data: JSON.parse(row.tree_data || 'null'),
                 node_cache: JSON.parse(row.node_cache || '{}'),
                 node_statuses: JSON.parse(row.node_statuses || '{}'),
+                user_id: row.user_id,
+                is_owner: true,
                 updated_at: row.updated_at
             });
         });
@@ -180,58 +185,70 @@ app.get('/api/mindmap', (req, res) => {
 });
 
 // POST endpoint - Simpan / Sinkronisasi mindmap ke database
-app.post('/api/mindmap', (req, res) => {
+app.post('/api/mindmap', async (req, res) => {
     const { id, name, tree_data, node_cache, node_statuses } = req.body;
     const targetId = id || ('mm_' + Date.now());
     const userId = req.user ? req.user.id : null;
 
-    const query = `
-        INSERT INTO mindmaps (id, name, tree_data, node_cache, node_statuses, user_id, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
-        ON CONFLICT(id) DO UPDATE SET
-            name = EXCLUDED.name,
-            tree_data = EXCLUDED.tree_data,
-            node_cache = EXCLUDED.node_cache,
-            node_statuses = EXCLUDED.node_statuses,
-            user_id = EXCLUDED.user_id,
-            updated_at = CURRENT_TIMESTAMP
-    `;
-
-    const params = [
-        targetId,
-        name || '',
-        JSON.stringify(tree_data || null),
-        JSON.stringify(node_cache || {}),
-        JSON.stringify(node_statuses || {}),
-        userId
-    ];
-
-    pool.query(query, params, (err, result) => {
-        if (err) {
-            console.error('Gagal menyimpan mindmap:', err.message);
-            return res.status(500).json({ error: 'Gagal menyimpan data ke database PostgreSQL' });
+    try {
+        const checkRes = await pool.query('SELECT user_id FROM mindmaps WHERE id = $1', [targetId]);
+        if (checkRes.rows.length > 0) {
+            const existingOwnerId = checkRes.rows[0].user_id;
+            if (existingOwnerId !== null && existingOwnerId !== userId) {
+                return res.status(403).json({ error: 'Anda tidak memiliki hak untuk mengubah mindmap ini.' });
+            }
         }
+
+        const query = `
+            INSERT INTO mindmaps (id, name, tree_data, node_cache, node_statuses, user_id, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+            ON CONFLICT(id) DO UPDATE SET
+                name = EXCLUDED.name,
+                tree_data = EXCLUDED.tree_data,
+                node_cache = EXCLUDED.node_cache,
+                node_statuses = EXCLUDED.node_statuses,
+                user_id = COALESCE(mindmaps.user_id, EXCLUDED.user_id),
+                updated_at = CURRENT_TIMESTAMP
+        `;
+
+        const params = [
+            targetId,
+            name || '',
+            JSON.stringify(tree_data || null),
+            JSON.stringify(node_cache || {}),
+            JSON.stringify(node_statuses || {}),
+            userId
+        ];
+
+        await pool.query(query, params);
         res.json({ success: true, message: 'Mindmap berhasil disinkronisasi ke PostgreSQL' });
-    });
+    } catch (err) {
+        console.error('Gagal menyimpan mindmap:', err.message);
+        res.status(500).json({ error: 'Gagal menyimpan data ke database PostgreSQL' });
+    }
 });
 
 // DELETE endpoint - Hapus mindmap berdasarkan ID
-app.delete('/api/mindmap/:id', (req, res) => {
+app.delete('/api/mindmap/:id', async (req, res) => {
     const id = req.params.id;
     const userId = req.user ? req.user.id : null;
 
-    const query = userId
-        ? 'DELETE FROM mindmaps WHERE id = $1 AND user_id = $2'
-        : 'DELETE FROM mindmaps WHERE id = $1 AND user_id IS NULL';
-    const params = userId ? [id, userId] : [id];
-
-    pool.query(query, params, (err, result) => {
-        if (err) {
-            console.error('Gagal menghapus mindmap:', err.message);
-            return res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
+    try {
+        const checkRes = await pool.query('SELECT user_id FROM mindmaps WHERE id = $1', [id]);
+        if (checkRes.rows.length > 0) {
+            const existingOwnerId = checkRes.rows[0].user_id;
+            if (existingOwnerId !== null && existingOwnerId !== userId) {
+                return res.status(403).json({ error: 'Anda tidak memiliki hak untuk menghapus mindmap ini.' });
+            }
         }
+
+        const query = 'DELETE FROM mindmaps WHERE id = $1';
+        await pool.query(query, [id]);
         res.json({ success: true, message: 'Mindmap berhasil dihapus dari PostgreSQL' });
-    });
+    } catch (err) {
+        console.error('Gagal menghapus mindmap:', err.message);
+        res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
+    }
 });
 
 // Proxy endpoint untuk callRouterAI (keamanan API Key)

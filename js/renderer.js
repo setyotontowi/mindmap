@@ -284,6 +284,13 @@ async function handleNodeClick(d3Node) {
         return;
     }
 
+    if (!state.isOwner) {
+        alert(state.language === 'en'
+            ? 'This topic is locked. You can only read topics that have been opened by the owner.'
+            : 'Topik ini belum terbuka. Anda hanya bisa membaca topik yang sudah dibuka oleh pemilik mindmap.');
+        return;
+    }
+
     // Jika data sedang diload (sedang disusun di latar belakang)
     if (d3Node.data.loading) {
         state.activeNode = d3Node.data;

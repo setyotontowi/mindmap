@@ -869,7 +869,7 @@ a:hover { text-decoration: underline; }
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 3000;
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--t);
