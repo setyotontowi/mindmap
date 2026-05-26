@@ -438,6 +438,23 @@
                         <option value="en">English 🇬🇧</option>
                     </select>
                 </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="ai-provider-select">Provider AI</label>
+                    <select id="ai-provider-select">
+                        <option value="gemini">Google Gemini ♊</option>
+                        <option value="claude">Anthropic Claude 🧠</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="ai-model-select">Model AI</label>
+                    <select id="ai-model-select">
+                        <!-- Akan diisi secara dinamis via JS -->
+                    </select>
+                </div>
+                <div class="form-group" id="custom-model-group" style="margin-top: 0.5rem; display: none;">
+                    <label for="ai-custom-model-input">Nama Model Kustom / Custom Model Name</label>
+                    <input type="text" id="ai-custom-model-input" placeholder="Contoh: claude-haiku-4-5-20250101" />
+                </div>
             </div>
             <footer class="modal-footer">
                 <button class="btn-secondary" id="btn-cancel-settings">Batal</button>

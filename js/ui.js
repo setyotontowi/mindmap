@@ -25,6 +25,25 @@ function initUIEventListeners() {
         });
     }
 
+    const providerSelect = document.getElementById('ai-provider-select');
+    if (providerSelect) {
+        providerSelect.addEventListener('change', (e) => {
+            const selectedProvider = e.target.value;
+            const defaultModel = selectedProvider === 'gemini' ? 'gemini-2.5-flash' : 'claude-sonnet-4-6';
+            updateModelSelectOptions(selectedProvider, defaultModel);
+        });
+    }
+
+    const modelSelect = document.getElementById('ai-model-select');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', (e) => {
+            const customGroup = document.getElementById('custom-model-group');
+            if (customGroup) {
+                customGroup.style.display = e.target.value === 'custom' ? 'flex' : 'none';
+            }
+        });
+    }
+
     // 3. Zoom Controls
     const btnZoomIn = document.getElementById('btn-zoom-in');
     const btnZoomOut = document.getElementById('btn-zoom-out');
@@ -318,6 +337,57 @@ function switchSidebarMode(mode) {
     }
 }
 
+const AI_MODELS_BY_PROVIDER = {
+    gemini: [
+        { value: 'gemini-2.5-flash', text: 'Gemini 2.5 Flash (Default) ⚡' },
+        { value: 'gemini-2.5-pro', text: 'Gemini 2.5 Pro 🧠' },
+        { value: 'gemini-1.5-flash', text: 'Gemini 1.5 Flash 💨' },
+        { value: 'custom', text: 'Kustom / Custom Model... ✏️' }
+    ],
+    claude: [
+        { value: 'claude-sonnet-4-6', text: 'Claude Sonnet 4.6 (Recommended) 🚀' },
+        { value: 'claude-opus-4-7', text: 'Claude Opus 4.7 🧠' },
+        { value: 'claude-haiku-4-5', text: 'Claude Haiku 4.5 ⚡' },
+        { value: 'custom', text: 'Kustom / Custom Model... ✏️' }
+    ]
+};
+
+function updateModelSelectOptions(provider, selectedModelValue) {
+    const modelSelect = document.getElementById('ai-model-select');
+    if (!modelSelect) return;
+    
+    modelSelect.innerHTML = '';
+    const models = AI_MODELS_BY_PROVIDER[provider] || [];
+    
+    // Cek apakah selectedModelValue ada dalam daftar predefined
+    const isPredefined = models.some(m => m.value === selectedModelValue);
+    let finalSelectedValue = selectedModelValue;
+    
+    const customGroup = document.getElementById('custom-model-group');
+    const customInput = document.getElementById('ai-custom-model-input');
+    
+    if (selectedModelValue && !isPredefined && selectedModelValue !== 'custom') {
+        finalSelectedValue = 'custom';
+        if (customInput) {
+            customInput.value = selectedModelValue;
+        }
+    }
+    
+    models.forEach(model => {
+        const opt = document.createElement('option');
+        opt.value = model.value;
+        opt.textContent = model.text;
+        if (model.value === finalSelectedValue) {
+            opt.selected = true;
+        }
+        modelSelect.appendChild(opt);
+    });
+    
+    if (customGroup) {
+        customGroup.style.display = finalSelectedValue === 'custom' ? 'flex' : 'none';
+    }
+}
+
 // Modal Control
 function openSettingsModal() {
     const modal = document.getElementById('settings-modal');
@@ -325,6 +395,20 @@ function openSettingsModal() {
     if (langSelect) {
         langSelect.value = state.language;
     }
+    
+    const providerSelect = document.getElementById('ai-provider-select');
+    if (providerSelect) {
+        providerSelect.value = state.aiProvider || 'gemini';
+    }
+    
+    // Migrasi model lama dari 9Router atau model default jika kosong
+    let activeModel = state.aiModel || 'gemini-2.5-flash';
+    if (state.aiProvider === 'claude' && (!activeModel || activeModel.includes('kr/') || activeModel.includes('latest'))) {
+        activeModel = 'claude-sonnet-4-6';
+    }
+    
+    updateModelSelectOptions(state.aiProvider || 'gemini', activeModel);
+    
     if (modal) modal.classList.add('open');
 }
 
@@ -340,11 +424,29 @@ function saveSettings() {
         localStorage.setItem('ai_language', state.language);
     }
     
+    const providerSelect = document.getElementById('ai-provider-select');
+    const modelSelect = document.getElementById('ai-model-select');
+    const customInput = document.getElementById('ai-custom-model-input');
+    
+    if (providerSelect) {
+        state.aiProvider = providerSelect.value;
+        localStorage.setItem('ai_provider', state.aiProvider);
+    }
+    
+    if (modelSelect) {
+        if (modelSelect.value === 'custom' && customInput && customInput.value.trim()) {
+            state.aiModel = customInput.value.trim();
+        } else {
+            state.aiModel = modelSelect.value;
+        }
+        localStorage.setItem('ai_model', state.aiModel);
+    }
+    
     closeSettingsModal();
     
     const message = state.language === 'en'
-        ? 'Settings saved successfully!'
-        : 'Pengaturan berhasil disimpan!';
+        ? `Settings saved successfully! Model: ${state.aiModel}`
+        : `Pengaturan berhasil disimpan! Model: ${state.aiModel}`;
     appendChatMessage('bot', message);
 }
 
@@ -864,7 +966,7 @@ Pertanyaan pembelajar:
  
 Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) dengan bahasa Indonesia yang santai dan ramah. Jangan gunakan judul/header besar (#, ##, ###). Jadikan jawaban Anda singkat layaknya membalas pesan chat. Kembalikan dalam format JSON: { "answer": "..." }.`;
 
-        // Panggil 9Router API
+        // Panggil AI API
         const result = await callRouterAI(prompt, systemInstruction);
         const answerMarkdown = result.answer || 'Maaf, aku tidak dapat merumuskan jawaban saat ini.';
 

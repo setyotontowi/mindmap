@@ -3,6 +3,8 @@
    ========================================================================== */
 const state = {
     language: localStorage.getItem('ai_language') || 'id',
+    aiProvider: localStorage.getItem('ai_provider') || 'gemini',
+    aiModel: localStorage.getItem('ai_model') || 'gemini-2.5-flash',
     currentMindmapId: localStorage.getItem('current_mindmap_id') || null,
     mindmapData: null,       // Data pohon (tree) D3
     activeNode: null,        // Node yang sedang aktif di drawer

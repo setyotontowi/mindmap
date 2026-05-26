@@ -27,7 +27,9 @@ async function callRouterAI(prompt, systemInstruction = null) {
         response_format: { type: "json_object" },
         temperature: 0.2,
         stream: false,
-        max_tokens: 8192
+        max_tokens: 8192,
+        provider: state.aiProvider || 'gemini',
+        model: state.aiModel || 'gemini-2.5-flash'
     };
 
     try {
@@ -41,7 +43,7 @@ async function callRouterAI(prompt, systemInstruction = null) {
 
         if (!response.ok) {
             const errText = await response.text();
-            let errMsg = 'Gagal terhubung ke 9Router API (Proxy)';
+            let errMsg = 'Gagal terhubung ke AI Proxy API';
             try {
                 const errData = JSON.parse(errText);
                 errMsg = errData.error?.message || errMsg;
@@ -86,7 +88,7 @@ async function callRouterAI(prompt, systemInstruction = null) {
 
         return JSON.parse(cleanJsonText);
     } catch (error) {
-        console.error('9Router API Error:', error);
+        console.error('AI Proxy API Error:', error);
         throw error;
     }
 }

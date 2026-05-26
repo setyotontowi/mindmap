@@ -237,14 +237,21 @@ app.delete('/api/mindmap/:id', (req, res) => {
 // Proxy endpoint untuk callRouterAI (keamanan API Key)
 app.post('/api/ai/completions', async (req, res) => {
     try {
-        const { messages, response_format, temperature, stream, max_tokens } = req.body;
+        const { messages, response_format, temperature, stream, max_tokens, provider, model } = req.body;
         
         const isProduction = process.env.NODE_ENV === 'production';
-        const apiKey = process.env.GEMINI_API_KEY;
-        const useGemini = isProduction || (apiKey && apiKey !== 'your_google_gemini_api_key_here');
+        const geminiApiKey = process.env.GEMINI_API_KEY;
+        
+        // Tentukan provider berdasarkan body parameter dari client, fallback ke deteksi default
+        let useGemini = true;
+        if (provider) {
+            useGemini = (provider === 'gemini');
+        } else {
+            useGemini = isProduction || (geminiApiKey && geminiApiKey !== 'your_google_gemini_api_key_here');
+        }
         
         if (useGemini) {
-            if (!apiKey || apiKey === 'your_google_gemini_api_key_here') {
+            if (!geminiApiKey || geminiApiKey === 'your_google_gemini_api_key_here') {
                 return res.status(401).json({ 
                     error: { message: 'GEMINI_API_KEY belum dikonfigurasi di file env (.env atau .env.production).' } 
                 });
@@ -280,7 +287,8 @@ app.post('/api/ai/completions', async (req, res) => {
                 geminiPayload.generationConfig.responseMimeType = 'application/json';
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const geminiModel = model || 'gemini-2.5-flash';
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -325,44 +333,70 @@ app.post('/api/ai/completions', async (req, res) => {
             res.json(mappedResponse);
 
         } else {
-            // Ambil API Key dari .env, fallback ke Authorization header dari client
-            let apiKey = process.env.ROUTER_API_KEY;
-            if (!apiKey && req.headers.authorization) {
-                apiKey = req.headers.authorization.replace('Bearer ', '');
-            }
-
-            if (!apiKey) {
+            // Langsung menggunakan Claude API dari Anthropic
+            const apiKey = process.env.CLAUDE_API_KEY;
+            
+            if (!apiKey || apiKey === 'your_anthropic_claude_api_key_here') {
                 return res.status(401).json({ 
-                    error: { message: 'API Key Router belum dikonfigurasi di server (.env) maupun client.' } 
+                    error: { message: 'CLAUDE_API_KEY belum dikonfigurasi di file env (.env atau .env.production).' } 
                 });
             }
 
-            const url = 'http://localhost:20128/v1/chat/completions';
-            const model = 'kr/claude-sonnet-4.5';
+            const url = 'https://api.anthropic.com/v1/messages';
+            const claudeModel = model || 'claude-3-5-sonnet-20241022';
+
+            const systemInstructionText = messages.find(m => m.role === 'system')?.content || '';
+            const userMessages = messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({
+                role: m.role,
+                content: m.content
+            }));
+
+            const anthropicPayload = {
+                model: claudeModel,
+                max_tokens: max_tokens || 8192,
+                temperature: temperature !== undefined ? temperature : 0.2,
+                messages: userMessages
+            };
+            if (systemInstructionText) {
+                anthropicPayload.system = systemInstructionText;
+            }
 
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
                 },
-                body: JSON.stringify({
-                    model,
-                    messages,
-                    response_format,
-                    temperature,
-                    stream,
-                    max_tokens
-                })
+                body: JSON.stringify(anthropicPayload)
             });
 
             if (!response.ok) {
                 const errText = await response.text();
-                return res.status(response.status).send(errText);
+                let errMsg = 'Gagal terhubung ke Anthropic Claude API';
+                try {
+                    const errData = JSON.parse(errText);
+                    errMsg = errData.error?.message || errMsg;
+                } catch (e) {
+                    errMsg = errText || errMsg;
+                }
+                return res.status(response.status).json({ error: { message: errMsg } });
             }
 
-            const rawText = await response.text();
-            res.send(rawText);
+            const responseData = await response.json();
+            const responseText = responseData.content?.[0]?.text || '';
+
+            const mappedResponse = {
+                choices: [
+                    {
+                        message: {
+                            role: 'assistant',
+                            content: responseText
+                        }
+                    }
+                ]
+            };
+            res.json(mappedResponse);
         }
     } catch (error) {
         console.error('Error on AI proxy endpoint:', error);
