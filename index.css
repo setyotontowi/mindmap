@@ -3126,22 +3126,7 @@ mark[data-note]::after {
     
     /* Live Sync Status Badge melayang di kiri bawah */
     .mobile-live-sync-badge {
-        display: flex !important;
-        align-items: center;
-        gap: 6px;
-        position: absolute;
-        left: 16px;
-        bottom: 80px;
-        background: var(--primary-green-light);
-        border: 1px solid rgba(0, 163, 116, 0.15);
-        color: var(--primary-green-dark);
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        box-shadow: 0 2px 8px rgba(0, 163, 116, 0.05);
-        z-index: 998;
-        animation: pulse-sync 2s infinite ease-in-out;
+        display: none !important;
     }
     
     .mobile-live-sync-badge .sync-dot {
