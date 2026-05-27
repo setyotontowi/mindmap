@@ -804,6 +804,43 @@ function showThinkingIndicator() {
     container.scrollTop = container.scrollHeight;
 }
 
+let loadingTriviaInterval = null;
+
+function startLoadingTrivia() {
+    const triviaContainer = document.getElementById('loading-trivia-container');
+    const triviaText = document.getElementById('loading-trivia-text');
+    if (!triviaContainer || !triviaText) return;
+
+    // Tampilkan container trivia
+    triviaContainer.style.display = 'block';
+
+    // Set first trivia immediately
+    triviaText.textContent = typeof getRandomTrivia === 'function' ? getRandomTrivia(state.language) : "Loading mind hack...";
+
+    // Hentikan interval lama jika ada (defensif)
+    if (loadingTriviaInterval) clearInterval(loadingTriviaInterval);
+
+    // Ganti trivia setiap 10 detik
+    loadingTriviaInterval = setInterval(() => {
+        triviaText.style.opacity = 0;
+        setTimeout(() => {
+            triviaText.textContent = typeof getRandomTrivia === 'function' ? getRandomTrivia(state.language) : "Loading...";
+            triviaText.style.opacity = 1;
+        }, 300);
+    }, 10000);
+}
+
+function stopLoadingTrivia() {
+    if (loadingTriviaInterval) {
+        clearInterval(loadingTriviaInterval);
+        loadingTriviaInterval = null;
+    }
+    const triviaContainer = document.getElementById('loading-trivia-container');
+    if (triviaContainer) {
+        triviaContainer.style.display = 'none';
+    }
+}
+
 function removeThinkingIndicator() {
     const indicator = document.getElementById('thinking-indicator');
     if (indicator) indicator.remove();
@@ -845,6 +882,7 @@ async function handleChatSubmit(e) {
                 ? `Exploring the rabbit hole of <strong>${topic}</strong>... 🧠✨`
                 : `Menyelam ke dalam rabbit hole <strong>${topic}</strong>... 🧠✨`;
         }
+        startLoadingTrivia();
     }
     const hintText = document.getElementById('mindmap-hint-text');
     if (hintText) hintText.classList.add('hidden');
@@ -858,26 +896,30 @@ async function handleChatSubmit(e) {
             selectedSubStyle = randomChoice.substyle;
         }
         const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle);
-        const prompt = state.language === 'en' ? `Create a structured learning roadmap for the topic: "${topic}". Generate valid JSON format with a single root node and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
+        const prompt = state.language === 'en' ? `Analyze the user's input/request: "${topic}". Identify their core intent/topic and rephrase it into a concise, professional, and clear topic title (this will be the Level 0 / root node name).
+
+        Create a structured learning roadmap for this rephrased topic. Generate valid JSON format with a single root node (whose "name" is the rephrased topic) and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
  
-        Additionally, create an in-depth introductory explanation/article for the main topic "${topic}" (layer 0) in rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
+        Additionally, create an in-depth introductory explanation/article for this rephrased topic (layer 0) in rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
 
         The JSON structure must be exactly like this:
         {
-          "name": "${topic}",
+          "name": "Rephrased Concise Topic Name based on User's Intention",
           "description": "Brief description of this topic",
           "explanation": "Full explanation content in Markdown format here for the main topic...",
           "children": [
             { "name": "Specific Subtopic 1", "description": "Brief description of sub 1" },
             { "name": "Specific Subtopic 2", "description": "Brief description of sub 2" }
           ]
-        }` : `Buatlah peta jalan (roadmap) belajar terstruktur untuk topik: "${topic}". Hasilkan dalam format JSON yang valid dengan satu node akar (root) dan beberapa sub-topik utama sebagai anaknya secara dinamis. Tentukan sendiri jumlah sub-topik utama yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas topik tersebut. Berikan deskripsi yang singkat namun jelas (maksimal 10 kata) untuk tiap node. 
+        }` : `Analisis input/permintaan pengguna: "${topic}". Identifikasi maksud/topik inti mereka dan formulasikan ulang menjadi judul topik yang singkat, profesional, dan jelas (sebagai nama node Level 0 / root).
+
+        Buatlah peta jalan (roadmap) belajar terstruktur untuk topik yang telah diformulasikan ulang tersebut. Hasilkan dalam format JSON yang valid dengan satu node akar (root, yang "name"-nya adalah topik yang telah diformulasikan tersebut) dan beberapa sub-topik utama sebagai anaknya secara dinamis. Tentukan sendiri jumlah sub-topik utama yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas topik tersebut. Berikan deskripsi yang singkat namun jelas (maksimal 10 kata) untuk tiap node. 
  
-        Selain itu, buat juga penjelasan/artikel pengantar yang mendalam untuk topik utama "${topic}" tersebut (layer 0) dalam format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik. Jika terdapat sub-list, gunakan indentasi 2 atau 4 spasi). GAYA PENULISAN: ${styleInstruction}. Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
+        Selain itu, buat juga penjelasan/artikel pengantar yang mendalam untuk topik yang telah diformulasikan ulang tersebut (layer 0) dalam format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik. Jika terdapat sub-list, gunakan indentasi 2 atau 4 spasi). GAYA PENULISAN: ${styleInstruction}. Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
 
         Struktur JSON harus persis seperti ini:
         {
-          "name": "${topic}",
+          "name": "Nama Topik Singkat Hasil Formulasi Ulang berdasarkan Maksud Pengguna",
           "description": "Deskripsi singkat topik ini",
           "explanation": "Isi penjelasan lengkap dalam format Markdown di sini untuk topik utama...",
           "children": [
@@ -888,7 +930,10 @@ async function handleChatSubmit(e) {
 
         const result = await callRouterAI(prompt);
         removeThinkingIndicator();
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+            stopLoadingTrivia();
+        }
 
         if (result && result.name) {
             // Set ID untuk node agar D3 dapat mengontrol transisi
@@ -946,7 +991,10 @@ async function handleChatSubmit(e) {
     } catch (error) {
         removeThinkingIndicator();
         const loadingOverlay = document.getElementById('mindmap-loading-overlay');
-        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+            stopLoadingTrivia();
+        }
         console.error('Initial generation error:', error);
         const msg = state.language === 'en'
             ? `Sorry, I had trouble creating a mindmap for that topic. Error: *${error.message}*. Please try again!`
@@ -1017,7 +1065,46 @@ function openDetailDrawer(title) {
     drawer.classList.add('open');
 }
 
+let drawerLoadingTriviaInterval = null;
+
+function startDrawerLoadingTrivia() {
+    const triviaContainer = document.getElementById('drawer-loading-trivia-container');
+    const triviaText = document.getElementById('drawer-loading-trivia-text');
+    if (!triviaContainer || !triviaText) return;
+
+    // Set first trivia immediately
+    triviaText.textContent = typeof getRandomTrivia === 'function' ? getRandomTrivia(state.language) : "Loading mind hack...";
+
+    // Hentikan interval lama jika ada
+    if (drawerLoadingTriviaInterval) clearInterval(drawerLoadingTriviaInterval);
+
+    // Ganti trivia setiap 10 detik
+    drawerLoadingTriviaInterval = setInterval(() => {
+        if (!document.getElementById('drawer-loading-trivia-text')) {
+            // Jika element sudah hilang dari DOM (karena render selesai), stop interval!
+            stopDrawerLoadingTrivia();
+            return;
+        }
+        triviaText.style.opacity = 0;
+        setTimeout(() => {
+            const el = document.getElementById('drawer-loading-trivia-text');
+            if (el) {
+                el.textContent = typeof getRandomTrivia === 'function' ? getRandomTrivia(state.language) : "Loading...";
+                el.style.opacity = 1;
+            }
+        }, 300);
+    }, 10000);
+}
+
+function stopDrawerLoadingTrivia() {
+    if (drawerLoadingTriviaInterval) {
+        clearInterval(drawerLoadingTriviaInterval);
+        drawerLoadingTriviaInterval = null;
+    }
+}
+
 function closeDetailDrawer() {
+    stopDrawerLoadingTrivia();
     const drawer = document.getElementById('detail-drawer');
     if (!drawer) return;
     const qaCol = document.getElementById('drawer-col-qa');
@@ -1048,21 +1135,38 @@ function renderDrawerLoading(title) {
         ? `Exploring the rabbit hole for <strong>${title}</strong>... <br>Preparing deep theoretical summary & new subtopics.<br><span style="font-size:0.75rem; opacity:0.75; margin-top:0.25rem; display:block;">(this usually takes about 30 seconds)</span>`
         : `Menggali rabbit hole untuk <strong>${title}</strong>... <br>Mempersiapkan rangkuman teori mendalam & sub-topik baru.<br><span style="font-size:0.75rem; opacity:0.75; margin-top:0.25rem; display:block;">(ini biasanya membutuhkan waktu sekitar 30 detik)</span>`;
     content.innerHTML = `
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 0; gap:1rem;">
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 0; gap:1.25rem;">
             <div class="typing-dots">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
-            <p style="font-size:0.88rem; color:var(--text-muted); text-align:center; line-height:1.45;">${loadingText}</p>
+            <p style="font-size:0.88rem; color:var(--text-muted); text-align:center; line-height:1.45; margin-bottom: 0.5rem;">${loadingText}</p>
+            
+            <!-- Side Drawer Loading Trivia Box -->
+            <div class="loading-trivia-container" id="drawer-loading-trivia-container" style="max-width: 450px; width: 100%; text-align: center; padding: 1rem 1.5rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow-sm);">
+                <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <i data-lucide="lightbulb" style="width: 12px; height: 12px;"></i> Brain Hack / Trivia
+                </div>
+                <p id="drawer-loading-trivia-text" style="font-size: 0.78rem; color: var(--text-2); line-height: 1.45; margin: 0; font-style: italic; transition: opacity 0.3s ease; opacity: 1;">
+                    Loading mind hack...
+                </p>
+            </div>
         </div>
     `;
     const qaList = document.getElementById('qa-messages-list');
     const qaLoadingText = state.language === 'en' ? 'Loading material...' : 'Sedang memuat materi...';
     if (qaList) qaList.innerHTML = `<div style="font-size:0.78rem; color:var(--text-3); text-align:center; padding:1.25rem 0;">${qaLoadingText}</div>`;
+
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+
+    startDrawerLoadingTrivia();
 }
 
 function renderDrawerError(title, errorMsg) {
+    stopDrawerLoadingTrivia();
     const content = document.getElementById('drawer-markdown-content');
     if (!content) return;
     const errorTitle = state.language === 'en' ? 'An Error Occurred!' : 'Terjadi Kesalahan!';
@@ -1079,6 +1183,7 @@ function renderDrawerError(title, errorMsg) {
 }
 
 function renderNodeDetail(title, markdownText) {
+    stopDrawerLoadingTrivia();
     const content = document.getElementById('drawer-markdown-content');
     if (!content) return;
     // Gunakan marked.js untuk merender Markdown ke HTML
@@ -1394,32 +1499,22 @@ Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) deng
    ========================================================================== */
 function toggleDrawerQa() {
     const qaCol = document.getElementById('drawer-col-qa');
-    const drawer = document.getElementById('detail-drawer');
     const toggleBtn = document.getElementById('btn-toggle-drawer-qa');
-    if (!qaCol || !drawer || !toggleBtn || !state.activeNode) return;
+    if (!qaCol || !toggleBtn || !state.activeNode) return;
 
     const isCollapsed = qaCol.classList.contains('collapsed');
-    const baseWidth = 780; // Default drawer width
 
     if (isCollapsed) {
-        // Buka panel Q&A ke samping
+        // Buka panel Q&A ke samping sebagai card terpisah
         qaCol.classList.remove('collapsed');
         toggleBtn.classList.add('active');
-        
-        // Lebarkan drawer: ambil lebar saat ini dan tambah 440px (kolom Q&A)
-        const currentWidth = drawer.offsetWidth;
-        drawer.style.width = `${currentWidth + 440}px`;
         
         // Render Q&A khusus node aktif
         renderNodeQa(state.activeNode.name);
     } else {
-        // Tutup panel Q&A ke samping
+        // Tutup panel Q&A
         qaCol.classList.add('collapsed');
         toggleBtn.classList.remove('active');
-        
-        // Kembalikan lebar drawer asal (kurangi 440px)
-        const currentWidth = drawer.offsetWidth;
-        drawer.style.width = `${Math.max(currentWidth - 440, baseWidth)}px`;
     }
 }
 
@@ -2548,13 +2643,13 @@ function addHighlight(color) {
     cache.highlights.push(newHl);
     saveState();
     
-    // Re-render to apply immediately
-    renderNodeDetail(nodeName, cache.explanation);
-    
-    // Hapus selection & sembunyikan toolbar
+    // Hapus selection & sembunyikan toolbar sebelum render ulang menghapus node DOM
     const toolbar = document.getElementById('highlight-toolbar');
     if (toolbar) toolbar.classList.add('hidden');
     selection.removeAllRanges();
+    
+    // Re-render to apply immediately
+    renderNodeDetail(nodeName, cache.explanation);
 }
 
 function addHighlightWithNote() {
@@ -2582,11 +2677,12 @@ function addHighlightWithNote() {
     cache.highlights.push(newHl);
     saveState();
     
-    renderNodeDetail(nodeName, cache.explanation);
-    
+    // Hapus selection & sembunyikan toolbar sebelum render ulang menghapus node DOM
     const toolbar = document.getElementById('highlight-toolbar');
     if (toolbar) toolbar.classList.add('hidden');
     selection.removeAllRanges();
+    
+    renderNodeDetail(nodeName, cache.explanation);
     
     // Langsung buka modal catatan
     setTimeout(() => {
