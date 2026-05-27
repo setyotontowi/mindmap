@@ -368,10 +368,32 @@ async function handleNodeClick(d3Node) {
 
     try {
         const rootTopicName = state.mindmapData.name;
+
+        // Cari gaya penulisan terpilih atau warisi dari parent/ancestor
+        let selectedStyle = 'auto';
+        let selectedSubStyle = 'auto';
+        let current = d3Node;
+        while (current) {
+            if (current.data && current.data.writingStyle && current.data.writingStyle !== 'auto') {
+                selectedStyle = current.data.writingStyle;
+                selectedSubStyle = current.data.writingSubStyle || 'auto';
+                break;
+            }
+            current = current.parent;
+        }
+
+        // Simpan gaya penulisan yang diwarisi/terpilih ini ke data node saat ini agar konsisten
+        d3Node.data.writingStyle = selectedStyle;
+        d3Node.data.writingSubStyle = selectedSubStyle;
+
+        const styleInstruction = (typeof getWritingStyleInstruction === 'function')
+            ? getWritingStyleInstruction(selectedStyle, selectedSubStyle)
+            : '';
+
         const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants to deep-dive into the subtopic "${nodeName}" (Description: "${nodeDesc}").
         
         Your tasks are:
-        1. Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
+        1. Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
         2. Generate several next, more specific subtopics/milestones under "${nodeName}" to dynamically expand their mindmap. Decide the most relevant number of subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the material. Do not make subtopics that are too generic.
 
         Return the result in JSON with exactly this format:
@@ -384,7 +406,7 @@ async function handleNodeClick(d3Node) {
         }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin melakukan deep-dive ke sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}").
         
         Tugasmu adalah:
-        1. Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
+        1. Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, dan blockquote yang menarik). GAYA PENULISAN: ${styleInstruction}. Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
         2. Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
 
         Kembalikan hasilnya dalam JSON dengan format persis seperti ini:

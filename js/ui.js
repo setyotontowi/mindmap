@@ -1,7 +1,272 @@
+const WRITING_STYLES = {
+    academic: {
+        name: { id: "Akademik (Scholarly)", en: "Scholarly" },
+        instruction: {
+            id: "Gunakan gaya penulisan Akademik (Scholarly) yang formal, terstruktur, berbasis bukti, objektif, dan menggunakan terminologi akademis yang tepat.",
+            en: "Use a formal, scholarly, evidence-based, objective, and well-structured academic writing style with precise terminology."
+        },
+        substyles: {
+            encyclopedic: {
+                name: { id: "Ensiklopedik", en: "Encyclopedic" },
+                instruction: {
+                    id: "Fokus pada penyajian informasi ensiklopedik dengan definisi ketat, klasifikasi taksonomi yang rapi, dan referensi silang antarkonsep yang komprehensif.",
+                    en: "Focus on presenting encyclopedic information with strict definitions, neat taxonomic classifications, and comprehensive cross-references between concepts."
+                }
+            },
+            argumentative: {
+                name: { id: "Argumentatif", en: "Argumentative" },
+                instruction: {
+                    id: "Fokus pada struktur argumentatif akademis yang jelas: sajikan tesis di awal, dukung dengan argumen logis dan bukti, kemukakan sanggahan (counter-arguments), dan akhiri dengan kesimpulan analitis.",
+                    en: "Focus on a clear academic argumentative structure: present a thesis first, support it with logical arguments and evidence, address counter-arguments, and end with an analytical conclusion."
+                }
+            },
+            comparative: {
+                name: { id: "Komparatif", en: "Comparative" },
+                instruction: {
+                    id: "Fokus pada analisis komparatif sistematis dengan membandingkan dua atau lebih teori, perspektif, model, atau pendekatan secara objektif, menyoroti persamaan, perbedaan, dan sintesisnya.",
+                    en: "Focus on a systematic comparative analysis by objectively comparing two or more theories, perspectives, models, or approaches, highlighting their similarities, differences, and synthesis."
+                }
+            }
+        }
+    },
+    technical: {
+        name: { id: "Teknis (Technical)", en: "Technical" },
+        instruction: {
+            id: "Gunakan gaya penulisan Teknis yang dense, sangat presisi, to-the-point, kaya akan detail teknis, dan dilengkapi contoh kode atau perbandingan spesifikasi konkret.",
+            en: "Use a dense, highly precise, to-the-point technical writing style rich in technical details, specifications, and concrete code examples where appropriate."
+        },
+        substyles: {
+            tutorial: {
+                name: { id: "Tutorial Step-by-Step", en: "Step-by-Step Tutorial" },
+                instruction: {
+                    id: "Format penjelasan sebagai tutorial langkah-demi-langkah (step-by-step) yang terurut dengan instruksi praktis yang jelas, potongan kode/perintah, dan penjelasan output yang diharapkan di tiap langkah.",
+                    en: "Format the explanation as a clear, ordered step-by-step tutorial with practical instructions, code snippets/commands, and explanation of expected output at each step."
+                }
+            },
+            deep_internals: {
+                name: { id: "Deep Internals", en: "Deep Internals" },
+                instruction: {
+                    id: "Fokus mendalam pada mekanisme internal (under the hood/behind the scenes). Jelaskan arsitektur tingkat rendah, alokasi memori, protokol komunikasi, atau detail sistem dalam yang jarang dibahas.",
+                    en: "Focus deeply on internal mechanisms (under the hood/behind the scenes). Explain low-level architecture, memory allocation, communication protocols, or deep system details."
+                }
+            },
+            best_practices: {
+                name: { id: "Best Practices & Pitfalls", en: "Best Practices & Pitfalls" },
+                instruction: {
+                    id: "Tekankan pada praktik terbaik (best practices) dan jebakan umum (pitfalls). Sajikan daftar do's and don'ts, kesalahan umum pembelajar, kompromi desain (trade-offs), serta cara mitigasi masalah.",
+                    en: "Emphasize best practices and common pitfalls. Provide a list of do's and don'ts, common mistakes, trade-offs, and how to mitigate issues."
+                }
+            }
+        }
+    },
+    casual: {
+        name: { id: "Santai (Casual)", en: "Casual" },
+        instruction: {
+            id: "Gunakan gaya penulisan Santai (Casual) layaknya mengobrol akrab dengan teman yang cerdas. Gunakan bahasa yang ringan, humor tipis jika cocok, dan jauhkan dari kesan kaku.",
+            en: "Use a warm, casual, conversational writing style like talking with a smart friend. Use friendly language, light humor if appropriate, and avoid stiff jargon."
+        },
+        substyles: {
+            conversational: {
+                name: { id: "Ngobrol Langsung", en: "Direct Chat" },
+                instruction: {
+                    id: "Gunakan gaya 'kamu pasti pernah ngerasain ini...' — sangat percakapan (conversational), interaktif, menggunakan kata ganti orang pertama/kedua secara langsung untuk membangun relasi pembaca.",
+                    en: "Use a highly conversational style like 'you've probably felt this...' — interactive, directly using first/second person pronouns to build rapport with the reader."
+                }
+            },
+            creative_analogy: {
+                name: { id: "Analogi Kreatif", en: "Creative Analogy" },
+                instruction: {
+                    id: "Jelaskan konsep-konsep abstrak atau kompleks dengan menggunakan analogi kehidupan sehari-hari yang unik, kreatif, tidak biasa, namun sangat mudah dipahami.",
+                    en: "Explain abstract or complex concepts using daily-life analogies that are unique, creative, unusual, yet highly memorable and easy to understand."
+                }
+            },
+            faq: {
+                name: { id: "FAQ Style", en: "FAQ Style" },
+                instruction: {
+                    id: "Format penjelasan menggunakan gaya FAQ (Tanya-Jawab) yang menjawab secara tuntas pertanyaan-pertanyaan yang paling sering muncul secara spontan di kepala pembaca mengenai topik ini.",
+                    en: "Format the explanation using an FAQ (Q&A) style, addressing and thoroughly answering the most common questions that spontaneously arise in the reader's mind about this topic."
+                }
+            }
+        }
+    },
+    narrative: {
+        name: { id: "Naratif (Storytelling)", en: "Storytelling" },
+        instruction: {
+            id: "Gunakan gaya penulisan Naratif (Storytelling). Rangkai penjelasan dalam alur cerita non-fiksi kreatif yang mengalir, kaya deskripsi, dramatis, dan memikat.",
+            en: "Use a narrative (storytelling) writing style. Weave the explanations into a flowing, descriptive, dramatic, and highly engaging creative non-fiction story."
+        },
+        substyles: {
+            biography: {
+                name: { id: "Biografi / Tokoh", en: "Biography & Figures" },
+                instruction: {
+                    id: "Awali dan bingkai penjelasan dengan kisah biografi tokoh penemu atau ilmuwan penting yang relevan dengan topik ini, memperlihatkan perjuangan dan momen eureka mereka.",
+                    en: "Begin and frame the explanation with the biographical story of a key pioneer, inventor, or historical figure relevant to the topic, highlighting their struggle and eureka moment."
+                }
+            },
+            historical: {
+                name: { id: "Kejadian Bersejarah", en: "Historical Event" },
+                instruction: {
+                    id: "Gunakan momen kritis atau kejadian bersejarah dramatis di masa lalu sebagai pintu masuk utama untuk menjelaskan bagaimana konsep ini lahir dan mengubah jalannya sejarah.",
+                    en: "Use a critical moment or dramatic historical event in the past as the main entry point to explain how this concept was born and changed the course of history."
+                }
+            },
+            fiction_analogy: {
+                name: { id: "Fiksi Analogi", en: "Analogy Fiction" },
+                instruction: {
+                    id: "Gunakan skenario fiktif pendek (misal: penjelajah luar angkasa, dunia mikroba, atau kerajaan kuno) untuk mempersonifikasi konsep abstrak dan menjadikannya petualangan seru.",
+                    en: "Use a short fictional scenario (e.g., space explorers, microbial worlds, or ancient kingdoms) to personify abstract concepts and turn them into an exciting adventure."
+                }
+            }
+        }
+    },
+    analytical: {
+        name: { id: "Analitik (Analytical)", en: "Analytical" },
+        instruction: {
+            id: "Gunakan gaya penulisan Analitik yang berfokus mendalam pada hubungan sebab-akibat (why & how), pengenalan pola, pemikiran kritis, dan argumen terstruktur.",
+            en: "Use an analytical writing style focused deeply on cause-and-effect relationships (why and how), pattern recognition, critical thinking, and structured arguments."
+        },
+        substyles: {
+            framework: {
+                name: { id: "Framework Thinking", en: "Framework Thinking" },
+                instruction: {
+                    id: "Sajikan konsep sebagai kerangka berpikir (framework) praktis yang sistematis dan siap diaplikasikan pengguna untuk memecahkan masalah nyata.",
+                    en: "Present the concept as a practical, systematic thinking framework that the reader can immediately apply to solve real-world problems."
+                }
+            },
+            data_driven: {
+                name: { id: "Data-Driven", en: "Data-Driven" },
+                instruction: {
+                    id: "Gunakan pendekatan data-driven dengan banyak mengacu pada angka, statistik, visualisasi data imajiner, tren empiris, dan riset ilmiah pendukung.",
+                    en: "Use a data-driven approach, heavily referencing figures, statistics, empirical trends, and supporting scientific research."
+                }
+            },
+            first_principles: {
+                name: { id: "First Principles", en: "First Principles" },
+                instruction: {
+                    id: "Gunakan pemikiran First Principles: urai konsep rumit sampai ke asumsi fundamental paling mendasar yang tidak bisa dibantah, lalu bangun argumen kembali ke atas langkah demi langkah.",
+                    en: "Use First Principles thinking: break down complex concepts to the most fundamental, undeniable truth/assumptions, then rebuild the arguments upwards step-by-step."
+                }
+            }
+        }
+    },
+    provocateur: {
+        name: { id: "Provokatif (Provocateur)", en: "Provocateur" },
+        instruction: {
+            id: "Gunakan gaya penulisan Provokatif yang menantang asumsi umum secara sengaja. Mulai dengan pernyataan kontra-intuitif yang mengejutkan, dan gunakan nada berenergi ala Freakonomics.",
+            en: "Use a provocative, mind-opening writing style that intentionally challenges common assumptions. Start with a surprising, counter-intuitive hook, and use a high-energy tone."
+        },
+        substyles: {
+            myth_buster: {
+                name: { id: "Myth Buster", en: "Myth Buster" },
+                instruction: {
+                    id: "Fokus pada pembongkaran mitos besar atau kesalahpahaman umum yang dipercaya publik mengenai topik ini, menyajikan bukti-bukti telak yang mematahkan mitos tersebut.",
+                    en: "Focus on debunking a major myth or common misconception believed by the public about this topic, presenting solid evidence that shatters the myth."
+                }
+            },
+            devils_delegate: {
+                name: { id: "Devil's Advocate", en: "Devil's Advocate" },
+                instruction: {
+                    id: "Ambil peran sebagai Devil's Advocate: bela argumen atau sudut pandang yang sangat tidak populer namun memiliki dasar rasional yang kuat, memaksa pengguna berpikir di luar kotak.",
+                    en: "Play the role of Devil's Advocate: argue for a highly unpopular perspective or counter-argument that has a strong rational basis, forcing the reader to think outside the box."
+                }
+            },
+            reframing: {
+                name: { id: "Reframing", en: "Reframing" },
+                instruction: {
+                    id: "Lakukan Reframing: ubah secara radikal cara pandang pembaca terhadap konsep atau fenomena yang sudah dianggap sangat familiar, membuka sisi pandang baru yang mengejutkan.",
+                    en: "Perform Reframing: radically change how the reader perceives a very familiar concept or phenomenon, opening up a surprising and fresh perspective."
+                }
+            }
+        }
+    }
+};
+
+function updateSubStyleDropdown(styleSelectId, substyleSelectId, selectedSubStyle = 'auto') {
+    const styleSelect = document.getElementById(styleSelectId);
+    const substyleSelect = document.getElementById(substyleSelectId);
+    if (!styleSelect || !substyleSelect) return;
+    
+    const selectedStyle = styleSelect.value;
+    substyleSelect.innerHTML = '';
+    
+    // Add Auto/Semua Sub-Gaya option
+    const autoOpt = document.createElement('option');
+    autoOpt.value = 'auto';
+    autoOpt.textContent = state.language === 'en' ? '🔮 All Sub-Styles' : '🔮 Semua Sub-Gaya';
+    if (selectedSubStyle === 'auto') autoOpt.selected = true;
+    substyleSelect.appendChild(autoOpt);
+    
+    if (selectedStyle !== 'auto' && WRITING_STYLES[selectedStyle]) {
+        const substyles = WRITING_STYLES[selectedStyle].substyles;
+        for (const [key, value] of Object.entries(substyles)) {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = state.language === 'en' ? value.name.en : value.name.id;
+            if (key === selectedSubStyle) opt.selected = true;
+            substyleSelect.appendChild(opt);
+        }
+    }
+}
+
+function saveNodeStylePreference() {
+    if (!state.activeNode) return;
+    const styleSelect = document.getElementById('drawer-style-select');
+    const substyleSelect = document.getElementById('drawer-substyle-select');
+    if (styleSelect && substyleSelect) {
+        state.activeNode.writingStyle = styleSelect.value;
+        state.activeNode.writingSubStyle = substyleSelect.value;
+        saveState();
+    }
+}
+
+function getWritingStyleInstruction(style, substyle) {
+    if (!style || style === 'auto') {
+        if (state.language === 'en') {
+            return `Auto-detect the domain/domain area of the topic, then dynamically adapt the article's writing style to one of the following category blends that maximizes reader comprehension: Scholarly (precise, taxonomy), Technical (dense, code, step-by-step), Casual (friendly, conversational, everyday analogies), Storytelling (rich narrative, historical backdrop), Analytical (first principles, frameworks, statistical patterns), or Provocateur (shattering common myths, counter-intuitive arguments). Do not state that you did this.`;
+        } else {
+            return `Secara otomatis deteksi bidang/ranah dari topik ini, lalu adaptasikan gaya penulisan artikel secara dinamis menggunakan salah satu dari kategori berikut yang paling memaksimalkan pemahaman pembaca: Akademik (presisi, taksonomi), Teknis (padat, contoh kode, tutorial), Santai (conversational, ramah, analogi sehari-hari), Naratif (kaya cerita, latar belakang sejarah), Analitis (first principles, kerangka berpikir, pola statistik), atau Provokatif (membongkar mitos, argumen kontra-intuitif). Jangan sebutkan bahwa Anda melakukan penyesuaian ini secara eksplisit.`;
+        }
+    }
+
+    const styleData = WRITING_STYLES[style];
+    if (!styleData) return '';
+
+    let instr = state.language === 'en' ? styleData.instruction.en : styleData.instruction.id;
+
+    if (substyle && substyle !== 'auto' && styleData.substyles[substyle]) {
+        const substyleData = styleData.substyles[substyle];
+        const substyleInstr = state.language === 'en' ? substyleData.instruction.en : substyleData.instruction.id;
+        instr += " " + substyleInstr;
+    }
+
+    return instr;
+}
+
 function initUIEventListeners() {
     // 1. Form Chat
     const chatForm = document.getElementById('chat-form');
     if (chatForm) chatForm.addEventListener('submit', handleChatSubmit);
+
+    // 1c. Writing Style Event Listeners
+    const drawerStyleSelect = document.getElementById('drawer-style-select');
+    const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');
+    if (drawerStyleSelect && drawerSubstyleSelect) {
+        drawerStyleSelect.addEventListener('change', () => {
+            updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', 'auto');
+            saveNodeStylePreference();
+        });
+        drawerSubstyleSelect.addEventListener('change', () => {
+            saveNodeStylePreference();
+        });
+    }
+
+    const regenStyleSelect = document.getElementById('regenerate-style-select');
+    const regenSubstyleSelect = document.getElementById('regenerate-substyle-select');
+    if (regenStyleSelect && regenSubstyleSelect) {
+        regenStyleSelect.addEventListener('change', () => {
+            updateSubStyleDropdown('regenerate-style-select', 'regenerate-substyle-select', 'auto');
+        });
+    }
 
     // 1b. Node Search
     const nodeSearchInput = document.getElementById('mindmap-node-search');
@@ -555,9 +820,10 @@ async function handleChatSubmit(e) {
     if (hintText) hintText.classList.add('hidden');
 
     try {
+        const styleInstruction = getWritingStyleInstruction('auto', 'auto');
         const prompt = state.language === 'en' ? `Create a structured learning roadmap for the topic: "${topic}". Generate valid JSON format with a single root node and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
  
-        Additionally, create an in-depth introductory explanation/article for the main topic "${topic}" (layer 0) in rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
+        Additionally, create an in-depth introductory explanation/article for the main topic "${topic}" (layer 0) in rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
 
         The JSON structure must be exactly like this:
         {
@@ -570,7 +836,7 @@ async function handleChatSubmit(e) {
           ]
         }` : `Buatlah peta jalan (roadmap) belajar terstruktur untuk topik: "${topic}". Hasilkan dalam format JSON yang valid dengan satu node akar (root) dan beberapa sub-topik utama sebagai anaknya secara dinamis. Tentukan sendiri jumlah sub-topik utama yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas topik tersebut. Berikan deskripsi yang singkat namun jelas (maksimal 10 kata) untuk tiap node. 
  
-        Selain itu, buat juga penjelasan/artikel pengantar yang mendalam untuk topik utama "${topic}" tersebut (layer 0) dalam format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik. Jika terdapat sub-list, gunakan indentasi 2 atau 4 spasi). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
+        Selain itu, buat juga penjelasan/artikel pengantar yang mendalam untuk topik utama "${topic}" tersebut (layer 0) dalam format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik. Jika terdapat sub-list, gunakan indentasi 2 atau 4 spasi). GAYA PENULISAN: ${styleInstruction}. Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
 
         Struktur JSON harus persis seperti ini:
         {
@@ -686,6 +952,19 @@ function openDetailDrawer(title) {
     
     // Setup status tombol belajar aktif
     updateDrawerStatusSelector(title);
+
+    // Setup writing style selectors
+    const drawerStyleSelect = document.getElementById('drawer-style-select');
+    const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');
+    if (drawerStyleSelect && drawerSubstyleSelect) {
+        if (state.activeNode) {
+            drawerStyleSelect.value = state.activeNode.writingStyle || 'auto';
+            updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', state.activeNode.writingSubStyle || 'auto');
+        } else {
+            drawerStyleSelect.value = 'auto';
+            updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', 'auto');
+        }
+    }
 
     // Update UI based on ownership
     updateOwnerUI();
@@ -1609,6 +1888,15 @@ function openRegenerateNodeModal() {
     const promptInput = document.getElementById('regenerate-custom-prompt');
     if (displayEl) displayEl.innerText = state.activeNode.name;
     if (promptInput) promptInput.value = '';
+
+    // Pre-populate style selectors in regenerate modal
+    const styleSelect = document.getElementById('regenerate-style-select');
+    const substyleSelect = document.getElementById('regenerate-substyle-select');
+    if (styleSelect && substyleSelect) {
+        styleSelect.value = state.activeNode.writingStyle || 'auto';
+        updateSubStyleDropdown('regenerate-style-select', 'regenerate-substyle-select', state.activeNode.writingSubStyle || 'auto');
+    }
+
     if (modal) modal.classList.add('open');
 }
 
@@ -1638,6 +1926,26 @@ async function submitRegenerateNode(e) {
         if (r.checked) scope = r.value;
     }
 
+    // Ambil opsi gaya penulisan terpilih dari modal
+    const regenStyleSelect = document.getElementById('regenerate-style-select');
+    const regenSubstyleSelect = document.getElementById('regenerate-substyle-select');
+    const selectedStyle = regenStyleSelect ? regenStyleSelect.value : 'auto';
+    const selectedSubStyle = regenSubstyleSelect ? regenSubstyleSelect.value : 'auto';
+
+    // Simpan pilihan gaya penulisan ini ke state node
+    state.activeNode.writingStyle = selectedStyle;
+    state.activeNode.writingSubStyle = selectedSubStyle;
+    
+    // Sinkronkan ke dropdown detail drawer agar sama/sinkron
+    const drawerStyleSelect = document.getElementById('drawer-style-select');
+    const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');
+    if (drawerStyleSelect && drawerSubstyleSelect) {
+        drawerStyleSelect.value = selectedStyle;
+        updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', selectedSubStyle);
+    }
+
+    const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle);
+
     closeRegenerateNodeModal();
 
     // 1. Tampilkan loading di drawer dan canvas
@@ -1660,7 +1968,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
             
             Your task is:
-            Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
+            Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
             
             Return the result in JSON with exactly this format:
             {
@@ -1670,7 +1978,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
             
             Tugasmu adalah:
-            Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
+            Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). GAYA PENULISAN: ${styleInstruction}. Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
             
             Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
             {
@@ -1695,7 +2003,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
             
             Your tasks are:
-            1. Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes). The article's tone should be a unique blend of Wikipedia (highly informative, structured, factual), Medium (engaging, narrative-driven, analogy-rich), and Substack (thought-provoking, analytical, opening new blindspots). Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
+            1. Create an in-depth explanation/material in English using rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
             2. Generate several next, more specific subtopics/milestones under "${nodeName}" to dynamically expand their mindmap. Decide the most relevant number of subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the material. Do not make subtopics that are too generic.
     
             Return the result in JSON with exactly this format:
@@ -1709,7 +2017,7 @@ async function submitRegenerateNode(e) {
             ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
             
             Tugasmu adalah:
-            1. Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). Gunakan "tone" gaya penulisan yang merupakan gabungan antara Wikipedia (sangat informatif, terstruktur, faktual), Medium (menarik, mengalir, kaya narasi), dan Substack (analitis, membuka perspektif/blindspot baru). Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
+            1. Buat penjelasan materi yang mendalam dalam Bahasa Indonesia menggunakan format Markdown yang kaya (gunakan judul h3 kecil, list, contoh/analogi, dan blockquote yang menarik). GAYA PENULISAN: ${styleInstruction}. Buka dengan cerita pengantar atau narasi pembuka yang menarik jika relevan (jangan dipaksakan jika tidak cocok). Fokuslah untuk membuka "blindspot" baru (aspek mendalam, pemahaman yang kontra-intuitif, atau hal penting yang jarang disadari pembelajar). Tulis penjelasan secara padat, kaya informasi, dan batasi panjang penjelasan maksimal sekitar 800-1000 kata agar tidak terpotong.
             2. Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
     
             Kembalikan hasilnya dalam JSON dengan format persis seperti ini:

@@ -232,7 +232,25 @@
                     <div class="detail-modal-body-wrapper" style="display: flex; height: calc(100% - 60px - 56px); overflow: hidden; position: relative;">
                         <!-- Article Content Column -->
                         <div class="drawer-col-materi" style="flex: 1; overflow-y: auto; padding: 2rem 2.5rem; background: var(--bg);">
-                            <div class="article-category" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 0.75rem;">ARTICLE DEEP-DIVE</div>
+                            <div class="article-category" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                                <span>ARTICLE DEEP-DIVE</span>
+                                <div class="style-selector-wrap" style="display: inline-flex; align-items: center; gap: 6px; background: var(--bg-subtle); padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                    <i data-lucide="pen-tool" style="width: 11px; height: 11px; color: var(--accent);"></i>
+                                    <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-2);">Gaya:</span>
+                                    <select id="drawer-style-select" style="font-size: 0.68rem; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
+                                        <option value="auto">Otomatis (Auto)</option>
+                                        <option value="academic">Akademik (Scholarly)</option>
+                                        <option value="technical">Teknis (Technical)</option>
+                                        <option value="casual">Santai (Casual)</option>
+                                        <option value="narrative">Naratif (Storytelling)</option>
+                                        <option value="analytical">Analitik (Analytical)</option>
+                                        <option value="provocateur">Provocateur</option>
+                                    </select>
+                                    <select id="drawer-substyle-select" style="font-size: 0.68rem; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
+                                        <option value="auto">Semua Sub-Gaya</option>
+                                    </select>
+                                </div>
+                            </div>
                             <div id="drawer-markdown-content" class="markdown-body">
                                 Pilih salah satu node di halaman Mind Map untuk mulai membaca penjelasan materi secara mendalam.
                             </div>
@@ -554,7 +572,25 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 0.5rem;">
+                <div class="form-group" style="margin-top: 0.75rem;">
+                    <label style="font-weight: 600; margin-bottom: 0.25rem;">Gaya Penulisan (Writing Style):</label>
+                    <div style="display: flex; gap: 8px; margin-top: 5px;">
+                        <select id="regenerate-style-select" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
+                            <option value="auto">Otomatis (Auto)</option>
+                            <option value="academic">Akademik (Scholarly)</option>
+                            <option value="technical">Teknis (Technical)</option>
+                            <option value="casual">☕ Santai (Casual)</option>
+                            <option value="narrative">Naratif (Storytelling)</option>
+                            <option value="analytical">Analitik (Analytical)</option>
+                            <option value="provocateur">Provocateur</option>
+                        </select>
+                        <select id="regenerate-substyle-select" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
+                            <option value="auto">Semua Sub-Gaya</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 0.75rem;">
                     <label for="regenerate-custom-prompt" style="font-weight: 600;">Instruksi Eksplorasi Khusus (Opsional):</label>
                     <textarea id="regenerate-custom-prompt" placeholder="Misal: 'Ekspansi topik ini dengan fokus pada contoh kode Rust' atau 'Fokuskan sub-topik ke aspek efisiensi energi'" rows="3"></textarea>
                 </div>
