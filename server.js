@@ -355,7 +355,11 @@ app.post('/api/ai/completions', async (req, res) => {
             }
 
             const responseText = responseData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            
+            // Log usage details (Gemini 2.5 automatically handles implicit context caching)
+            const usage = responseData.usageMetadata || {};
             console.log(`[AI] Google Gemini API Completion Success. Response length: ${responseText?.length || 0} chars.`);
+            console.log(`[AI] Token Usage - Input: ${usage.promptTokenCount || 0}, Output: ${usage.candidatesTokenCount || 0}, Total: ${usage.totalTokenCount || 0}, Cached: ${usage.cachedContentTokenCount || 0}`);
 
             const mappedResponse = {
                 choices: [
@@ -396,7 +400,13 @@ app.post('/api/ai/completions', async (req, res) => {
                 messages: userMessages
             };
             if (systemInstructionText) {
-                anthropicPayload.system = systemInstructionText;
+                anthropicPayload.system = [
+                    {
+                        type: 'text',
+                        text: systemInstructionText,
+                        cache_control: { type: 'ephemeral' }
+                    }
+                ];
             }
 
             const response = await fetch(url, {
@@ -404,7 +414,8 @@ app.post('/api/ai/completions', async (req, res) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
+                    'anthropic-version': '2023-06-01',
+                    'anthropic-beta': 'prompt-caching-2024-07-31'
                 },
                 body: JSON.stringify(anthropicPayload)
             });
@@ -424,7 +435,11 @@ app.post('/api/ai/completions', async (req, res) => {
 
             const responseData = await response.json();
             const responseText = responseData.content?.[0]?.text || '';
+            
+            // Log caching usage details
+            const usage = responseData.usage || {};
             console.log(`[AI] Anthropic Claude API Completion Success. Response length: ${responseText?.length || 0} chars.`);
+            console.log(`[AI] Token Usage - Input: ${usage.input_tokens || 0}, Output: ${usage.output_tokens || 0}, Cache Creation: ${usage.cache_creation_input_tokens || 0}, Cache Read: ${usage.cache_read_input_tokens || 0}`);
 
             const mappedResponse = {
                 choices: [

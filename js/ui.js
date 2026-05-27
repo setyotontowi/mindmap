@@ -1,16 +1,16 @@
 const ANTI_AI_SLOP_INSTRUCTION = {
     en: `
 CRITICAL WRITING DIRECTIVES (ANTI-AI SLOP ENGINE):
-1. STRICT BAN ON AI CLICHÉS. You are strictly forbidden from using these words: 'delve', 'testament', 'tapestry', 'furthermore', 'moreover', 'in conclusion', 'crucial', 'vital', 'not only... but also', 'let\\'s embark', 'unlock', 'journey', 'dynamic', 'beacon', 'realm', 'revolutionize', 'pave the way', 'demystify', 'treasure trove', 'blueprint'.
+1. STRICT BAN ON AI CLICHÉS. You are strictly forbidden from using these words: 'delve', 'testament', 'tapestry', 'furthermore', 'moreover', 'in conclusion', 'crucial', 'vital', 'not only... but also', 'let\\'s embark', 'unlock', 'journey', 'dynamic', 'beacon', 'realm', 'revolutionize', 'pave the way', 'demystify', 'treasure trove', 'blueprint', 'imagine'.
 2. ACTIVE VOICE & DIRECTNESS. Avoid excessive passive voice. Write with high-impact, active verbs. Do not use verbose filler phrases.
-3. NO CLICHÉ INTROS OR OUTROS. Never open with phrases like 'In the fast-paced world of...', 'Since the dawn of time...', 'In today\\'s digital age...', or similar boilerplate text. Get straight to the point in the first sentence. Do not summarize in the end with a boring 'In summary' or 'In conclusion' section.
+3. NO CLICHÉ INTROS OR OUTROS. Never open with 'Imagine...' or phrases like 'In the fast-paced world of...', 'Since the dawn of time...', 'In today\\'s digital age...', or similar boilerplate text. Get straight to the point in the first sentence. Do not summarize in the end with a boring 'In summary' or 'In conclusion' section.
 4. HUMAN-LIKE FLOW. Write naturally, as a highly skilled domain expert, with varying sentence lengths. Be concise, punchy, and highly informative.
 `,
     id: `
 PETUNJUK PENULISAN KRITIS (ANTI-AI SLOP ENGINE):
-1. LARANGAN KERAS KATA KLISE AI. Anda dilarang keras menggunakan kata-kata klise khas AI seperti: 'delve', 'testament', 'tapestry', 'furthermore', 'moreover', 'in conclusion' (kesimpulannya), 'crucial' (krusial), 'vital', 'not only... but also' (tidak hanya... tetapi juga), 'let\\'s embark' (mari kita memulai), 'unlock' (membuka kunci), 'journey' (perjalanan), 'dynamic' (dinamis), 'beacon', 'realm' (ranah/alam), 'revolutionize' (merevolusi), 'pave the way' (merintis jalan), 'demystify', 'treasure trove' (harta karun), 'blueprint' (cetak biru). Gunakan padanan kata Indonesia yang lebih alami dan segar.
+1. LARANGAN KERAS KATA KLISE AI. Anda dilarang keras menggunakan kata-kata klise khas AI seperti: 'delve', 'testament', 'tapestry', 'furthermore', 'moreover', 'in conclusion' (kesimpulannya), 'crucial' (krusial), 'vital', 'not only... but also' (tidak hanya... tetapi juga), 'let\\'s embark' (mari kita memulai), 'unlock' (membuka kunci), 'journey' (perjalanan), 'dynamic' (dinamis), 'beacon', 'realm' (ranah/alam), 'revolutionize' (merevolusi), 'pave the way' (merintis jalan), 'demystify', 'treasure trove' (harta karun), 'blueprint' (cetak biru), 'imagine' (bayangkan). Gunakan padanan kata Indonesia yang lebih alami dan segar.
 2. KALIMAT AKTIF & TO-THE-POINT. Batasi penggunaan kalimat pasif berlebihan. Utamakan kalimat aktif yang bertenaga dan langsung. Hindari frasa pengisi yang bertele-tele.
-3. HINDARI PEMBUKAAN/PENUTUP KLISE. Dilarang membuka artikel dengan gaya seperti 'Di dunia yang serba cepat saat ini...', 'Sejak zaman dahulu...', 'Di era digital ini...', atau kalimat templat membosankan lainnya. Langsung masuk ke poin utama sejak kalimat pertama. Jangan menutup artikel dengan bagian kesimpulan klise seperti 'Kesimpulannya...', 'Singkatnya...', atau ringkasan yang mengulang-ulang.
+3. HINDARI PEMBUKAAN/PENUTUP KLISE. Dilarang membuka artikel dengan kata 'Bayangkan...' ('Imagine...') atau gaya seperti 'Di dunia yang serba cepat saat ini...', 'Sejak zaman dahulu...', 'Di era digital ini...', atau kalimat templat membosankan lainnya. Langsung masuk ke poin utama sejak kalimat pertama. Jangan menutup artikel dengan bagian kesimpulan klise seperti 'Kesimpulannya...', 'Singkatnya...', atau ringkasan yang mengulang-ulang.
 4. ALIRAN GAYA MANUSIA. Menulislah secara alami layaknya seorang pakar ahli manusia yang sangat kompeten, dengan panjang kalimat yang bervariasi. Tulis secara padat, tajam, dan sarat informasi yang berharga.
 `
 };
@@ -374,6 +374,13 @@ function initUIEventListeners() {
     // 5. Drawer Close
     const btnCloseDrawer = document.getElementById('btn-close-drawer');
     if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeDetailDrawer);
+
+    const detailDrawerOverlay = document.getElementById('detail-drawer-overlay');
+    if (detailDrawerOverlay) {
+        detailDrawerOverlay.addEventListener('click', (e) => {
+            if (e.target === detailDrawerOverlay) closeDetailDrawer();
+        });
+    }
 
     // 6. Status Progress Click
     const statusBtns = document.querySelectorAll('.status-btn');
@@ -1056,6 +1063,14 @@ function openDetailDrawer(title) {
 
     // Update UI based on ownership
     updateOwnerUI();
+
+    // Tampilkan panel tanya jawab (Q&A) secara default
+    const qaCol = document.getElementById('drawer-col-qa');
+    const toggleBtn = document.getElementById('btn-toggle-drawer-qa');
+    if (qaCol && toggleBtn) {
+        qaCol.classList.remove('collapsed');
+        toggleBtn.classList.add('active');
+    }
 
     // Render Lucide icons if available
     if (window.lucide) {

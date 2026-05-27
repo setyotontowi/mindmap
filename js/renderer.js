@@ -455,21 +455,18 @@ async function handleNodeClick(d3Node) {
                         d3Node.data.children.push(sub);
                     }
                 });
-
-                // Update visualisasi mindmap & persist
-                updateMindmap(state.mindmapData);
-                saveState();
             }
 
-            // Render isi penjelasan ke drawer JIKA user sedang aktif membuka node ini atau tidak sedang membaca node lain
+            // Update visualisasi mindmap & persist (selalu jalankan untuk membersihkan spinner loading)
+            updateMindmap(state.mindmapData);
+            saveState();
+
+            // Render isi penjelasan ke drawer JIKA user saat ini sedang aktif membuka node ini dan drawer terbuka
+            const drawer = document.getElementById('detail-drawer');
+            const isDrawerOpen = drawer && drawer.classList.contains('open');
             const isCurrentlyActive = state.activeNode && (state.activeNode.name === nodeName || state.activeNode.id === d3Node.data.id);
-            if (isCurrentlyActive || !isReadingAnotherNode) {
-                // Pastikan node diaktifkan jika tidak sedang membaca node lain
-                if (!state.activeNode) {
-                    state.activeNode = d3Node.data;
-                    updateMindmap(state.mindmapData);
-                    openDetailDrawer(nodeName);
-                }
+
+            if (isDrawerOpen && isCurrentlyActive) {
                 renderNodeDetail(nodeName, result.explanation);
             }
 
@@ -495,9 +492,11 @@ async function handleNodeClick(d3Node) {
             : `Maaf, aku gagal menjelajahi rabbit hole untuk **${nodeName}**. Pesan error: *${error.message}*. Coba klik lagi nanti!`;
         appendChatMessage('bot', msg);
 
-        // Hanya render error ke drawer jika user sedang membuka node ini
+        // Hanya render error ke drawer jika user sedang membuka node ini dan drawer terbuka
+        const drawer = document.getElementById('detail-drawer');
+        const isDrawerOpen = drawer && drawer.classList.contains('open');
         const isCurrentlyActive = state.activeNode && (state.activeNode.name === nodeName || state.activeNode.id === d3Node.data.id);
-        if (isCurrentlyActive || !isReadingAnotherNode) {
+        if (isDrawerOpen && isCurrentlyActive) {
             renderDrawerError(nodeName, error.message);
         }
     }
