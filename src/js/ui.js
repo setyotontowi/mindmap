@@ -195,6 +195,22 @@ const WRITING_STYLES = {
                 }
             }
         }
+    },
+    leadership: {
+        name: { id: "Insightful Leadership", en: "Insightful Leadership" },
+        instruction: {
+            id: "Gunakan gaya penulisan Insightful Leadership yang menantang asumsi umum. Tulis dengan nada percakapan yang profesional tanpa jargon korporat. Fokus pada elemen manusia, psikologi, dan alasan 'mengapa' di balik sebuah perilaku.",
+            en: "Use an Insightful Leadership writing style that challenges common assumptions. Write in a professional, conversational tone without corporate jargon. Focus on the human element, psychology, and the 'why' behind behaviors."
+        },
+        substyles: {
+            contrarian_analogy: {
+                name: { id: "Contrarian Analogy", en: "Contrarian Analogy" },
+                instruction: {
+                    id: "Buka dengan analogi ilmiah atau sejarah yang unik, lalu hubungkan ke tema bisnis. Tantang kebijaksanaan konvensional sejak awal, dan gunakan subjudul tebal untuk mengurai konsep ke dalam konteks organisasi yang praktis.",
+                    en: "Open with a unique scientific or historical analogy, then connect it to a business theme. Challenge conventional wisdom early on, and use bold subheadings to unpack the concept into practical organizational contexts."
+                }
+            }
+        }
     }
 };
 
@@ -3670,3 +3686,19 @@ function renderRecentSearches() {
         window.lucide.createIcons();
     }
 }
+
+// Ekspos ke global window agar kompatibel dengan modul lain
+window.getRandomStyleAndSubstyle = getRandomStyleAndSubstyle;
+window.getWritingStyleInstruction = getWritingStyleInstruction;
+window.initUIEventListeners = initUIEventListeners;
+window.appendChatMessage = appendChatMessage;
+window.openDetailDrawer = openDetailDrawer;
+window.closeDetailDrawer = closeDetailDrawer;
+window.renderDrawerLoading = renderDrawerLoading;
+window.renderDrawerError = renderDrawerError;
+window.renderNodeDetail = renderNodeDetail;
+window.switchScreen = switchScreen;
+window.loadHistoryList = loadHistoryList;
+window.checkAuthStatus = checkAuthStatus;
+window.updateTableOfContents = updateTableOfContents;
+

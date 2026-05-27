@@ -594,3 +594,21 @@ function searchNode(query) {
         }
     }
 }
+
+// Ekspos ke global window agar kompatibel dengan modul lain
+window.initD3Canvas = initD3Canvas;
+window.updateMindmap = updateMindmap;
+window.zoomFit = zoomFit;
+window.zoomIn = zoomIn;
+window.zoomOut = zoomOut;
+window.searchNode = searchNode;
+window.handleNodeClick = handleNodeClick;
+
+// Ekspos rootNodeData getter/setter
+Object.defineProperty(window, 'rootNodeData', {
+    get: () => rootNodeData,
+    set: (v) => { rootNodeData = v; },
+    configurable: true
+});
+
+

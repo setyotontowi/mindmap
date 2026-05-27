@@ -93,3 +93,7 @@ async function callRouterAI(prompt, systemInstruction = null) {
     }
 }
 
+// Ekspos ke global window agar kompatibel dengan modul lain
+window.callRouterAI = callRouterAI;
+
+

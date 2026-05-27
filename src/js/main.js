@@ -1,7 +1,7 @@
 /* ==========================================================================
    INITIALIZATION & SETUP (ENTRY POINT)
    ========================================================================== */
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     // Inisialisasi tema
     if (typeof applyTheme === 'function') {
         applyTheme(state.theme);
@@ -42,4 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(zoomFit, 100);
         }
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+

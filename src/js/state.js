@@ -197,3 +197,12 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
         applyTheme('system');
     }
 });
+
+// Ekspos ke global window agar kompatibel dengan modul lain
+window.state = state;
+window.saveState = saveState;
+window.loadState = loadState;
+window.syncFromDatabase = syncFromDatabase;
+window.clearState = clearState;
+window.applyTheme = applyTheme;
+

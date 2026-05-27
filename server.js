@@ -31,7 +31,12 @@ const parseCookies = (cookieHeader) => {
 
 // Middleware
 app.use(express.json({ limit: '50mb' })); // Mendukung data berukuran besar (penjelasan AI & cache)
-app.use(express.static(__dirname)); // Sajikan frontend static files langsung dari root directory
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, 'dist')));
+} else {
+    app.use(express.static(__dirname));
+}
+
 
 // Global Logger Middleware
 app.use((req, res, next) => {

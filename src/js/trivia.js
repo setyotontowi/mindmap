@@ -161,3 +161,8 @@ function getRandomTrivia(lang = 'id') {
     const item = BRAIN_TRIVIA[randomIndex];
     return lang === 'en' ? item.en_text : item.id_text;
 }
+
+// Ekspos ke global window agar kompatibel dengan modul lain
+window.getRandomTrivia = getRandomTrivia;
+window.BRAIN_TRIVIA = BRAIN_TRIVIA;
+

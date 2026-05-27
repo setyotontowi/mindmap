@@ -1,24 +1,27 @@
-FROM node:20-slim
+# Stage 1: Build frontend
+FROM node:20-slim AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-# Set working directory
+# Stage 2: Production environment (hanya runtime, tanpa source code)
+FROM node:20-slim
 WORKDIR /app
 
-# Copy package files first for caching layers
+# Hanya copy yang dibutuhkan runtime: dependencies, server, frontend, dan static assets
 COPY package*.json ./
-
-# Install production dependencies
 RUN npm ci --omit=dev
 
-# Copy the rest of the application files
-COPY . .
+COPY server.js ./
+COPY index.html ./
+COPY favicon.svg ./
+COPY --from=builder /app/dist ./dist
 
-# Default environment variables
 ENV PORT=4000
 ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mindmap
 ENV NODE_ENV=production
 
-# Expose the application port
 EXPOSE 4000
-
-# Start the application
 CMD ["node", "server.js"]
