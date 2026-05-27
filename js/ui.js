@@ -708,6 +708,12 @@ function closeDetailDrawer() {
     state.activeNode = null;
     updateMindmap(state.mindmapData); // Matikan active border pada link
 
+    // Pastikan header & bottom nav terlihat saat detail drawer ditutup
+    const header = document.querySelector('.global-header');
+    const bottomNav = document.querySelector('.mobile-bottom-nav');
+    if (header) header.classList.remove('header-hidden');
+    if (bottomNav) bottomNav.classList.remove('nav-hidden');
+
     // Kembalikan ke layout standard (kecil) setelah transisi tutup selesai agar rapi untuk pemuatan berikutnya
     setTimeout(() => {
         drawer.style.width = ''; // Hapus inline width, kembali ke default CSS
@@ -2248,6 +2254,50 @@ function deleteHighlightFromModal() {
     closeCommentaryModal();
 }
 
+function showToast(message) {
+    let toast = document.getElementById('custom-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'custom-toast';
+        toast.style.position = 'fixed';
+        toast.style.bottom = '24px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.background = '#18181b';
+        toast.style.color = '#ffffff';
+        toast.style.padding = '12px 24px';
+        toast.style.borderRadius = '8px';
+        toast.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)';
+        toast.style.zIndex = '9999';
+        toast.style.fontFamily = 'Inter, system-ui, sans-serif';
+        toast.style.fontSize = '0.875rem';
+        toast.style.fontWeight = '500';
+        toast.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.display = 'flex';
+        toast.style.alignItems = 'center';
+        toast.style.gap = '8px';
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<span style="color: #22c55e;">✓</span> ${message}`;
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        toast.style.opacity = '1';
+    });
+
+    // Clear existing timeout if any
+    if (toast.timeoutId) {
+        clearTimeout(toast.timeoutId);
+    }
+
+    toast.timeoutId = setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+    }, 3000);
+}
+
 async function shareMindmap() {
     if (!state.currentMindmapId) {
         alert(state.language === 'en' ? 'No active mindmap to share!' : 'Tidak ada mindmap aktif untuk dibagikan!');
@@ -2260,7 +2310,7 @@ async function shareMindmap() {
             ? `🔗 **Link copied!** You can share this mindmap with others: <br><a href="${shareUrl}" target="_blank" class="share-link-toast">${shareUrl}</a>`
             : `🔗 **Link berhasil disalin!** Kamu bisa membagikan mindmap ini ke orang lain: <br><a href="${shareUrl}" target="_blank" class="share-link-toast">${shareUrl}</a>`;
         appendChatMessage('bot', msg);
-        alert(state.language === 'en' ? 'Share link copied to clipboard!' : 'Link bagikan telah disalin ke clipboard!');
+        showToast(state.language === 'en' ? 'Share link copied to clipboard!' : 'Link bagikan telah disalin ke clipboard!');
     } catch (err) {
         console.error('Failed to copy share link:', err);
         prompt(state.language === 'en' ? 'Copy this link to share:' : 'Salin link ini untuk membagikan:', shareUrl);
@@ -2493,13 +2543,22 @@ function switchScreen(screenName) {
     
     // Sinkronisasi status aktif tombol navigasi bawah mobile
     document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
-    if (screenName === 'search' || screenName === 'mindmaps') {
-        const activeNav = document.getElementById('btn-mobile-nav-search');
+    if (screenName === 'search') {
+        const activeNav = document.getElementById('btn-mobile-nav-create');
+        if (activeNav) activeNav.classList.add('active');
+    } else if (screenName === 'mindmaps') {
+        const activeNav = document.getElementById('btn-mobile-nav-mindmap');
         if (activeNav) activeNav.classList.add('active');
     } else if (screenName === 'dashboard') {
         const activeNav = document.getElementById('btn-mobile-nav-history');
         if (activeNav) activeNav.classList.add('active');
     }
+    
+    // Pastikan header & bottom nav terlihat saat ganti screen
+    const header = document.querySelector('.global-header');
+    const bottomNav = document.querySelector('.mobile-bottom-nav');
+    if (header) header.classList.remove('header-hidden');
+    if (bottomNav) bottomNav.classList.remove('nav-hidden');
     
     // Perbarui judul header mobile
     updateMobileHeaderTitle();
@@ -2534,6 +2593,12 @@ function switchDashboardSubview(subviewName) {
     if (subviewName === 'exploration' && window.lucide) {
         window.lucide.createIcons();
     }
+    
+    // Pastikan header & bottom nav terlihat saat ganti subview
+    const header = document.querySelector('.global-header');
+    const bottomNav = document.querySelector('.mobile-bottom-nav');
+    if (header) header.classList.remove('header-hidden');
+    if (bottomNav) bottomNav.classList.remove('nav-hidden');
 }
 
 function initRedesignNavigation() {
@@ -2550,22 +2615,25 @@ function initRedesignNavigation() {
 
     // 1.8. Hook Mobile Bottom Navigation Items
     const btnMobileNavHistory = document.getElementById('btn-mobile-nav-history');
-    const btnMobileNavSearch = document.getElementById('btn-mobile-nav-search');
+    const btnMobileNavMindmap = document.getElementById('btn-mobile-nav-mindmap');
     const btnMobileNavCreate = document.getElementById('btn-mobile-nav-create');
     
     if (btnMobileNavHistory) {
         btnMobileNavHistory.addEventListener('click', () => {
+            closeDetailDrawer();
             switchScreen('dashboard');
             switchDashboardSubview('history');
         });
     }
-    if (btnMobileNavSearch) {
-        btnMobileNavSearch.addEventListener('click', () => {
-            switchScreen('search');
+    if (btnMobileNavMindmap) {
+        btnMobileNavMindmap.addEventListener('click', () => {
+            closeDetailDrawer();
+            switchScreen('mindmaps');
         });
     }
     if (btnMobileNavCreate) {
         btnMobileNavCreate.addEventListener('click', () => {
+            closeDetailDrawer();
             switchScreen('search');
             const chatInput = document.getElementById('chat-input');
             if (chatInput) setTimeout(() => chatInput.focus(), 150);
@@ -2715,6 +2783,44 @@ function initRedesignNavigation() {
             closeDetailDrawer();
         });
     }
+
+    // 7. Scroll listener to auto-hide navbar and bottom bar on mobile scroll
+    let lastScrollTops = new Map();
+    document.addEventListener('scroll', (event) => {
+        if (window.innerWidth > 768) return;
+        
+        let target = event.target;
+        if (!target || !(target instanceof Element)) return;
+        
+        // ONLY apply this hide/show logic inside the detail/article page reader (.drawer-col-materi)
+        if (!target.closest('.drawer-col-materi')) return;
+        
+        const scrollTop = target.scrollTop;
+        const lastScrollTop = lastScrollTops.get(target) || 0;
+        const delta = scrollTop - lastScrollTop;
+        
+        // Threshold check to avoid jittering
+        if (Math.abs(delta) < 10) return;
+        
+        const header = document.querySelector('.global-header');
+        const bottomNav = document.querySelector('.mobile-bottom-nav');
+        
+        if (scrollTop <= 20) {
+            // Always show at the very top
+            if (header) header.classList.remove('header-hidden');
+            if (bottomNav) bottomNav.classList.remove('nav-hidden');
+        } else if (delta > 0) {
+            // Scroll down -> hide
+            if (header) header.classList.add('header-hidden');
+            if (bottomNav) bottomNav.classList.add('nav-hidden');
+        } else {
+            // Scroll up -> show
+            if (header) header.classList.remove('header-hidden');
+            if (bottomNav) bottomNav.classList.remove('nav-hidden');
+        }
+        
+        lastScrollTops.set(target, scrollTop);
+    }, true);
 }
 
 function updateTableOfContents() {

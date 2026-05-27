@@ -2761,11 +2761,20 @@ mark[data-note]::after {
     }
     
     .global-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         height: 56px;
         padding: 0 1rem;
         border-bottom: 1px solid var(--border);
         background: #ffffff;
         z-index: 1001;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .global-header.header-hidden {
+        transform: translateY(-100%);
     }
     
     .global-header .brand-logo {
@@ -2805,12 +2814,21 @@ mark[data-note]::after {
         display: flex;
         flex-direction: column;
         background: var(--bg-mobile);
-        padding-bottom: 60px; /* Space for fixed bottom navigation */
+        padding-bottom: 0px; /* Space for fixed bottom navigation */
     }
     
-    .screen-container {
-        height: calc(100vh - 56px - 60px); /* 56px header + 60px bottom nav */
+    .app-container-redesign > .screen-container {
+        height: 100vh;
+        height: -webkit-fill-available;
+        overflow: hidden;
+    }
+    
+    .app-container-redesign > .screen-container > .screen-container {
+        height: 100%;
         overflow-y: auto;
+        padding-top: 56px;
+        padding-bottom: 60px;
+        box-sizing: border-box;
     }
     
     /* Mobile Bottom Navigation Bar styling */
@@ -2830,6 +2848,11 @@ mark[data-note]::after {
         padding-bottom: env(safe-area-inset-bottom);
         z-index: 1000;
         box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .mobile-bottom-nav.nav-hidden {
+        transform: translateY(100%);
     }
     
     .mobile-nav-item {
@@ -2880,7 +2903,7 @@ mark[data-note]::after {
     }
     
     .history-main-content {
-        padding: 1.5rem 1rem 5rem 1rem !important;
+        padding: calc(56px + 1.5rem) 1rem 5rem 1rem !important;
         background: var(--bg-mobile) !important;
         overflow-y: auto;
     }
