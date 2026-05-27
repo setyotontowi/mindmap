@@ -282,9 +282,9 @@
                 <div class="modal-card" id="detail-drawer" style="max-width: 800px; height: 80vh; display: flex; flex-direction: column; transition: max-width 0.3s ease, width 0.3s ease;">
                     <!-- Modal Header -->
                     <header class="modal-header" style="padding: 0 1.5rem; height: 60px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg);">
-                        <div class="drawer-header-left" style="display: flex; align-items: center; gap: 8px;">
-                            <span class="node-tag" id="drawer-node-level" style="background: var(--accent-light); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">Level 0</span>
-                            <h3 id="drawer-node-title" style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text);">Judul Topik</h3>
+                        <div class="drawer-header-left" style="display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; flex: 1; margin-right: 12px;">
+                            <span class="node-tag" id="drawer-node-level" style="background: var(--accent-light); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; flex-shrink: 0;">Level 0</span>
+                            <h3 id="drawer-node-title" style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Judul Topik</h3>
                         </div>
                         <div class="drawer-header-actions" style="display: flex; gap: 6px; align-items: center;">
                             <button class="icon-btn" id="btn-add-subnode" title="Tambah Sub-Node Manual">
