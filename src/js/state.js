@@ -206,3 +206,51 @@ window.syncFromDatabase = syncFromDatabase;
 window.clearState = clearState;
 window.applyTheme = applyTheme;
 
+/* ==========================================================================
+   PHASE 3: HELPER GRANULAR NODE SYNC
+   ========================================================================== */
+async function syncNodeStatus(mindmapId, nodeName, status) {
+    if (!mindmapId || !nodeName) return;
+    const nodeId = encodeURIComponent(`${mindmapId}::${nodeName}`);
+    try {
+        await fetch(`/api/node/${nodeId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+    } catch (e) {
+        console.warn('[Node] Gagal sync status granular:', e);
+    }
+}
+
+async function saveNodeExplanation(mindmapId, nodeName, explanation) {
+    if (!mindmapId || !nodeName) return;
+    const nodeId = encodeURIComponent(`${mindmapId}::${nodeName}`);
+    try {
+        await fetch(`/api/node/${nodeId}/explanation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ explanation })
+        });
+    } catch (e) {
+        console.warn('[Node] Gagal simpan explanation granular:', e);
+    }
+}
+
+async function fetchNodeExplanation(mindmapId, nodeName) {
+    if (!mindmapId || !nodeName) return null;
+    const nodeId = encodeURIComponent(`${mindmapId}::${nodeName}`);
+    try {
+        const res = await fetch(`/api/node/${nodeId}/explanation`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.explanation || null;
+    } catch (e) {
+        console.warn('[Node] Gagal fetch explanation granular:', e);
+        return null;
+    }
+}
+
+window.syncNodeStatus = syncNodeStatus;
+window.saveNodeExplanation = saveNodeExplanation;
+window.fetchNodeExplanation = fetchNodeExplanation;

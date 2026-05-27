@@ -88,6 +88,23 @@ const initDb = async () => {
             ALTER TABLE mindmaps ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
         `);
         console.log('Tabel database mindmaps dan relasi siap digunakan.');
+
+        // Phase 3: Tabel nodes relasional (additive, tidak menghapus data lama)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS nodes (
+                id VARCHAR(500) PRIMARY KEY,
+                mindmap_id VARCHAR(255) REFERENCES mindmaps(id) ON DELETE CASCADE,
+                parent_id VARCHAR(500),
+                name VARCHAR(500),
+                status VARCHAR(50) DEFAULT 'todo',
+                explanation TEXT,
+                depth INTEGER DEFAULT 0,
+                position INTEGER DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_nodes_mindmap_id ON nodes(mindmap_id)`);
+        console.log('Tabel nodes relasional siap digunakan.');
     } catch (err) {
         console.error('Gagal menginisialisasi skema database:', err.message);
     }
@@ -116,6 +133,17 @@ app.use(async (req, res, next) => {
     }
     next();
 });
+
+// Helper: Ratakan tree rekursif menjadi array flat nodes
+function flattenTree(node, mindmapId, parentId = null, depth = 0, position = 0, result = []) {
+    if (!node || !node.name) return result;
+    const nodeId = `${mindmapId}::${node.name}`;
+    result.push({ id: nodeId, mindmap_id: mindmapId, parent_id: parentId, name: node.name, depth, position });
+    if (Array.isArray(node.children)) {
+        node.children.forEach((child, i) => flattenTree(child, mindmapId, nodeId, depth + 1, i, result));
+    }
+    return result;
+}
 
 // GET endpoint - Ambil semua mindmap (untuk history)
 app.get('/api/mindmaps', (req, res) => {
@@ -237,6 +265,29 @@ app.post('/api/mindmap', async (req, res) => {
         ];
 
         await pool.query(query, params);
+
+        // Phase 3: Dual-write ke tabel nodes relasional
+        if (tree_data) {
+            const flatNodes = flattenTree(tree_data, targetId);
+            const statuses = node_statuses || {};
+            const cache = node_cache || {};
+            for (const node of flatNodes) {
+                const nodeStatus = statuses[node.name] || 'todo';
+                const nodeExplanation = cache[node.name]?.explanation || null;
+                await pool.query(`
+                    INSERT INTO nodes (id, mindmap_id, parent_id, name, status, explanation, depth, position, updated_at)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+                    ON CONFLICT(id) DO UPDATE SET
+                        status = EXCLUDED.status,
+                        explanation = COALESCE(EXCLUDED.explanation, nodes.explanation),
+                        depth = EXCLUDED.depth,
+                        position = EXCLUDED.position,
+                        updated_at = CURRENT_TIMESTAMP
+                `, [node.id, node.mindmap_id, node.parent_id, node.name, nodeStatus, nodeExplanation, node.depth, node.position]);
+            }
+            console.log(`[Mindmap] Dual-wrote ${flatNodes.length} nodes to relational table.`);
+        }
+
         console.log(`[Mindmap] Successfully synced mindmap ID: ${targetId}`);
         res.json({ success: true, message: 'Mindmap berhasil disinkronisasi ke PostgreSQL' });
     } catch (err) {
@@ -268,6 +319,56 @@ app.delete('/api/mindmap/:id', async (req, res) => {
     } catch (err) {
         console.error(`[Mindmap] Failed to delete mindmap ID: ${id}:`, err.message);
         res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
+    }
+});
+
+// --- PHASE 3: NODE GRANULAR ENDPOINTS ---
+
+// PATCH /api/node/:id/status - Update status satu node
+app.patch('/api/node/:id/status', async (req, res) => {
+    const nodeId = decodeURIComponent(req.params.id);
+    const { status } = req.body;
+    if (!['todo', 'doing', 'done'].includes(status)) {
+        return res.status(400).json({ error: 'Status tidak valid.' });
+    }
+    try {
+        await pool.query(
+            `UPDATE nodes SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+            [status, nodeId]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[Node] Failed to update status:', err.message);
+        res.status(500).json({ error: 'Gagal update status node.' });
+    }
+});
+
+// GET /api/node/:id/explanation - Lazy-load penjelasan satu node
+app.get('/api/node/:id/explanation', async (req, res) => {
+    const nodeId = decodeURIComponent(req.params.id);
+    try {
+        const result = await pool.query(`SELECT explanation FROM nodes WHERE id = $1`, [nodeId]);
+        if (!result.rows.length) return res.status(404).json({ error: 'Node tidak ditemukan.' });
+        res.json({ explanation: result.rows[0].explanation || null });
+    } catch (err) {
+        console.error('[Node] Failed to get explanation:', err.message);
+        res.status(500).json({ error: 'Gagal mengambil explanation.' });
+    }
+});
+
+// POST /api/node/:id/explanation - Simpan penjelasan satu node
+app.post('/api/node/:id/explanation', async (req, res) => {
+    const nodeId = decodeURIComponent(req.params.id);
+    const { explanation } = req.body;
+    try {
+        await pool.query(
+            `UPDATE nodes SET explanation = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+            [explanation, nodeId]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[Node] Failed to save explanation:', err.message);
+        res.status(500).json({ error: 'Gagal menyimpan explanation.' });
     }
 });
 
