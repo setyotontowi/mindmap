@@ -1918,8 +1918,8 @@ mark[data-note]::after {
 
 .search-columns-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
     width: 100%;
     max-width: 700px;
     margin-bottom: 4rem;
@@ -1959,6 +1959,9 @@ mark[data-note]::after {
     cursor: pointer;
     font-weight: 500;
     transition: color var(--t);
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 .recent-search-item:hover {

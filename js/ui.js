@@ -2185,6 +2185,73 @@ async function submitRegenerateNode(e) {
             } else {
                 throw new Error("Respon AI tidak sesuai format");
             }
+        } else if (scope === 'subtopics') {
+            // Hanya buat ulang sub-topik baru, pertahankan penjelasan materi lama
+            const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants you to regenerate ONLY the subtopics/milestones under the subtopic "${nodeName}" (Description: "${nodeDesc}") to dynamically expand their mindmap.
+            ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
+            
+            Your task is:
+            Generate several next, more specific subtopics/milestones under "${nodeName}". Decide the most relevant number of subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity. Do not make subtopics that are too generic.
+            
+            Return the result in JSON with exactly this format:
+            {
+              "subtopics": [
+                { "name": "Specific Subtopic 1", "description": "Brief description 1" },
+                { "name": "Specific Subtopic 2", "description": "Brief description 2" }
+              ]
+            }` : `Kamu adalah tutor ahli. Pengguna sedang mempelajari topik utama "${rootTopicName}" dan ingin Anda membuat ulang HANYA sub-topik/milestone di bawah sub-topik "${nodeName}" (Deskripsi: "${nodeDesc}") untuk memperluas mindmap mereka secara dinamis.
+            ${customPrompt ? `INSTRUKSI TAMBAHAN / FOKUS UTAMA DARI PENGGUNA: "${customPrompt}"\n` : ''}
+            
+            Tugasmu adalah:
+            Hasilkan beberapa sub-topik/milestone berikutnya yang lebih spesifik di bawah "${nodeName}" untuk memperluas mindmap mereka secara dinamis. Tentukan sendiri jumlah sub-topik yang paling relevan (misalnya 2, 3, 5, atau lebih) berdasarkan cakupan dan kompleksitas materinya. Jangan buat sub-topik yang terlalu umum.
+            
+            Kembalikan hasilnya dalam JSON dengan format persis seperti ini:
+            {
+              "subtopics": [
+                { "name": "Sub-topik Spesifik 1", "description": "Deskripsi singkat 1" },
+                { "name": "Sub-topik Spesifik 2", "description": "Deskripsi singkat 2" }
+              ]
+            }`;
+
+            result = await callRouterAI(prompt);
+
+            // Validasi respon JSON
+            if (result && result.subtopics) {
+                // Fungsi pembantu rekursif untuk membersihkan cache anak-anak lama sebelum diganti
+                function cleanSubtreeData(node) {
+                    if (node.name) {
+                        delete state.nodeCache[node.name];
+                        delete state.nodeStatuses[node.name];
+                    }
+                    if (node.children) {
+                        node.children.forEach(cleanSubtreeData);
+                    }
+                }
+
+                // Bersihkan data lama di bawah node ini
+                if (targetNode.children) {
+                    targetNode.children.forEach(cleanSubtreeData);
+                }
+
+                // Kosongkan dan ganti children
+                targetNode.children = [];
+
+                // Update cache subtopics baru, pertahankan penjelasan lama
+                if (!state.nodeCache[nodeName]) {
+                    state.nodeCache[nodeName] = { explanation: '', subtopics: [] };
+                }
+                state.nodeCache[nodeName].subtopics = result.subtopics || [];
+
+                // Tambah children baru
+                if (result.subtopics && result.subtopics.length > 0) {
+                    result.subtopics.forEach(sub => {
+                        sub.id = `${nodeName}-${sub.name}-${Date.now()}`;
+                        targetNode.children.push(sub);
+                    });
+                }
+            } else {
+                throw new Error("Respon AI tidak sesuai format");
+            }
         } else {
             // Buat ulang penjelasan & buat ulang sub-node baru
             const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants to deep-dive into the subtopic "${nodeName}" (Description: "${nodeDesc}").

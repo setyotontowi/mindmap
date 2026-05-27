@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="index.css?v=2">
+    <link rel="stylesheet" href="index.css?v=3">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     
     <!-- Lucide Icons -->
@@ -651,6 +651,14 @@
                             <div>
                                 <strong>Hanya buat ulang penjelasan 📝</strong>
                                 <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Penjelasan materi baru akan dibuat, tetapi semua sub-topik yang sudah ada di bawahnya TIDAK akan diubah.</div>
+                            </div>
+                        </label>
+
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
+                            <input type="radio" name="regenerate-scope" value="subtopics" style="margin-top: 4px; cursor: pointer; width: auto; height: auto;">
+                            <div>
+                                <strong>Hanya buat ulang sub-topik baru 🌿</strong>
+                                <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Penjelasan materi lama tetap dipertahankan, tetapi semua sub-topik di bawah node ini akan dibuat ulang/diganti dengan yang baru.</div>
                             </div>
                         </label>
                         
