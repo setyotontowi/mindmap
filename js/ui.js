@@ -2298,21 +2298,50 @@ function showToast(message) {
     }, 3000);
 }
 
+async function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (e) {
+            console.warn('navigator.clipboard failed, trying fallback...', e);
+        }
+    }
+    
+    // Fallback using temporary textarea
+    try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '0';
+        textarea.style.left = '0';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        if (successful) return true;
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+    }
+    return false;
+}
+
 async function shareMindmap() {
     if (!state.currentMindmapId) {
         alert(state.language === 'en' ? 'No active mindmap to share!' : 'Tidak ada mindmap aktif untuk dibagikan!');
         return;
     }
     const shareUrl = `${window.location.origin}${window.location.pathname}?id=${state.currentMindmapId}`;
-    try {
-        await navigator.clipboard.writeText(shareUrl);
+    const copied = await copyToClipboard(shareUrl);
+    if (copied) {
         const msg = state.language === 'en'
             ? `🔗 **Link copied!** You can share this mindmap with others: <br><a href="${shareUrl}" target="_blank" class="share-link-toast">${shareUrl}</a>`
             : `🔗 **Link berhasil disalin!** Kamu bisa membagikan mindmap ini ke orang lain: <br><a href="${shareUrl}" target="_blank" class="share-link-toast">${shareUrl}</a>`;
         appendChatMessage('bot', msg);
         showToast(state.language === 'en' ? 'Share link copied to clipboard!' : 'Link bagikan telah disalin ke clipboard!');
-    } catch (err) {
-        console.error('Failed to copy share link:', err);
+    } else {
         prompt(state.language === 'en' ? 'Copy this link to share:' : 'Salin link ini untuk membagikan:', shareUrl);
     }
 }
