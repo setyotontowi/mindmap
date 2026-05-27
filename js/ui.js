@@ -613,6 +613,63 @@ function initUIEventListeners() {
     if (typeof initRedesignNavigation === 'function') {
         initRedesignNavigation();
     }
+
+    // 17. Mobile Immersive Custom Actions and Q&A
+    const btnMobileToggleQa = document.getElementById('btn-mobile-toggle-qa');
+    if (btnMobileToggleQa) {
+        btnMobileToggleQa.addEventListener('click', toggleDrawerQa);
+    }
+
+    const btnMobileMore = document.getElementById('btn-mobile-more');
+    const mobileMoreDropdown = document.getElementById('mobile-more-dropdown');
+    if (btnMobileMore && mobileMoreDropdown) {
+        btnMobileMore.addEventListener('click', (e) => {
+            e.stopPropagation();
+            mobileMoreDropdown.classList.toggle('open');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!mobileMoreDropdown.contains(e.target) && e.target !== btnMobileMore) {
+                mobileMoreDropdown.classList.remove('open');
+            }
+        });
+    }
+
+    const mobileAddSubnode = document.getElementById('btn-mobile-add-subnode');
+    if (mobileAddSubnode) {
+        mobileAddSubnode.addEventListener('click', () => {
+            const btn = document.getElementById('btn-add-subnode');
+            if (btn) btn.click();
+            if (mobileMoreDropdown) mobileMoreDropdown.classList.remove('open');
+        });
+    }
+
+    const mobileEditNode = document.getElementById('btn-mobile-edit-node');
+    if (mobileEditNode) {
+        mobileEditNode.addEventListener('click', () => {
+            const btn = document.getElementById('btn-edit-node');
+            if (btn) btn.click();
+            if (mobileMoreDropdown) mobileMoreDropdown.classList.remove('open');
+        });
+    }
+
+    const mobileRegenNode = document.getElementById('btn-mobile-regenerate-node');
+    if (mobileRegenNode) {
+        mobileRegenNode.addEventListener('click', () => {
+            const btn = document.getElementById('btn-regenerate-node');
+            if (btn) btn.click();
+            if (mobileMoreDropdown) mobileMoreDropdown.classList.remove('open');
+        });
+    }
+
+    const mobileDeleteNode = document.getElementById('btn-mobile-delete-node');
+    if (mobileDeleteNode) {
+        mobileDeleteNode.addEventListener('click', () => {
+            const btn = document.getElementById('btn-delete-node');
+            if (btn) btn.click();
+            if (mobileMoreDropdown) mobileMoreDropdown.classList.remove('open');
+        });
+    }
 }
 
 
@@ -1078,12 +1135,20 @@ function openDetailDrawer(title) {
     // Update UI based on ownership
     updateOwnerUI();
 
-    // Tampilkan panel tanya jawab (Q&A) secara default
+    // Tampilkan panel tanya jawab (Q&A) secara default hanya di desktop (lebar > 768px)
     const qaCol = document.getElementById('drawer-col-qa');
     const toggleBtn = document.getElementById('btn-toggle-drawer-qa');
-    if (qaCol && toggleBtn) {
-        qaCol.classList.remove('collapsed');
-        toggleBtn.classList.add('active');
+    const mobileToggleBtn = document.getElementById('btn-mobile-toggle-qa');
+    if (qaCol) {
+        if (window.innerWidth > 768) {
+            qaCol.classList.remove('collapsed');
+            if (toggleBtn) toggleBtn.classList.add('active');
+            if (mobileToggleBtn) mobileToggleBtn.classList.add('active');
+        } else {
+            qaCol.classList.add('collapsed');
+            if (toggleBtn) toggleBtn.classList.remove('active');
+            if (mobileToggleBtn) mobileToggleBtn.classList.remove('active');
+        }
     }
 
     // Render Lucide icons if available
@@ -1529,21 +1594,24 @@ Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) deng
 function toggleDrawerQa() {
     const qaCol = document.getElementById('drawer-col-qa');
     const toggleBtn = document.getElementById('btn-toggle-drawer-qa');
-    if (!qaCol || !toggleBtn || !state.activeNode) return;
+    const mobileToggleBtn = document.getElementById('btn-mobile-toggle-qa');
+    if (!qaCol || !state.activeNode) return;
 
     const isCollapsed = qaCol.classList.contains('collapsed');
 
     if (isCollapsed) {
-        // Buka panel Q&A ke samping sebagai card terpisah
+        // Buka panel Q&A ke samping sebagai card terpisah / slide-in
         qaCol.classList.remove('collapsed');
-        toggleBtn.classList.add('active');
+        if (toggleBtn) toggleBtn.classList.add('active');
+        if (mobileToggleBtn) mobileToggleBtn.classList.add('active');
         
         // Render Q&A khusus node aktif
         renderNodeQa(state.activeNode.name);
     } else {
         // Tutup panel Q&A
         qaCol.classList.add('collapsed');
-        toggleBtn.classList.remove('active');
+        if (toggleBtn) toggleBtn.classList.remove('active');
+        if (mobileToggleBtn) mobileToggleBtn.classList.remove('active');
     }
 }
 
@@ -2955,6 +3023,11 @@ function updateOwnerUI() {
     const mobileMore = document.getElementById('btn-mobile-more');
     if (mobileMore) {
         mobileMore.style.display = state.isOwner ? '' : 'none';
+    }
+
+    const styleSelectorWrap = document.querySelector('.style-selector-wrap');
+    if (styleSelectorWrap) {
+        styleSelectorWrap.style.display = state.isOwner ? 'flex' : 'none';
     }
 }
 
