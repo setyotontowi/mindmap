@@ -3720,6 +3720,72 @@ mark[data-note]::after {
     }
 }
 
+/* ==========================================================================
+   DARK MODE STYLES
+   ========================================================================== */
+[data-theme="dark"] {
+    --bg:          #0e1411; /* Clean deep charcoal/dark green background */
+    --bg-subtle:   #151d19; /* Slightly lighter deep charcoal green */
+    --bg-hover:    #1c2722;
+    --surface:     #141b18; /* Cards/modals */
+
+    --border:      #26332c; /* Dark sage border */
+    --border-mid:  #35483e;
+
+    --text:        #e2e8e5; /* Soft clean off-white */
+    --text-2:      #a3b8ad; /* Soft muted sage green */
+    --text-3:      #698074; /* Muted pale green */
+
+    --accent:      #10b981; /* Premium Emerald/Mint Green */
+    --accent-2:    #059669; /* Darker Emerald hover */
+    --accent-inv:  #0e1411; /* Dark background text color for contrast */
+
+    /* Level colors adjusted for dark mode readability */
+    --l0: #34d399; /* Bright Emerald */
+    --l1: #22d3ee; /* Bright Cyan */
+    --l2: #4ade80; /* Bright Green */
+    --l3: #38bdf8; /* Bright Sky-blue */
+    --l4: #fbbf24; /* Bright Amber */
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02);
+
+    --primary-green: #10b981;
+    --primary-green-dark: #059669;
+    --primary-green-light: #16241e;
+    --bg-mobile: #0e1411;
+}
+
+/* Dark Mode overrides for hardcoded light/white backgrounds */
+[data-theme="dark"] .global-header,
+[data-theme="dark"] .history-progress-card,
+[data-theme="dark"] .floating-controls,
+[data-theme="dark"] .mindmap-search-bar,
+[data-theme="dark"] #detail-drawer-overlay,
+[data-theme="dark"] .mobile-drawer-header {
+    background: var(--bg) !important;
+}
+
+[data-theme="dark"] .qa-bubble.bot,
+[data-theme="dark"] .modal-card,
+[data-theme="dark"] .drawer-col-qa,
+[data-theme="dark"] .qa-header,
+[data-theme="dark"] .qa-footer {
+    background: var(--surface) !important;
+}
+
+[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(14, 20, 17, 0.85) !important;
+}
+
+/* Ensure selected option in standard selects is legible */
+[data-theme="dark"] select option {
+    background-color: var(--surface);
+    color: var(--text);
+}
+
 
 
 

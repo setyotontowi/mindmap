@@ -722,6 +722,11 @@ function openSettingsModal() {
     
     updateModelSelectOptions(state.aiProvider || 'gemini', activeModel);
     
+    const themeSelect = document.getElementById('app-theme-select');
+    if (themeSelect) {
+        themeSelect.value = state.theme || 'system';
+    }
+    
     if (modal) modal.classList.add('open');
 }
 
@@ -753,6 +758,15 @@ function saveSettings() {
             state.aiModel = modelSelect.value;
         }
         localStorage.setItem('ai_model', state.aiModel);
+    }
+    
+    const themeSelect = document.getElementById('app-theme-select');
+    if (themeSelect) {
+        state.theme = themeSelect.value;
+        localStorage.setItem('app_theme', state.theme);
+        if (typeof applyTheme === 'function') {
+            applyTheme(state.theme);
+        }
     }
     
     closeSettingsModal();

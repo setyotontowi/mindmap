@@ -5,6 +5,7 @@ const state = {
     language: localStorage.getItem('ai_language') || 'id',
     aiProvider: localStorage.getItem('ai_provider') || 'gemini',
     aiModel: localStorage.getItem('ai_model') || 'gemini-2.5-flash',
+    theme: localStorage.getItem('app_theme') || 'system',
     currentMindmapId: localStorage.getItem('current_mindmap_id') || null,
     mindmapData: null,       // Data pohon (tree) D3
     activeNode: null,        // Node yang sedang aktif di drawer
@@ -177,3 +178,22 @@ async function clearState() {
         showSyncStatus('Gagal Hapus DB ⚠️');
     }
 }
+
+/* Theme Application Helper */
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    }
+}
+
+// Reactive System Theme Change Listener
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (state.theme === 'system') {
+        applyTheme('system');
+    }
+});

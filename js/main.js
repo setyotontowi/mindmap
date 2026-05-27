@@ -2,6 +2,11 @@
    INITIALIZATION & SETUP (ENTRY POINT)
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
+    // Inisialisasi tema
+    if (typeof applyTheme === 'function') {
+        applyTheme(state.theme);
+    }
+
     // Jalankan inisialisasi ikon
     if (window.lucide) {
         window.lucide.createIcons();
