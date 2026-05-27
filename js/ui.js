@@ -1,180 +1,197 @@
+const ANTI_AI_SLOP_INSTRUCTION = {
+    en: `
+CRITICAL WRITING DIRECTIVES (ANTI-AI SLOP ENGINE):
+1. STRICT BAN ON AI CLICHÉS. You are strictly forbidden from using these words: 'delve', 'testament', 'tapestry', 'furthermore', 'moreover', 'in conclusion', 'crucial', 'vital', 'not only... but also', 'let\\'s embark', 'unlock', 'journey', 'dynamic', 'beacon', 'realm', 'revolutionize', 'pave the way', 'demystify', 'treasure trove', 'blueprint'.
+2. ACTIVE VOICE & DIRECTNESS. Avoid excessive passive voice. Write with high-impact, active verbs. Do not use verbose filler phrases.
+3. NO CLICHÉ INTROS OR OUTROS. Never open with phrases like 'In the fast-paced world of...', 'Since the dawn of time...', 'In today\\'s digital age...', or similar boilerplate text. Get straight to the point in the first sentence. Do not summarize in the end with a boring 'In summary' or 'In conclusion' section.
+4. HUMAN-LIKE FLOW. Write naturally, as a highly skilled domain expert, with varying sentence lengths. Be concise, punchy, and highly informative.
+`,
+    id: `
+PETUNJUK PENULISAN KRITIS (ANTI-AI SLOP ENGINE):
+1. LARANGAN KERAS KATA KLISE AI. Anda dilarang keras menggunakan kata-kata klise khas AI seperti: 'delve', 'testament', 'tapestry', 'furthermore', 'moreover', 'in conclusion' (kesimpulannya), 'crucial' (krusial), 'vital', 'not only... but also' (tidak hanya... tetapi juga), 'let\\'s embark' (mari kita memulai), 'unlock' (membuka kunci), 'journey' (perjalanan), 'dynamic' (dinamis), 'beacon', 'realm' (ranah/alam), 'revolutionize' (merevolusi), 'pave the way' (merintis jalan), 'demystify', 'treasure trove' (harta karun), 'blueprint' (cetak biru). Gunakan padanan kata Indonesia yang lebih alami dan segar.
+2. KALIMAT AKTIF & TO-THE-POINT. Batasi penggunaan kalimat pasif berlebihan. Utamakan kalimat aktif yang bertenaga dan langsung. Hindari frasa pengisi yang bertele-tele.
+3. HINDARI PEMBUKAAN/PENUTUP KLISE. Dilarang membuka artikel dengan gaya seperti 'Di dunia yang serba cepat saat ini...', 'Sejak zaman dahulu...', 'Di era digital ini...', atau kalimat templat membosankan lainnya. Langsung masuk ke poin utama sejak kalimat pertama. Jangan menutup artikel dengan bagian kesimpulan klise seperti 'Kesimpulannya...', 'Singkatnya...', atau ringkasan yang mengulang-ulang.
+4. ALIRAN GAYA MANUSIA. Menulislah secara alami layaknya seorang pakar ahli manusia yang sangat kompeten, dengan panjang kalimat yang bervariasi. Tulis secara padat, tajam, dan sarat informasi yang berharga.
+`
+};
+
 const WRITING_STYLES = {
-    academic: {
-        name: { id: "Akademik (Scholarly)", en: "Scholarly" },
+    copywriting: {
+        name: { id: "Direct Copywriting (Conversion-Focused)", en: "Direct Copywriting" },
         instruction: {
-            id: "Gunakan gaya penulisan Akademik (Scholarly) yang formal, terstruktur, berbasis bukti, objektif, dan menggunakan terminologi akademis yang tepat.",
-            en: "Use a formal, scholarly, evidence-based, objective, and well-structured academic writing style with precise terminology."
+            id: "Gunakan gaya penulisan Direct Copywriting yang berorientasi pada konversi dan persuasi menggunakan formula teruji (seperti AIDA atau PAS). Buat agar pembaca merasa terpikat dan terdorong untuk bertindak.",
+            en: "Use a Direct Copywriting writing style focused on conversion and persuasion using proven formulas (such as AIDA or PAS). Make the reader feel engaged and compelled to take action."
         },
         substyles: {
-            encyclopedic: {
-                name: { id: "Ensiklopedik", en: "Encyclopedic" },
+            aida: {
+                name: { id: "AIDA Model", en: "AIDA Model" },
                 instruction: {
-                    id: "Fokus pada penyajian informasi ensiklopedik dengan definisi ketat, klasifikasi taksonomi yang rapi, dan referensi silang antarkonsep yang komprehensif.",
-                    en: "Focus on presenting encyclopedic information with strict definitions, neat taxonomic classifications, and comprehensive cross-references between concepts."
+                    id: "Ikuti formula AIDA secara ketat: Attention (pembuka/kait yang sangat kuat dan menarik) → Interest (sajikan fakta menarik atau data mengejutkan) → Desire (tunjukkan manfaat utama dan solusi bagi pembaca) → Action (ajakan bertindak atau kesimpulan yang kuat).",
+                    en: "Strictly follow the AIDA formula: Attention (strong hook/opening) → Interest (intriguing facts or surprising data) → Desire (highlighting benefits and solutions) → Action (compelling call-to-action or conclusion)."
                 }
             },
-            argumentative: {
-                name: { id: "Argumentatif", en: "Argumentative" },
+            pas: {
+                name: { id: "PAS Formula", en: "PAS Formula" },
                 instruction: {
-                    id: "Fokus pada struktur argumentatif akademis yang jelas: sajikan tesis di awal, dukung dengan argumen logis dan bukti, kemukakan sanggahan (counter-arguments), dan akhiri dengan kesimpulan analitis.",
-                    en: "Focus on a clear academic argumentative structure: present a thesis first, support it with logical arguments and evidence, address counter-arguments, and end with an analytical conclusion."
+                    id: "Ikuti formula PAS secara ketat: Problem (identifikasi masalah nyata yang dihadapi pembaca) → Agitate (perdalam emosi, konsekuensi, dan rasa sakit dari masalah tersebut) → Solution (sajikan konsep/topik ini sebagai solusi penyelamat terbaik).",
+                    en: "Strictly follow the PAS formula: Problem (identify a real problem the reader faces) → Agitate (deepen the emotion, consequence, and pain of the problem) → Solution (present this concept/topic as the ultimate solution)."
                 }
             },
-            comparative: {
-                name: { id: "Komparatif", en: "Comparative" },
+            benefit: {
+                name: { id: "Benefit-Driven", en: "Benefit-Driven" },
                 instruction: {
-                    id: "Fokus pada analisis komparatif sistematis dengan membandingkan dua atau lebih teori, perspektif, model, atau pendekatan secara objektif, menyoroti persamaan, perbedaan, dan sintesisnya.",
-                    en: "Focus on a systematic comparative analysis by objectively comparing two or more theories, perspectives, models, or approaches, highlighting their similarities, differences, and synthesis."
+                    id: "Fokus pada Benefit-Driven: jelaskan setiap fitur atau konsep dengan murni menerjemahkannya langsung ke keuntungan konkret dan nilai praktis yang akan didapatkan oleh pembaca.",
+                    en: "Focus on Benefit-Driven content: explain every feature or concept by purely translating it into concrete benefits and practical value for the reader."
                 }
             }
         }
     },
-    technical: {
-        name: { id: "Teknis (Technical)", en: "Technical" },
+    seo: {
+        name: { id: "Technical & SEO Content", en: "Technical & SEO Content" },
         instruction: {
-            id: "Gunakan gaya penulisan Teknis yang dense, sangat presisi, to-the-point, kaya akan detail teknis, dan dilengkapi contoh kode atau perbandingan spesifikasi konkret.",
-            en: "Use a dense, highly precise, to-the-point technical writing style rich in technical details, specifications, and concrete code examples where appropriate."
+            id: "Gunakan gaya penulisan Technical & SEO Content yang padat informasi, fokus pada penyusunan heading (H2/H3) yang logis, terstruktur rapi, mudah dipindai (scannable), dan menjawab Search Intent dengan tepat.",
+            en: "Use a Technical & SEO Content writing style: highly informative, focused on logical heading structures (H2/H3), clean layouts, highly scannable, and perfectly addressing Search Intent."
         },
         substyles: {
+            intent: {
+                name: { id: "Search Intent Alignment", en: "Search Intent Alignment" },
+                instruction: {
+                    id: "Lakukan penyelarasan Search Intent secara spesifik: jawab niat pencarian pembaca secara langsung dan tuntas di awal paragraf (informasional/transaksional) sebelum masuk ke detail teoritis.",
+                    en: "Align closely with Search Intent: directly and thoroughly answer the search intent in the opening paragraphs (informational/transactional) before diving into deep theoretical details."
+                }
+            },
+            semantic: {
+                name: { id: "Semantic Keyword Rich", en: "Semantic Keyword Rich" },
+                instruction: {
+                    id: "Susun penjelasan dengan kaya akan istilah semantik dan keyword/jargon relevan yang memperkuat kedalaman topik, tanpa melakukan keyword stuffing. Buat tulisan tetap mengalir alami namun berbobot tinggi bagi mesin pencari.",
+                    en: "Rich in semantic terms and highly relevant keywords/jargon that strengthen topic authority without keyword stuffing. Keep the writing natural yet highly authoritative for search engines."
+                }
+            },
             tutorial: {
-                name: { id: "Tutorial Step-by-Step", en: "Step-by-Step Tutorial" },
+                name: { id: "Actionable Tutorial", en: "Actionable Tutorial" },
                 instruction: {
-                    id: "Format penjelasan sebagai tutorial langkah-demi-langkah (step-by-step) yang terurut dengan instruksi praktis yang jelas, potongan kode/perintah, dan penjelasan output yang diharapkan di tiap langkah.",
-                    en: "Format the explanation as a clear, ordered step-by-step tutorial with practical instructions, code snippets/commands, and explanation of expected output at each step."
-                }
-            },
-            deep_internals: {
-                name: { id: "Deep Internals", en: "Deep Internals" },
-                instruction: {
-                    id: "Fokus mendalam pada mekanisme internal (under the hood/behind the scenes). Jelaskan arsitektur tingkat rendah, alokasi memori, protokol komunikasi, atau detail sistem dalam yang jarang dibahas.",
-                    en: "Focus deeply on internal mechanisms (under the hood/behind the scenes). Explain low-level architecture, memory allocation, communication protocols, or deep system details."
-                }
-            },
-            best_practices: {
-                name: { id: "Best Practices & Pitfalls", en: "Best Practices & Pitfalls" },
-                instruction: {
-                    id: "Tekankan pada praktik terbaik (best practices) dan jebakan umum (pitfalls). Sajikan daftar do's and don'ts, kesalahan umum pembelajar, kompromi desain (trade-offs), serta cara mitigasi masalah.",
-                    en: "Emphasize best practices and common pitfalls. Provide a list of do's and don'ts, common mistakes, trade-offs, and how to mitigate issues."
+                    id: "Sajikan materi dalam bentuk tutorial langkah-demi-langkah yang praktis, konkret, dan terukur. Berikan panduan yang bisa langsung dieksekusi dengan hasil yang jelas.",
+                    en: "Present the material as a highly practical, concrete, and measurable step-by-step tutorial. Provide immediately executable guidelines with clear expected outcomes."
                 }
             }
         }
     },
-    casual: {
-        name: { id: "Santai (Casual)", en: "Casual" },
+    conversational: {
+        name: { id: "Conversational Persona", en: "Conversational Persona" },
         instruction: {
-            id: "Gunakan gaya penulisan Santai (Casual) layaknya mengobrol akrab dengan teman yang cerdas. Gunakan bahasa yang ringan, humor tipis jika cocok, dan jauhkan dari kesan kaku.",
-            en: "Use a warm, casual, conversational writing style like talking with a smart friend. Use friendly language, light humor if appropriate, and avoid stiff jargon."
+            id: "Gunakan gaya penulisan Conversational Persona yang santai, hangat, dan ramah seperti mengobrol dengan mentor pribadi. Gunakan nada bicara yang bersahabat dan hindari jargon kaku yang menjemukan.",
+            en: "Use a Conversational Persona writing style: casual, warm, and friendly, like having a chat with a personal mentor. Use a friendly tone and avoid dry, academic jargon."
         },
         substyles: {
-            conversational: {
-                name: { id: "Ngobrol Langsung", en: "Direct Chat" },
+            coach: {
+                name: { id: "Friendly Coach", en: "Friendly Coach" },
                 instruction: {
-                    id: "Gunakan gaya 'kamu pasti pernah ngerasain ini...' — sangat percakapan (conversational), interaktif, menggunakan kata ganti orang pertama/kedua secara langsung untuk membangun relasi pembaca.",
-                    en: "Use a highly conversational style like 'you've probably felt this...' — interactive, directly using first/second person pronouns to build rapport with the reader."
+                    id: "Gaya Friendly Coach: gunakan kata ganti orang 'saya' dan 'kamu', ajukan pertanyaan retoris untuk memicu pemikiran, tunjukkan empati yang tinggi terhadap proses belajar pembaca, dan berikan dorongan positif.",
+                    en: "Friendly Coach style: use 'I' and 'you' pronouns, ask thought-provoking rhetorical questions, show high empathy for the reader's learning journey, and offer constant encouragement."
                 }
             },
-            creative_analogy: {
-                name: { id: "Analogi Kreatif", en: "Creative Analogy" },
+            analogy: {
+                name: { id: "Analogi Membumi", en: "Grounded Analogy" },
                 instruction: {
-                    id: "Jelaskan konsep-konsep abstrak atau kompleks dengan menggunakan analogi kehidupan sehari-hari yang unik, kreatif, tidak biasa, namun sangat mudah dipahami.",
-                    en: "Explain abstract or complex concepts using daily-life analogies that are unique, creative, unusual, yet highly memorable and easy to understand."
+                    id: "Gunakan Analogi Membumi: hilangkan semua istilah rumit dan gantilah dengan analogi dunia nyata sehari-hari yang sangat sederhana, intuitif, dan mudah diingat oleh siapa saja.",
+                    en: "Use Grounded Analogies: replace complex jargon with highly simple, intuitive, and memorable real-world analogies from everyday life."
                 }
             },
-            faq: {
-                name: { id: "FAQ Style", en: "FAQ Style" },
+            qa: {
+                name: { id: "Q&A Dialogue", en: "Q&A Dialogue" },
                 instruction: {
-                    id: "Format penjelasan menggunakan gaya FAQ (Tanya-Jawab) yang menjawab secara tuntas pertanyaan-pertanyaan yang paling sering muncul secara spontan di kepala pembaca mengenai topik ini.",
-                    en: "Format the explanation using an FAQ (Q&A) style, addressing and thoroughly answering the most common questions that spontaneously arise in the reader's mind about this topic."
+                    id: "Format penjelasan mengalir seperti dialog tanya-jawab (Q&A) interaktif, yang secara antisipatif menjawab keraguan, sanggahan, atau pertanyaan yang biasanya muncul di kepala pembaca.",
+                    en: "Format the explanation like an interactive Q&A dialogue, anticipating and directly answering the doubts, concerns, or questions likely to arise in the reader's head."
                 }
             }
         }
     },
-    narrative: {
-        name: { id: "Naratif (Storytelling)", en: "Storytelling" },
+    storytelling: {
+        name: { id: "Story-Driven Content (Copywriting)", en: "Story-Driven Content" },
         instruction: {
-            id: "Gunakan gaya penulisan Naratif (Storytelling). Rangkai penjelasan dalam alur cerita non-fiksi kreatif yang mengalir, kaya deskripsi, dramatis, dan memikat.",
-            en: "Use a narrative (storytelling) writing style. Weave the explanations into a flowing, descriptive, dramatic, and highly engaging creative non-fiction story."
+            id: "Gunakan gaya penulisan Story-Driven Content yang membungkus informasi/topik menggunakan teknik penceritaan (storytelling) yang emosional, memikat, dan mengalir dengan indah.",
+            en: "Use a Story-Driven Content writing style: wrapping the information or topic in an emotional, engaging, and beautifully flowing narrative."
         },
         substyles: {
-            biography: {
-                name: { id: "Biografi / Tokoh", en: "Biography & Figures" },
+            hero: {
+                name: { id: "Hero's Journey", en: "Hero's Journey" },
                 instruction: {
-                    id: "Awali dan bingkai penjelasan dengan kisah biografi tokoh penemu atau ilmuwan penting yang relevan dengan topik ini, memperlihatkan perjuangan dan momen eureka mereka.",
-                    en: "Begin and frame the explanation with the biographical story of a key pioneer, inventor, or historical figure relevant to the topic, highlighting their struggle and eureka moment."
+                    id: "Gunakan pola Hero's Journey: awali dengan tantangan/masalah besar, ikuti dengan perjuangan mencari solusi, tampilkan titik balik penemuan (momen eureka), dan akhiri dengan hasil transformasi yang menginspirasi.",
+                    en: "Use the Hero's Journey framework: start with a major challenge/adventure, detail the struggle to find a solution, show the eureka moment, and end with the inspiring transformation."
                 }
             },
-            historical: {
-                name: { id: "Kejadian Bersejarah", en: "Historical Event" },
+            case: {
+                name: { id: "Case Story", en: "Case Story" },
                 instruction: {
-                    id: "Gunakan momen kritis atau kejadian bersejarah dramatis di masa lalu sebagai pintu masuk utama untuk menjelaskan bagaimana konsep ini lahir dan mengubah jalannya sejarah.",
-                    en: "Use a critical moment or dramatic historical event in the past as the main entry point to explain how this concept was born and changed the course of history."
+                    id: "Gunakan Case Story: sajikan sebuah kisah nyata atau studi kasus nyata yang singkat dan kuat untuk membuktikan poin utama serta menunjukkan pengaplikasian nyata dari konsep ini.",
+                    en: "Use Case Stories: present a brief, powerful, real-life story or case study to substantiate the main point and illustrate the concrete application of the concept."
                 }
             },
-            fiction_analogy: {
-                name: { id: "Fiksi Analogi", en: "Analogy Fiction" },
+            hook: {
+                name: { id: "Anecdotal Hook", en: "Anecdotal Hook" },
                 instruction: {
-                    id: "Gunakan skenario fiktif pendek (misal: penjelajah luar angkasa, dunia mikroba, atau kerajaan kuno) untuk mempersonifikasi konsep abstrak dan menjadikannya petualangan seru.",
-                    en: "Use a short fictional scenario (e.g., space explorers, microbial worlds, or ancient kingdoms) to personify abstract concepts and turn them into an exciting adventure."
+                    id: "Buka artikel dengan Anekdot Pendek (Anecdotal Hook) yang sangat menarik dan relevan sebagai pintu masuk yang memikat sebelum mengurai konsep dasar secara mendalam.",
+                    en: "Open the article with a highly engaging and relevant short anecdote (Anecdotal Hook) as a captivating gateway before unpacking the underlying concepts in detail."
                 }
             }
         }
     },
     analytical: {
-        name: { id: "Analitik (Analytical)", en: "Analytical" },
+        name: { id: "Analytical Case Study", en: "Analytical Case Study" },
         instruction: {
-            id: "Gunakan gaya penulisan Analitik yang berfokus mendalam pada hubungan sebab-akibat (why & how), pengenalan pola, pemikiran kritis, dan argumen terstruktur.",
-            en: "Use an analytical writing style focused deeply on cause-and-effect relationships (why and how), pattern recognition, critical thinking, and structured arguments."
+            id: "Gunakan gaya penulisan Analytical Case Study yang mendalam, objektif, logis, terstruktur, berbasis bukti, dan didukung oleh data empiris atau analisis sistematis.",
+            en: "Use an Analytical Case Study writing style: deep, objective, highly logical, well-structured, evidence-based, and backed by empirical data or systematic analysis."
         },
         substyles: {
-            framework: {
-                name: { id: "Framework Thinking", en: "Framework Thinking" },
+            data: {
+                name: { id: "Data-Driven Breakdown", en: "Data-Driven Breakdown" },
                 instruction: {
-                    id: "Sajikan konsep sebagai kerangka berpikir (framework) praktis yang sistematis dan siap diaplikasikan pengguna untuk memecahkan masalah nyata.",
-                    en: "Present the concept as a practical, systematic thinking framework that the reader can immediately apply to solve real-world problems."
+                    id: "Gunakan Data-Driven Breakdown: sajikan metrik konkret, angka, persentase, tren statistik, atau data empiris pendukung untuk memperkuat argumen dan memberikan visualisasi analitis yang tajam.",
+                    en: "Use a Data-Driven Breakdown: present concrete metrics, figures, percentages, statistical trends, or supporting empirical data to solidify arguments and provide sharp analytical insights."
                 }
             },
-            data_driven: {
-                name: { id: "Data-Driven", en: "Data-Driven" },
+            cause: {
+                name: { id: "Root-Cause Analysis", en: "Root-Cause Analysis" },
                 instruction: {
-                    id: "Gunakan pendekatan data-driven dengan banyak mengacu pada angka, statistik, visualisasi data imajiner, tren empiris, dan riset ilmiah pendukung.",
-                    en: "Use a data-driven approach, heavily referencing figures, statistics, empirical trends, and supporting scientific research."
+                    id: "Lakukan Root-Cause Analysis (Sebab-Akibat): bedah masalah secara runut, cari akar penyebab utamanya menggunakan metode analisis sebab-akibat (seperti 5 Whys), dan jelaskan implikasinya secara mendalam.",
+                    en: "Perform a Root-Cause Analysis: dissect problems logically, trace down to the primary root cause (using cause-and-effect or the 5 Whys technique), and explain the deep implications systematically."
                 }
             },
-            first_principles: {
-                name: { id: "First Principles", en: "First Principles" },
+            principles: {
+                name: { id: "First Principles Review", en: "First Principles Review" },
                 instruction: {
-                    id: "Gunakan pemikiran First Principles: urai konsep rumit sampai ke asumsi fundamental paling mendasar yang tidak bisa dibantah, lalu bangun argumen kembali ke atas langkah demi langkah.",
-                    en: "Use First Principles thinking: break down complex concepts to the most fundamental, undeniable truth/assumptions, then rebuild the arguments upwards step-by-step."
+                    id: "Gunakan First Principles Review: bongkar konsep rumit ini dari elemen penyusunnya yang paling mendasar dan tidak terbantahkan, lalu bangun pemahaman ke atas langkah demi langkah tanpa mengasumsikan apa pun.",
+                    en: "Use a First Principles Review: deconstruct this complex concept into its most fundamental, undeniable truth/components, then rebuild the understanding step-by-step without assumptions."
                 }
             }
         }
     },
-    provocateur: {
-        name: { id: "Provokatif (Provocateur)", en: "Provocateur" },
+    frameworks: {
+        name: { id: "Actionable Frameworks (Thought Leadership)", en: "Actionable Frameworks" },
         instruction: {
-            id: "Gunakan gaya penulisan Provokatif yang menantang asumsi umum secara sengaja. Mulai dengan pernyataan kontra-intuitif yang mengejutkan, dan gunakan nada berenergi ala Freakonomics.",
-            en: "Use a provocative, mind-opening writing style that intentionally challenges common assumptions. Start with a surprising, counter-intuitive hook, and use a high-energy tone."
+            id: "Gunakan gaya penulisan Actionable Frameworks yang mengajarkan metode praktis, model mental, atau kerangka berpikir orisinal yang bisa langsung dipraktikkan oleh pembaca dalam kehidupan sehari-hari.",
+            en: "Use an Actionable Frameworks writing style: teaching practical methods, mental models, or original frameworks that the reader can immediately implement in real life."
         },
         substyles: {
-            myth_buster: {
-                name: { id: "Myth Buster", en: "Myth Buster" },
+            mental: {
+                name: { id: "Mental Model", en: "Mental Model" },
                 instruction: {
-                    id: "Fokus pada pembongkaran mitos besar atau kesalahpahaman umum yang dipercaya publik mengenai topik ini, menyajikan bukti-bukti telak yang mematahkan mitos tersebut.",
-                    en: "Focus on debunking a major myth or common misconception believed by the public about this topic, presenting solid evidence that shatters the myth."
+                    id: "Kaitkan topik secara langsung dengan Kerangka Berpikir / Model Mental terkenal (seperti Hukum Pareto 80/20, SWOT, Kuadran Eisenhower, dll.) untuk membantu pembaca mencerna konsep secara struktural.",
+                    en: "Directly link the topic with well-known Mental Models (e.g., Pareto Principle, SWOT, Eisenhower Matrix) to help the reader structurally digest and apply the concept."
                 }
             },
-            devils_delegate: {
-                name: { id: "Devil's Advocate", en: "Devil's Advocate" },
+            playbook: {
+                name: { id: "SOP / Playbook", en: "SOP / Playbook" },
                 instruction: {
-                    id: "Ambil peran sebagai Devil's Advocate: bela argumen atau sudut pandang yang sangat tidak populer namun memiliki dasar rasional yang kuat, memaksa pengguna berpikir di luar kotak.",
-                    en: "Play the role of Devil's Advocate: argue for a highly unpopular perspective or counter-argument that has a strong rational basis, forcing the reader to think outside the box."
+                    id: "Sajikan panduan operasional standar (SOP / Playbook) yang sangat praktis dan terstruktur. Berikan daftar tindakan konkret, template sederhana, atau panduan kerja lapangan.",
+                    en: "Present a highly practical, structured Standard Operating Procedure (SOP / Playbook). Provide checklists of concrete actions, simple templates, or field execution guides."
                 }
             },
-            reframing: {
-                name: { id: "Reframing", en: "Reframing" },
+            pitfalls: {
+                name: { id: "Pitfall & Best Practices", en: "Pitfalls & Best Practices" },
                 instruction: {
-                    id: "Lakukan Reframing: ubah secara radikal cara pandang pembaca terhadap konsep atau fenomena yang sudah dianggap sangat familiar, membuka sisi pandang baru yang mengejutkan.",
-                    en: "Perform Reframing: radically change how the reader perceives a very familiar concept or phenomenon, opening up a surprising and fresh perspective."
+                    id: "Tekankan pada Best Practices (praktik terbaik) dan Pitfalls (jebakan/kesalahan umum) di lapangan. Sajikan panduan do's & don'ts yang teruji dan cara menghindarinya secara taktis.",
+                    en: "Emphasize field-tested Best Practices and common Pitfalls. Provide clear checklists of do's & don'ts and practical strategies to avoid failures."
                 }
             }
         }
@@ -219,27 +236,40 @@ function saveNodeStylePreference() {
     }
 }
 
+function getRandomStyleAndSubstyle() {
+    const styles = Object.keys(WRITING_STYLES);
+    const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+    const styleData = WRITING_STYLES[randomStyle];
+    const substyles = Object.keys(styleData.substyles);
+    const randomSubstyle = substyles[Math.floor(Math.random() * substyles.length)];
+    return { style: randomStyle, substyle: randomSubstyle };
+}
+
 function getWritingStyleInstruction(style, substyle) {
+    const slopRules = state.language === 'en' ? ANTI_AI_SLOP_INSTRUCTION.en : ANTI_AI_SLOP_INSTRUCTION.id;
+
+    let targetStyle = style;
+    let targetSubstyle = substyle;
+
     if (!style || style === 'auto') {
-        if (state.language === 'en') {
-            return `Auto-detect the domain/domain area of the topic, then dynamically adapt the article's writing style to one of the following category blends that maximizes reader comprehension: Scholarly (precise, taxonomy), Technical (dense, code, step-by-step), Casual (friendly, conversational, everyday analogies), Storytelling (rich narrative, historical backdrop), Analytical (first principles, frameworks, statistical patterns), or Provocateur (shattering common myths, counter-intuitive arguments). Do not state that you did this.`;
-        } else {
-            return `Secara otomatis deteksi bidang/ranah dari topik ini, lalu adaptasikan gaya penulisan artikel secara dinamis menggunakan salah satu dari kategori berikut yang paling memaksimalkan pemahaman pembaca: Akademik (presisi, taksonomi), Teknis (padat, contoh kode, tutorial), Santai (conversational, ramah, analogi sehari-hari), Naratif (kaya cerita, latar belakang sejarah), Analitis (first principles, kerangka berpikir, pola statistik), atau Provokatif (membongkar mitos, argumen kontra-intuitif). Jangan sebutkan bahwa Anda melakukan penyesuaian ini secara eksplisit.`;
-        }
+        const randomChoice = getRandomStyleAndSubstyle();
+        targetStyle = randomChoice.style;
+        targetSubstyle = randomChoice.substyle;
+        console.log(`[System Style Engine] Randomly chose style: ${targetStyle}, substyle: ${targetSubstyle}`);
     }
 
-    const styleData = WRITING_STYLES[style];
-    if (!styleData) return '';
+    const styleData = WRITING_STYLES[targetStyle];
+    if (!styleData) return slopRules;
 
     let instr = state.language === 'en' ? styleData.instruction.en : styleData.instruction.id;
 
-    if (substyle && substyle !== 'auto' && styleData.substyles[substyle]) {
-        const substyleData = styleData.substyles[substyle];
+    if (targetSubstyle && targetSubstyle !== 'auto' && styleData.substyles[targetSubstyle]) {
+        const substyleData = styleData.substyles[targetSubstyle];
         const substyleInstr = state.language === 'en' ? substyleData.instruction.en : substyleData.instruction.id;
         instr += " " + substyleInstr;
     }
 
-    return instr;
+    return instr + " " + slopRules;
 }
 
 function initUIEventListeners() {
@@ -820,7 +850,14 @@ async function handleChatSubmit(e) {
     if (hintText) hintText.classList.add('hidden');
 
     try {
-        const styleInstruction = getWritingStyleInstruction('auto', 'auto');
+        let selectedStyle = 'auto';
+        let selectedSubStyle = 'auto';
+        if (typeof getRandomStyleAndSubstyle === 'function') {
+            const randomChoice = getRandomStyleAndSubstyle();
+            selectedStyle = randomChoice.style;
+            selectedSubStyle = randomChoice.substyle;
+        }
+        const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle);
         const prompt = state.language === 'en' ? `Create a structured learning roadmap for the topic: "${topic}". Generate valid JSON format with a single root node and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
  
         Additionally, create an in-depth introductory explanation/article for the main topic "${topic}" (layer 0) in rich Markdown format (use small h3 headings, lists, analogies/examples, and blockquotes. If there are sub-lists, use 2 or 4 spaces indentation). WRITING STYLE STYLE: ${styleInstruction}. Open with an engaging introductory story or hook if relevant (do not force it). Focus on revealing counter-intuitive insights or lesser-known blindspots. Keep it concise, high-density, and limited to about 800-1000 words to prevent truncation.
@@ -865,6 +902,7 @@ async function handleChatSubmit(e) {
             // Generate unique ID untuk mindmap baru ini
             state.currentMindmapId = 'mm_' + Date.now();
             localStorage.setItem('current_mindmap_id', state.currentMindmapId);
+            state.isOwner = true;
 
             // Simpan ke state global & reset cache/status progress belajar
             state.mindmapData = result;
@@ -872,7 +910,9 @@ async function handleChatSubmit(e) {
             if (result.explanation) {
                 state.nodeCache[result.name] = {
                     explanation: result.explanation,
-                    subtopics: result.children ? result.children.map(c => ({ name: c.name, description: c.description })) : []
+                    subtopics: result.children ? result.children.map(c => ({ name: c.name, description: c.description })) : [],
+                    writingStyle: selectedStyle,
+                    writingSubStyle: selectedSubStyle
                 };
             }
             state.nodeStatuses = {};
@@ -1046,6 +1086,34 @@ function renderNodeDetail(title, markdownText) {
     
     // Terapkan sorotan (highlight) dan catatan tempel
     applyHighlights(title);
+
+    // Tampilkan log system style engine jika ada di cache
+    const cache = state.nodeCache[title];
+    if (cache && cache.writingStyle && WRITING_STYLES[cache.writingStyle]) {
+        const styleData = WRITING_STYLES[cache.writingStyle];
+        const styleName = state.language === 'en' ? styleData.name.en : styleData.name.id;
+        let substyleName = '';
+        if (cache.writingSubStyle && cache.writingSubStyle !== 'auto' && styleData.substyles[cache.writingSubStyle]) {
+            const substyleData = styleData.substyles[cache.writingSubStyle];
+            substyleName = ' - ' + (state.language === 'en' ? substyleData.name.en : substyleData.name.id);
+        }
+        
+        const logHtml = `
+            <div class="style-engine-log" style="margin-top: 2.5rem; padding: 0.75rem 1rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; font-size: 0.72rem; color: var(--text-2); display: flex; align-items: center; justify-content: space-between;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="terminal" style="width: 14px; height: 14px; color: var(--accent);"></i>
+                    <strong>[Style Log]</strong> 
+                    <span>Gaya Penulisan: <code>${styleName}${substyleName}</code></span>
+                </span>
+            </div>
+        `;
+        content.innerHTML += logHtml;
+
+        // Re-create icons for the newly added lucide icons
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }
     
     // Render Q&A khusus jika kolom Q&A sedang terbuka
     const qaCol = document.getElementById('drawer-col-qa');
@@ -1625,6 +1693,7 @@ function createNewMindmap() {
     // Reset state local
     state.currentMindmapId = 'mm_' + Date.now();
     localStorage.setItem('current_mindmap_id', state.currentMindmapId);
+    state.isOwner = true;
     state.mindmapData = null;
     state.nodeCache = {};
     state.nodeStatuses = {};
@@ -1930,8 +1999,14 @@ async function submitRegenerateNode(e) {
     // Ambil opsi gaya penulisan terpilih dari modal
     const regenStyleSelect = document.getElementById('regenerate-style-select');
     const regenSubstyleSelect = document.getElementById('regenerate-substyle-select');
-    const selectedStyle = regenStyleSelect ? regenStyleSelect.value : 'auto';
-    const selectedSubStyle = regenSubstyleSelect ? regenSubstyleSelect.value : 'auto';
+    let selectedStyle = regenStyleSelect ? regenStyleSelect.value : 'auto';
+    let selectedSubStyle = regenSubstyleSelect ? regenSubstyleSelect.value : 'auto';
+
+    if (selectedStyle === 'auto' && typeof getRandomStyleAndSubstyle === 'function') {
+        const randomChoice = getRandomStyleAndSubstyle();
+        selectedStyle = randomChoice.style;
+        selectedSubStyle = randomChoice.substyle;
+    }
 
     // Simpan pilihan gaya penulisan ini ke state node
     targetNode.writingStyle = selectedStyle;
@@ -1995,6 +2070,8 @@ async function submitRegenerateNode(e) {
                     state.nodeCache[nodeName] = { explanation: '', subtopics: [] };
                 }
                 state.nodeCache[nodeName].explanation = result.explanation;
+                state.nodeCache[nodeName].writingStyle = selectedStyle;
+                state.nodeCache[nodeName].writingSubStyle = selectedSubStyle;
             } else {
                 throw new Error("Respon AI tidak sesuai format");
             }
@@ -2056,7 +2133,9 @@ async function submitRegenerateNode(e) {
                 // Simpan cache baru
                 state.nodeCache[nodeName] = {
                     explanation: result.explanation,
-                    subtopics: result.subtopics || []
+                    subtopics: result.subtopics || [],
+                    writingStyle: selectedStyle,
+                    writingSubStyle: selectedSubStyle
                 };
 
                 // Tambah children baru
@@ -3051,12 +3130,11 @@ function initRedesignNavigation() {
     // 3. Hook Suggested Pills
     const suggestedPills = document.querySelectorAll('.suggested-pill');
     suggestedPills.forEach(pill => {
-        pill.addEventListener('click', () => {
+        pill.addEventListener('click', (e) => {
             const inputEl = document.getElementById('chat-input');
-            const formEl = document.getElementById('chat-form');
-            if (inputEl && formEl) {
+            if (inputEl) {
                 inputEl.value = pill.innerText.replace(/^[✨🧠💻🌱📊🧪🏛️] /, '').trim();
-                formEl.dispatchEvent(new Event('submit'));
+                handleChatSubmit(e);
             }
         });
     });
@@ -3068,11 +3146,10 @@ function initRedesignNavigation() {
             e.preventDefault();
             const inputDashboard = document.getElementById('dashboard-exploration-input');
             const inputChat = document.getElementById('chat-input');
-            const formChat = document.getElementById('chat-form');
-            if (inputDashboard && inputChat && formChat) {
+            if (inputDashboard && inputChat) {
                 inputChat.value = inputDashboard.value;
                 inputDashboard.value = '';
-                formChat.dispatchEvent(new Event('submit'));
+                handleChatSubmit(e);
             }
         });
     }
@@ -3080,12 +3157,13 @@ function initRedesignNavigation() {
     // 3.7. Hook Dashboard Suggested Topic Pills
     const suggestedPillsDashboard = document.querySelectorAll('.suggested-pill-dashboard');
     suggestedPillsDashboard.forEach(pill => {
-        pill.addEventListener('click', () => {
+        pill.addEventListener('click', (e) => {
             const inputDashboard = document.getElementById('dashboard-exploration-input');
-            const formDashboard = document.getElementById('dashboard-exploration-form');
-            if (inputDashboard && formDashboard) {
-                inputDashboard.value = pill.innerText.trim();
-                formDashboard.dispatchEvent(new Event('submit'));
+            const inputChat = document.getElementById('chat-input');
+            if (inputDashboard && inputChat) {
+                inputChat.value = pill.innerText.replace(/^[✨🧠💻🌱📊🧪🏛️] /, '').trim();
+                inputDashboard.value = '';
+                handleChatSubmit(e);
             }
         });
     });
@@ -3313,12 +3391,11 @@ function renderRecentSearches() {
             <i data-lucide="chevron-right" class="arrow-icon" style="width: 16px; height: 16px; color: var(--text-3); flex-shrink: 0;"></i>
         `;
         
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
             const chatInput = document.getElementById('chat-input');
-            const chatForm = document.getElementById('chat-form');
-            if (chatInput && chatForm) {
+            if (chatInput) {
                 chatInput.value = search;
-                chatForm.dispatchEvent(new Event('submit'));
+                handleChatSubmit(e);
             }
         });
         container.appendChild(item);

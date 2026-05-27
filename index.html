@@ -234,17 +234,17 @@
                         <div class="drawer-col-materi" style="flex: 1; overflow-y: auto; padding: 2rem 2.5rem; background: var(--bg);">
                             <div class="article-category" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                                 <span>ARTICLE DEEP-DIVE</span>
-                                <div class="style-selector-wrap" style="display: inline-flex; align-items: center; gap: 6px; background: var(--bg-subtle); padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;">
+                                <div class="style-selector-wrap" style="display: none; align-items: center; gap: 6px; background: var(--bg-subtle); padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;">
                                     <i data-lucide="pen-tool" style="width: 11px; height: 11px; color: var(--accent);"></i>
                                     <span style="font-size: 0.68rem; font-weight: 600; color: var(--text-2);">Gaya:</span>
                                     <select id="drawer-style-select" style="font-size: 0.68rem; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
                                         <option value="auto">Otomatis (Auto)</option>
-                                        <option value="academic">Akademik (Scholarly)</option>
-                                        <option value="technical">Teknis (Technical)</option>
-                                        <option value="casual">Santai (Casual)</option>
-                                        <option value="narrative">Naratif (Storytelling)</option>
-                                        <option value="analytical">Analitik (Analytical)</option>
-                                        <option value="provocateur">Provocateur</option>
+                                        <option value="copywriting">Direct Copywriting</option>
+                                        <option value="seo">Technical & SEO Content</option>
+                                        <option value="conversational">Conversational Persona</option>
+                                        <option value="storytelling">Story-Driven Content</option>
+                                        <option value="analytical">Analytical Case Study</option>
+                                        <option value="frameworks">Actionable Frameworks</option>
                                     </select>
                                     <select id="drawer-substyle-select" style="font-size: 0.68rem; padding: 1px 4px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
                                         <option value="auto">Semua Sub-Gaya</option>
@@ -571,18 +571,18 @@
                         </label>
                     </div>
                 </div>
-
-                <div class="form-group" style="margin-top: 0.75rem;">
+ 
+                <div class="form-group" style="margin-top: 0.75rem; display: none;">
                     <label style="font-weight: 600; margin-bottom: 0.25rem;">Gaya Penulisan (Writing Style):</label>
                     <div style="display: flex; gap: 8px; margin-top: 5px;">
                         <select id="regenerate-style-select" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
                             <option value="auto">Otomatis (Auto)</option>
-                            <option value="academic">Akademik (Scholarly)</option>
-                            <option value="technical">Teknis (Technical)</option>
-                            <option value="casual">☕ Santai (Casual)</option>
-                            <option value="narrative">Naratif (Storytelling)</option>
-                            <option value="analytical">Analitik (Analytical)</option>
-                            <option value="provocateur">Provocateur</option>
+                            <option value="copywriting">Direct Copywriting</option>
+                            <option value="seo">Technical & SEO Content</option>
+                            <option value="conversational">Conversational Persona</option>
+                            <option value="storytelling">Story-Driven Content</option>
+                            <option value="analytical">Analytical Case Study</option>
+                            <option value="frameworks">Actionable Frameworks</option>
                         </select>
                         <select id="regenerate-substyle-select" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
                             <option value="auto">Semua Sub-Gaya</option>

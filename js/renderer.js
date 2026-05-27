@@ -382,6 +382,13 @@ async function handleNodeClick(d3Node) {
             current = current.parent;
         }
 
+        // Resolusi auto menjadi style acak dari system
+        if (selectedStyle === 'auto' && typeof getRandomStyleAndSubstyle === 'function') {
+            const randomChoice = getRandomStyleAndSubstyle();
+            selectedStyle = randomChoice.style;
+            selectedSubStyle = randomChoice.substyle;
+        }
+
         // Simpan gaya penulisan yang diwarisi/terpilih ini ke data node saat ini agar konsisten
         d3Node.data.writingStyle = selectedStyle;
         d3Node.data.writingSubStyle = selectedSubStyle;
@@ -428,7 +435,9 @@ async function handleNodeClick(d3Node) {
             // Update cache & persist
             state.nodeCache[nodeName] = {
                 explanation: result.explanation,
-                subtopics: result.subtopics || []
+                subtopics: result.subtopics || [],
+                writingStyle: d3Node.data.writingStyle,
+                writingSubStyle: d3Node.data.writingSubStyle
             };
             saveState();
 
