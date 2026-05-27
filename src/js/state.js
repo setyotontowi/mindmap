@@ -36,7 +36,7 @@ async function saveState(skipDBSync = false) {
         localStorage.setItem('node_statuses', JSON.stringify(state.nodeStatuses));
         
         if (!skipDBSync && state.mindmapData) {
-            showSyncStatus('Menyimpan... ⏳');
+            showSyncStatus('Menyimpan...');
             const res = await fetch('/api/mindmap', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -49,14 +49,14 @@ async function saveState(skipDBSync = false) {
                 })
             });
             if (res.ok) {
-                showSyncStatus('Tersimpan 💾');
+                showSyncStatus('Tersimpan');
             } else {
                 throw new Error('Server error');
             }
         }
     } catch (e) {
         console.warn('Gagal menyimpan state:', e);
-        showSyncStatus('Gagal Sinkron ⚠️');
+        showSyncStatus('Gagal Sinkron');
     }
 }
 
@@ -87,7 +87,7 @@ function loadState() {
 
 async function syncFromDatabase(id = state.currentMindmapId) {
     try {
-        showSyncStatus('Sinkronisasi... ⏳');
+        showSyncStatus('Sinkronisasi...');
         const url = id ? `/api/mindmap?id=${id}` : '/api/mindmap';
         const response = await fetch(url);
         if (!response.ok) throw new Error('Koneksi server gagal');
@@ -107,9 +107,9 @@ async function syncFromDatabase(id = state.currentMindmapId) {
             
             if (state.isOwner) {
                 saveState(true); 
-                showSyncStatus('Tersinkronisasi 💾');
+                showSyncStatus('Tersinkronisasi');
             } else {
-                showSyncStatus('Mode Lihat Saja 👁️');
+                showSyncStatus('Mode Lihat Saja');
             }
             
             if (state.mindmapData) {
@@ -133,10 +133,10 @@ async function syncFromDatabase(id = state.currentMindmapId) {
             }
         } else {
             if (state.mindmapData && state.isOwner) {
-                showSyncStatus('Migrasi ke DB... ⏳');
+                showSyncStatus('Migrasi ke DB...');
                 await saveState(false);
             } else {
-                showSyncStatus('DB Kosong 🔌');
+                showSyncStatus('DB Kosong');
             }
         }
         // Muat daftar riwayat
@@ -144,9 +144,9 @@ async function syncFromDatabase(id = state.currentMindmapId) {
     } catch (error) {
         console.warn('Gagal sinkron dari database PostgreSQL:', error);
         if (state.isOwner) {
-            showSyncStatus('Offline (Lokal) 🔌');
+            showSyncStatus('Offline (Lokal)');
         } else {
-            showSyncStatus('Offline (View Only) 👁️');
+            showSyncStatus('Offline (View Only)');
         }
     }
 }
@@ -160,7 +160,7 @@ async function clearState() {
     localStorage.removeItem('node_cache');
     localStorage.removeItem('node_statuses');
     
-    showSyncStatus('Menghapus... ⏳');
+    showSyncStatus('Menghapus...');
     try {
         await fetch('/api/mindmap', {
             method: 'POST',
@@ -172,10 +172,10 @@ async function clearState() {
                 node_statuses: {}
             })
         });
-        showSyncStatus('Dibersihkan ✨');
+        showSyncStatus('Dibersihkan');
     } catch (e) {
         console.warn('Gagal menghapus data di database:', e);
-        showSyncStatus('Gagal Hapus DB ⚠️');
+        showSyncStatus('Gagal Hapus DB');
     }
 }
 

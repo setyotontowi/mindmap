@@ -359,11 +359,11 @@ async function handleNodeClick(d3Node) {
     // Tulis pesan robot di chat
     const exploringMsg = isReadingAnotherNode
         ? (state.language === 'en'
-            ? `Opening the rabbit hole portal for **${nodeName}** in the background... I am digging up the explanation for you. 🔍`
-            : `Membuka portal rabbit hole untuk **${nodeName}** di latar belakang... Aku sedang menggali penjelasannya untukmu. 🔍`)
+            ? `Opening the rabbit hole portal for **${nodeName}** in the background... I am digging up the explanation for you.`
+            : `Membuka portal rabbit hole untuk **${nodeName}** di latar belakang... Aku sedang menggali penjelasannya untukmu.`)
         : (state.language === 'en'
-            ? `Opening the rabbit hole portal for **${nodeName}**... I am digging up the explanation for you. 🔍`
-            : `Membuka portal rabbit hole untuk **${nodeName}**... Aku sedang menggali penjelasannya untukmu. 🔍`);
+            ? `Opening the rabbit hole portal for **${nodeName}**... I am digging up the explanation for you.`
+            : `Membuka portal rabbit hole untuk **${nodeName}**... Aku sedang menggali penjelasannya untukmu.`);
     appendChatMessage('bot', exploringMsg);
 
     try {
@@ -473,11 +473,11 @@ async function handleNodeClick(d3Node) {
             // Beri tahu di chat
             const msg = isReadingAnotherNode
                 ? (state.language === 'en'
-                    ? `Explanation for **${nodeName}** is ready in the background! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click that node to read it when you are ready! 🚀`
-                    : `Penjelasan materi untuk **${nodeName}** telah siap di latar belakang! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node tersebut untuk membacanya kapan saja Anda siap! 🚀`)
+                    ? `Explanation for **${nodeName}** is ready in the background! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click that node to read it when you are ready!`
+                    : `Penjelasan materi untuk **${nodeName}** telah siap di latar belakang! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node tersebut untuk membacanya kapan saja Anda siap!`)
                 : (state.language === 'en'
-                    ? `Explanation for **${nodeName}** is ready! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click those new nodes to dig deeper! 🚀`
-                    : `Penjelasan materi untuk **${nodeName}** telah siap! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node baru tersebut untuk menggali lebih dalam! 🚀`);
+                    ? `Explanation for **${nodeName}** is ready! I also added **${result.subtopics?.length || 0} new subtopics** to the mindmap. Click those new nodes to dig deeper!`
+                    : `Penjelasan materi untuk **${nodeName}** telah siap! Aku juga sudah menambahkan **${result.subtopics?.length || 0} sub-topik baru** di mindmap. Klik node baru tersebut untuk menggali lebih dalam!`);
             appendChatMessage('bot', msg);
         } else {
             throw new Error("Respon AI tidak sesuai format");

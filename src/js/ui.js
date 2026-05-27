@@ -725,16 +725,16 @@ function switchSidebarMode(mode) {
 
 const AI_MODELS_BY_PROVIDER = {
     gemini: [
-        { value: 'gemini-2.5-flash', text: 'Gemini 2.5 Flash (Default) ⚡' },
-        { value: 'gemini-2.5-pro', text: 'Gemini 2.5 Pro 🧠' },
-        { value: 'gemini-1.5-flash', text: 'Gemini 1.5 Flash 💨' },
-        { value: 'custom', text: 'Kustom / Custom Model... ✏️' }
+        { value: 'gemini-2.5-flash', text: 'Gemini 2.5 Flash (Default)' },
+        { value: 'gemini-2.5-pro', text: 'Gemini 2.5 Pro' },
+        { value: 'gemini-1.5-flash', text: 'Gemini 1.5 Flash' },
+        { value: 'custom', text: 'Kustom / Custom Model...' }
     ],
     claude: [
-        { value: 'claude-sonnet-4-6', text: 'Claude Sonnet 4.6 (Recommended) 🚀' },
-        { value: 'claude-opus-4-7', text: 'Claude Opus 4.7 🧠' },
-        { value: 'claude-haiku-4-5', text: 'Claude Haiku 4.5 ⚡' },
-        { value: 'custom', text: 'Kustom / Custom Model... ✏️' }
+        { value: 'claude-sonnet-4-6', text: 'Claude Sonnet 4.6 (Recommended)' },
+        { value: 'claude-opus-4-7', text: 'Claude Opus 4.7' },
+        { value: 'claude-haiku-4-5', text: 'Claude Haiku 4.5' },
+        { value: 'custom', text: 'Kustom / Custom Model...' }
     ]
 };
 
@@ -973,8 +973,8 @@ async function handleChatSubmit(e) {
         const loadingText = document.getElementById('mindmap-loading-text');
         if (loadingText) {
             loadingText.innerHTML = state.language === 'en'
-                ? `Exploring the rabbit hole of <strong>${topic}</strong>... 🧠✨`
-                : `Menyelam ke dalam rabbit hole <strong>${topic}</strong>... 🧠✨`;
+                ? `Exploring the rabbit hole of <strong>${topic}</strong>...`
+                : `Menyelam ke dalam rabbit hole <strong>${topic}</strong>...`;
         }
         startLoadingTrivia();
     }
@@ -1076,8 +1076,8 @@ async function handleChatSubmit(e) {
             switchSidebarMode('history');
 
             const msg = state.language === 'en'
-                ? `Initial mindmap to learn **${result.name}** is ready! 🗺️ <br><br>Use your mouse to pan & zoom the mindmap on the right panel. **Click on any node** to start deep diving into the lesson!`
-                : `Peta pikiran awal untuk belajar **${result.name}** telah siap! 🗺️ <br><br>Gunakan mouse untuk menggeser & men-zoom mindmap di panel kanan. **Klik pada node manapun** untuk memulai *deep dive* pelajaran!`;
+                ? `Initial mindmap to learn **${result.name}** is ready! <br><br>Use your mouse to pan & zoom the mindmap on the right panel. **Click on any node** to start deep diving into the lesson!`
+                : `Peta pikiran awal untuk belajar **${result.name}** telah siap! <br><br>Gunakan mouse untuk menggeser & men-zoom mindmap di panel kanan. **Klik pada node manapun** untuk memulai *deep dive* pelajaran!`;
             appendChatMessage('bot', msg);
         } else {
             throw new Error("Gagal mem-parsing format JSON dari AI");
@@ -1433,13 +1433,13 @@ function handleStatusChange(e) {
     // Beri apresiasi di chat jika ditandai SELESAI
     if (newStatus === 'done') {
         const msg = state.language === 'en'
-            ? `Excellent! You completed the topic **${nodeName}**. Keep up the great work! 🎓👏`
-            : `Luar biasa! Kamu telah menyelesaikan pelajaran **${nodeName}**. Terus pertahaman semangat belajarmu! 🎓👏`;
+            ? `Excellent! You completed the topic **${nodeName}**. Keep up the great work!`
+            : `Luar biasa! Kamu telah menyelesaikan pelajaran **${nodeName}**. Terus pertahankan semangat belajarmu!`;
         appendChatMessage('bot', msg);
     } else if (newStatus === 'doing') {
         const msg = state.language === 'en'
-            ? `Great! You are now studying **${nodeName}**. Take notes of the important points! 📖✍️`
-            : `Semangat! Sekarang kamu sedang mempelajari **${nodeName}**. Catat poin-poin pentingnya ya! 📖✍️`;
+            ? `Great! You are now studying **${nodeName}**. Take notes of the important points!`
+            : `Semangat! Sekarang kamu sedang mempelajari **${nodeName}**. Catat poin-poin pentingnya ya!`;
         appendChatMessage('bot', msg);
     }
 }
@@ -1881,7 +1881,7 @@ async function deleteMindmapById(id) {
                     d3.select('#mindmap-svg').selectAll('*').remove();
                     document.getElementById('mindmap-hint-text').classList.remove('hidden');
                     
-                    appendChatMessage('bot', 'Semua mindmap telah dihapus. Silakan tulis topik baru di kolom chat untuk memulai! 🧠✨');
+                    appendChatMessage('bot', 'Semua mindmap telah dihapus. Silakan tulis topik baru di kolom chat untuk memulai!');
                     
                     // Update daftar riwayat di sidebar agar terupdate
                     await loadHistoryList();
@@ -1914,7 +1914,7 @@ function createNewMindmap() {
     d3.select('#mindmap-svg').selectAll('*').remove();
     document.getElementById('mindmap-hint-text').classList.remove('hidden');
     
-    appendChatMessage('bot', 'Siap membuat mindmap baru! Silakan tulis topik belajar berikutnya yang ingin kamu jelajahi di bawah ini. 🧠🚀');
+    appendChatMessage('bot', 'Siap membuat mindmap baru! Silakan tulis topik belajar berikutnya yang ingin kamu jelajahi di bawah ini.');
     
     // Aktifkan mode chat
     switchSidebarMode('chat');
@@ -2015,8 +2015,8 @@ function submitAddNode(e) {
     closeAddNodeModal();
 
     const msg = state.language === 'en'
-        ? `Successfully added new subtopic **${title}** manually under **${state.activeNode.name}**! 🚀`
-        : `Berhasil menambahkan sub-topik baru **${title}** secara manual di bawah **${state.activeNode.name}**! 🚀`;
+        ? `Successfully added new subtopic **${title}** manually under **${state.activeNode.name}**!`
+        : `Berhasil menambahkan sub-topik baru **${title}** secara manual di bawah **${state.activeNode.name}**!`;
     appendChatMessage('bot', msg);
 }
 
@@ -2082,8 +2082,8 @@ function submitEditNode(e) {
     }
 
     const msg = state.language === 'en'
-        ? `Node **${oldTitle}** was successfully edited to **${newTitle}**! ✏️`
-        : `Node **${oldTitle}** berhasil diubah menjadi **${newTitle}**! ✏️`;
+        ? `Node **${oldTitle}** was successfully edited to **${newTitle}**!`
+        : `Node **${oldTitle}** berhasil diubah menjadi **${newTitle}**!`;
     appendChatMessage('bot', msg);
     
     // Muat ulang history jika root diubah namanya
@@ -3235,7 +3235,8 @@ function updateMobileHeaderTitle() {
         if (isMindmapScreen && state.mindmapData && state.mindmapData.name) {
             brandLogo.textContent = state.mindmapData.name;
         } else {
-            brandLogo.textContent = 'Rabbit Hole 🧠';
+            brandLogo.innerHTML = '<i data-lucide="brain" style="display: inline-block; vertical-align: middle; margin-right: 6px; width: 18px; height: 18px;"></i>Rabbit Hole';
+            if (window.lucide) window.lucide.createIcons();
         }
     }
 }
@@ -3590,11 +3591,18 @@ function updateTableOfContents() {
         
         // Add indicator based on node status
         const status = state.nodeStatuses[item.name] || 'todo';
-        let statusEmoji = '🌱 ';
-        if (status === 'doing') statusEmoji = '📖 ';
-        if (status === 'done') statusEmoji = '✅ ';
+        let iconName = 'book';
+        let iconColor = 'var(--text-3)';
+        if (status === 'doing') {
+            iconName = 'book-open';
+            iconColor = 'var(--accent)';
+        }
+        if (status === 'done') {
+            iconName = 'check-circle';
+            iconColor = '#10b981';
+        }
         
-        btn.innerText = statusEmoji + item.name;
+        btn.innerHTML = `<i data-lucide="${iconName}" style="width: 14px; height: 14px; margin-right: 6px; display: inline-block; vertical-align: middle; color: ${iconColor};"></i><span>${item.name}</span>`;
         
         btn.addEventListener('click', () => {
             selectAndOpenNode(item.name);
@@ -3602,6 +3610,7 @@ function updateTableOfContents() {
         
         tocContainer.appendChild(btn);
     });
+    if (window.lucide) window.lucide.createIcons();
 }
 
 function selectAndOpenNode(nodeName) {

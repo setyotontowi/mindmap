@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rabbit Hole Mindmap Learner 🧠✨</title>
+    <title>Rabbit Hole Mindmap Learner</title>
     <meta name="description" content="Belajar apapun lewat mindmap interaktif dan chat agent bertenaga AI. Masuk sedalam mungkin ke dalam 'rabbit hole' topik belajarmu!">
     
     <!-- Dark Mode Initializer -->
@@ -28,13 +28,13 @@
     
     <!-- Custom Icon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-
+ 
 <body>
     <div class="app-container-redesign">
         <!-- Global Header -->
         <header class="global-header">
             <div class="header-left">
-                <span class="brand-logo">Rabbit Hole 🧠</span>
+                <span class="brand-logo"><i data-lucide="brain" style="display: inline-block; vertical-align: middle; margin-right: 6px; width: 18px; height: 18px;"></i>Rabbit Hole</span>
                 <nav class="global-nav">
                     <button class="nav-tab active" id="tab-search">Search</button>
                     <button class="nav-tab" id="tab-mindmaps">Mind Maps</button>
@@ -42,7 +42,7 @@
                 </nav>
             </div>
             <div class="header-right">
-                <span id="sync-status" class="sync-status" title="Status Sinkronisasi PostgreSQL" style="font-size: 0.72rem; margin-right: 8px;">Menghubungkan... 🔌</span>
+                <span id="sync-status" class="sync-status" title="Status Sinkronisasi PostgreSQL" style="font-size: 0.72rem; margin-right: 8px;">Menghubungkan...</span>
                 <button class="icon-btn" id="btn-mobile-header-search" title="Cari Topik" style="display: none;">
                     <i data-lucide="search"></i>
                 </button>
@@ -218,7 +218,7 @@
                         <!-- Mindmap Loading Overlay -->
                         <div class="mindmap-loading-overlay hidden" id="mindmap-loading-overlay">
                             <div class="mindmap-loading-spinner"></div>
-                            <span class="mindmap-loading-text" id="mindmap-loading-text">Menyelam ke dalam rabbit hole topik Anda... 🧠✨</span>
+                            <span class="mindmap-loading-text" id="mindmap-loading-text">Menyelam ke dalam rabbit hole topik Anda...</span>
                             <div class="loading-trivia-container" id="loading-trivia-container" style="margin-top: 1.5rem; max-width: 450px; text-align: center; padding: 1rem 1.5rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(4px); display: none;">
                                 <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                     <i data-lucide="lightbulb" style="width: 12px; height: 12px;"></i> Brain Hack / Trivia
@@ -581,15 +581,15 @@
                 <div class="form-group">
                     <label for="ai-language-select">Bahasa AI / AI Language</label>
                     <select id="ai-language-select">
-                        <option value="id">Bahasa Indonesia 🇮🇩</option>
-                        <option value="en">English 🇬🇧</option>
+                        <option value="id">Bahasa Indonesia (ID)</option>
+                        <option value="en">English (EN)</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="ai-provider-select">Provider AI</label>
                     <select id="ai-provider-select">
-                        <option value="gemini">Google Gemini ♊</option>
-                        <option value="claude">Anthropic Claude 🧠</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="claude">Anthropic Claude</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">
@@ -605,9 +605,9 @@
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="app-theme-select">Tema Tampilan / App Theme</label>
                     <select id="app-theme-select">
-                        <option value="light">Terang / Light ☀️</option>
-                        <option value="dark">Gelap / Dark 🌙</option>
-                        <option value="system">Mengikuti Sistem / System 💻</option>
+                        <option value="light">Terang / Light</option>
+                        <option value="dark">Gelap / Dark</option>
+                        <option value="system">Mengikuti Sistem / System</option>
                     </select>
                 </div>
             </div>
@@ -691,7 +691,7 @@
                         <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
                             <input type="radio" name="regenerate-scope" value="keep" checked style="margin-top: 4px; cursor: pointer; width: auto; height: auto;">
                             <div>
-                                <strong>Hanya buat ulang penjelasan 📝</strong>
+                                <strong>Hanya buat ulang penjelasan</strong>
                                 <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Penjelasan materi baru akan dibuat, tetapi semua sub-topik yang sudah ada di bawahnya TIDAK akan diubah.</div>
                             </div>
                         </label>
@@ -699,7 +699,7 @@
                         <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
                             <input type="radio" name="regenerate-scope" value="subtopics" style="margin-top: 4px; cursor: pointer; width: auto; height: auto;">
                             <div>
-                                <strong>Hanya buat ulang sub-topik baru 🌿</strong>
+                                <strong>Hanya buat ulang sub-topik baru</strong>
                                 <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Penjelasan materi lama tetap dipertahankan, tetapi semua sub-topik di bawah node ini akan dibuat ulang/diganti dengan yang baru.</div>
                             </div>
                         </label>
@@ -707,7 +707,7 @@
                         <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
                             <input type="radio" name="regenerate-scope" value="overwrite" style="margin-top: 4px; cursor: pointer; width: auto; height: auto;">
                             <div>
-                                <strong>Buat ulang penjelasan & sub-topik baru 🔄</strong>
+                                <strong>Buat ulang penjelasan & sub-topik baru</strong>
                                 <div style="font-size: 0.72rem; color: #ef4444; margin-top: 2px;">AI akan membuat materi baru DAN membuat sub-topik baru. Semua sub-topik lama/kustom di bawah node ini akan DIHAPUS.</div>
                             </div>
                         </label>
@@ -761,7 +761,7 @@
                     <button class="btn-secondary" id="btn-export-png-action" style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px; width: 100%; text-align: left;">
                         <i data-lucide="image" style="color: #3b82f6;"></i>
                         <div>
-                            <strong>Ekspor Gambar PNG 🖼️</strong>
+                            <strong>Ekspor Gambar PNG</strong>
                             <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Unduh peta pikiran sebagai gambar PNG resolusi tinggi.</div>
                         </div>
                     </button>
@@ -770,7 +770,7 @@
                     <button class="btn-secondary" id="btn-export-svg-action" style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px; width: 100%; text-align: left;">
                         <i data-lucide="file-code" style="color: #10b981;"></i>
                         <div>
-                            <strong>Ekspor Gambar SVG 📐</strong>
+                            <strong>Ekspor Gambar SVG</strong>
                             <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Unduh peta pikiran sebagai grafis vektor SVG (skala tak terbatas).</div>
                         </div>
                     </button>
@@ -779,7 +779,7 @@
                     <button class="btn-secondary" id="btn-export-md-action" style="display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px; width: 100%; text-align: left;">
                         <i data-lucide="file-text" style="color: #f59e0b;"></i>
                         <div>
-                            <strong>Ekspor Ringkasan Markdown 📝</strong>
+                            <strong>Ekspor Ringkasan Markdown</strong>
                             <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 2px;">Unduh seluruh artikel materi pelajaran yang telah dijelajahi ke satu file Markdown terpadu.</div>
                         </div>
                     </button>

@@ -1568,7 +1568,7 @@ mark.hl-pink:hover   { background: #fbcfe8; }
 
 /* Subtle indicator that highlight has commentary */
 mark[data-note]::after {
-    content: ' 💬';
+    content: ' *';
     font-size: 0.65rem;
     vertical-align: super;
     opacity: 0.8;
