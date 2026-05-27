@@ -33,6 +33,12 @@ const parseCookies = (cookieHeader) => {
 app.use(express.json({ limit: '50mb' })); // Mendukung data berukuran besar (penjelasan AI & cache)
 app.use(express.static(__dirname)); // Sajikan frontend static files langsung dari root directory
 
+// Global Logger Middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ➡️  ${req.method} ${req.url}`);
+    next();
+});
+
 // Inisialisasi Database PostgreSQL
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
@@ -109,6 +115,7 @@ app.use(async (req, res, next) => {
 // GET endpoint - Ambil semua mindmap (untuk history)
 app.get('/api/mindmaps', (req, res) => {
     const userId = req.user ? req.user.id : null;
+    console.log(`[Mindmaps] Fetching all mindmaps list for user ID: ${userId || 'guest'}`);
     const query = userId 
         ? 'SELECT id, name, tree_data, node_statuses, updated_at FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC'
         : 'SELECT id, name, tree_data, node_statuses, updated_at FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC';
@@ -116,9 +123,10 @@ app.get('/api/mindmaps', (req, res) => {
 
     pool.query(query, params, (err, result) => {
         if (err) {
-            console.error(err);
+            console.error(`[Mindmaps] Error fetching mindmaps:`, err);
             return res.status(500).json({ error: 'Gagal mengambil daftar mindmap' });
         }
+        console.log(`[Mindmaps] Found ${result.rows?.length || 0} mindmaps in history.`);
         res.json(result.rows || []);
     });
 });
@@ -127,6 +135,7 @@ app.get('/api/mindmaps', (req, res) => {
 app.get('/api/mindmap', (req, res) => {
     const id = req.query.id;
     const userId = req.user ? req.user.id : null;
+    console.log(`[Mindmap] Request to load mindmap. ID = ${id || 'active/latest'}, User ID = ${userId || 'guest'}`);
     
     if (id) {
         const query = 'SELECT * FROM mindmaps WHERE id = $1';
@@ -189,12 +198,14 @@ app.post('/api/mindmap', async (req, res) => {
     const { id, name, tree_data, node_cache, node_statuses } = req.body;
     const targetId = id || ('mm_' + Date.now());
     const userId = req.user ? req.user.id : null;
+    console.log(`[Mindmap] Syncing mindmap ID: ${targetId} ("${name || 'untitled'}") for user ID: ${userId || 'guest'}`);
 
     try {
         const checkRes = await pool.query('SELECT user_id FROM mindmaps WHERE id = $1', [targetId]);
         if (checkRes.rows.length > 0) {
             const existingOwnerId = checkRes.rows[0].user_id;
             if (existingOwnerId !== null && existingOwnerId !== userId) {
+                console.warn(`[Mindmap] Unauthorized sync attempt for ID: ${targetId} by user ID: ${userId || 'guest'}`);
                 return res.status(403).json({ error: 'Anda tidak memiliki hak untuk mengubah mindmap ini.' });
             }
         }
@@ -221,9 +232,10 @@ app.post('/api/mindmap', async (req, res) => {
         ];
 
         await pool.query(query, params);
+        console.log(`[Mindmap] Successfully synced mindmap ID: ${targetId}`);
         res.json({ success: true, message: 'Mindmap berhasil disinkronisasi ke PostgreSQL' });
     } catch (err) {
-        console.error('Gagal menyimpan mindmap:', err.message);
+        console.error(`[Mindmap] Failed to save/sync mindmap ID: ${targetId}:`, err.message);
         res.status(500).json({ error: 'Gagal menyimpan data ke database PostgreSQL' });
     }
 });
@@ -232,21 +244,24 @@ app.post('/api/mindmap', async (req, res) => {
 app.delete('/api/mindmap/:id', async (req, res) => {
     const id = req.params.id;
     const userId = req.user ? req.user.id : null;
+    console.log(`[Mindmap] Deleting mindmap ID: ${id} for user ID: ${userId || 'guest'}`);
 
     try {
         const checkRes = await pool.query('SELECT user_id FROM mindmaps WHERE id = $1', [id]);
         if (checkRes.rows.length > 0) {
             const existingOwnerId = checkRes.rows[0].user_id;
             if (existingOwnerId !== null && existingOwnerId !== userId) {
+                console.warn(`[Mindmap] Unauthorized delete attempt for ID: ${id} by user ID: ${userId || 'guest'}`);
                 return res.status(403).json({ error: 'Anda tidak memiliki hak untuk menghapus mindmap ini.' });
             }
         }
 
         const query = 'DELETE FROM mindmaps WHERE id = $1';
         await pool.query(query, [id]);
+        console.log(`[Mindmap] Successfully deleted mindmap ID: ${id}`);
         res.json({ success: true, message: 'Mindmap berhasil dihapus dari PostgreSQL' });
     } catch (err) {
-        console.error('Gagal menghapus mindmap:', err.message);
+        console.error(`[Mindmap] Failed to delete mindmap ID: ${id}:`, err.message);
         res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
     }
 });
@@ -255,6 +270,7 @@ app.delete('/api/mindmap/:id', async (req, res) => {
 app.post('/api/ai/completions', async (req, res) => {
     try {
         const { messages, response_format, temperature, stream, max_tokens, provider, model } = req.body;
+        console.log(`[AI] Completion Request: Provider = ${provider || 'gemini'}, Model = ${model || 'gemini-2.5-flash'}, Messages Count = ${messages?.length || 0}`);
         
         const isProduction = process.env.NODE_ENV === 'production';
         const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -269,6 +285,7 @@ app.post('/api/ai/completions', async (req, res) => {
         
         if (useGemini) {
             if (!geminiApiKey || geminiApiKey === 'your_google_gemini_api_key_here') {
+                console.warn('[AI] Gemini Api Key is missing or default placeholder');
                 return res.status(401).json({ 
                     error: { message: 'GEMINI_API_KEY belum dikonfigurasi di file env (.env atau .env.production).' } 
                 });
@@ -324,18 +341,21 @@ app.post('/api/ai/completions', async (req, res) => {
                 } catch (e) {
                     errMsg = errText || errMsg;
                 }
+                console.error(`[AI] Google Gemini API HTTP Error: ${response.status} - ${errMsg}`);
                 return res.status(response.status).json({ error: { message: errMsg } });
             }
 
             const responseData = await response.json();
             
             if (responseData.error) {
+                console.error(`[AI] Google Gemini API returned error:`, responseData.error);
                 return res.status(responseData.error.code || 500).json({
                     error: { message: responseData.error.message }
                 });
             }
 
             const responseText = responseData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            console.log(`[AI] Google Gemini API Completion Success. Response length: ${responseText?.length || 0} chars.`);
 
             const mappedResponse = {
                 choices: [
@@ -354,6 +374,7 @@ app.post('/api/ai/completions', async (req, res) => {
             const apiKey = process.env.CLAUDE_API_KEY;
             
             if (!apiKey || apiKey === 'your_anthropic_claude_api_key_here') {
+                console.warn('[AI] Claude API Key is missing or default placeholder');
                 return res.status(401).json({ 
                     error: { message: 'CLAUDE_API_KEY belum dikonfigurasi di file env (.env atau .env.production).' } 
                 });
@@ -397,11 +418,13 @@ app.post('/api/ai/completions', async (req, res) => {
                 } catch (e) {
                     errMsg = errText || errMsg;
                 }
+                console.error(`[AI] Anthropic Claude API HTTP Error: ${response.status} - ${errMsg}`);
                 return res.status(response.status).json({ error: { message: errMsg } });
             }
 
             const responseData = await response.json();
             const responseText = responseData.content?.[0]?.text || '';
+            console.log(`[AI] Anthropic Claude API Completion Success. Response length: ${responseText?.length || 0} chars.`);
 
             const mappedResponse = {
                 choices: [

@@ -1911,8 +1911,9 @@ async function submitRegenerateNode(e) {
     e.preventDefault();
     if (!state.activeNode) return;
 
-    const nodeName = state.activeNode.name;
-    const nodeDesc = state.activeNode.description || '';
+    const targetNode = state.activeNode; // Capture node reference to survive drawer closure!
+    const nodeName = targetNode.name;
+    const nodeDesc = targetNode.description || '';
     const rootTopicName = state.mindmapData.name;
 
     // Ambil instruksi eksplorasi khusus
@@ -1933,8 +1934,8 @@ async function submitRegenerateNode(e) {
     const selectedSubStyle = regenSubstyleSelect ? regenSubstyleSelect.value : 'auto';
 
     // Simpan pilihan gaya penulisan ini ke state node
-    state.activeNode.writingStyle = selectedStyle;
-    state.activeNode.writingSubStyle = selectedSubStyle;
+    targetNode.writingStyle = selectedStyle;
+    targetNode.writingSubStyle = selectedSubStyle;
     
     // Sinkronkan ke dropdown detail drawer agar sama/sinkron
     const drawerStyleSelect = document.getElementById('drawer-style-select');
@@ -1950,7 +1951,7 @@ async function submitRegenerateNode(e) {
 
     // 1. Tampilkan loading di drawer dan canvas
     renderDrawerLoading(nodeName);
-    state.activeNode.loading = true;
+    targetNode.loading = true;
     updateMindmap(state.mindmapData);
 
     const thinkingMsg = state.language === 'en'
@@ -1962,7 +1963,7 @@ async function submitRegenerateNode(e) {
         let result;
         if (scope === 'keep') {
             // Hanya buat ulang penjelasan, pertahaman sub-node di bawahnya
-            const existingSubtopicList = state.activeNode.children ? state.activeNode.children.map(c => c.name).join(', ') : '';
+            const existingSubtopicList = targetNode.children ? targetNode.children.map(c => c.name).join(', ') : '';
             const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants you to regenerate the deep-dive explanation for the subtopic "${nodeName}" (Description: "${nodeDesc}").
             The existing subtopics under this node are: [${existingSubtopicList}].
             ${customPrompt ? `ADDITIONAL USER INSTRUCTION / FOCUS AREA: "${customPrompt}"\n` : ''}
@@ -2045,12 +2046,12 @@ async function submitRegenerateNode(e) {
                 }
 
                 // Bersihkan data lama di bawah node ini
-                if (state.activeNode.children) {
-                    state.activeNode.children.forEach(cleanSubtreeData);
+                if (targetNode.children) {
+                    targetNode.children.forEach(cleanSubtreeData);
                 }
 
                 // Kosongkan dan ganti children
-                state.activeNode.children = [];
+                targetNode.children = [];
 
                 // Simpan cache baru
                 state.nodeCache[nodeName] = {
@@ -2062,7 +2063,7 @@ async function submitRegenerateNode(e) {
                 if (result.subtopics && result.subtopics.length > 0) {
                     result.subtopics.forEach(sub => {
                         sub.id = `${nodeName}-${sub.name}-${Date.now()}`;
-                        state.activeNode.children.push(sub);
+                        targetNode.children.push(sub);
                     });
                 }
             } else {
@@ -2071,13 +2072,15 @@ async function submitRegenerateNode(e) {
         }
 
         // Hapus loading status
-        delete state.activeNode.loading;
+        delete targetNode.loading;
 
         saveState();
         updateMindmap(state.mindmapData);
 
-        // Render isi penjelasan baru
-        renderNodeDetail(nodeName, state.nodeCache[nodeName].explanation);
+        // Render isi penjelasan baru hanya jika drawer masih aktif pada node ini
+        if (state.activeNode === targetNode) {
+            renderNodeDetail(nodeName, state.nodeCache[nodeName].explanation);
+        }
 
         const msg = state.language === 'en'
             ? `Successfully regenerated material for **${nodeName}**! 🔄`
@@ -2086,14 +2089,19 @@ async function submitRegenerateNode(e) {
 
     } catch (error) {
         console.error('Regeneration error:', error);
-        delete state.activeNode.loading;
+        if (targetNode) {
+            delete targetNode.loading;
+        }
         updateMindmap(state.mindmapData);
         
         const msg = state.language === 'en'
             ? `Sorry, I failed to regenerate material for **${nodeName}**. Error message: *${error.message}*.`
             : `Maaf, aku gagal membangun ulang materi untuk **${nodeName}**. Masalah: *${error.message}*.`;
         appendChatMessage('bot', msg);
-        renderDrawerError(nodeName, error.message);
+        
+        if (state.activeNode === targetNode) {
+            renderDrawerError(nodeName, error.message);
+        }
     }
 }
 
