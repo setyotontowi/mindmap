@@ -1780,6 +1780,12 @@ mark[data-note]::after {
     position: relative;
 }
 
+@media (max-width: 768px) {
+    .search-screen-wrapper {
+        padding: 1.5rem 1rem;
+    }
+}
+
 .search-screen-two-columns {
     display: grid;
     grid-template-columns: 1.1fr 1.3fr;
@@ -1804,8 +1810,12 @@ mark[data-note]::after {
 
 @media (max-width: 1024px) {
     .search-screen-two-columns {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 2.5rem;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
     }
     
     .search-hero-title {
@@ -1921,8 +1931,15 @@ mark[data-note]::after {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 2rem;
     width: 100%;
-    max-width: 700px;
+    max-width: 100%;
     margin-bottom: 4rem;
+}
+
+@media (max-width: 600px) {
+    .search-columns-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
 }
 
 .search-column-title {
@@ -2006,6 +2023,12 @@ mark[data-note]::after {
     text-align: center;
     position: relative;
     overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .search-marketing-showcase {
+        padding: 1rem;
+    }
 }
 
 .search-marketing-showcase:hover {
