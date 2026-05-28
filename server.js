@@ -479,6 +479,78 @@ app.post('/api/ai/completions', async (req, res) => {
             };
             res.json(mappedResponse);
 
+        } else if (provider === 'deepsek' || provider === 'deepseek') {
+            // DeepSeek API (OpenAI-compatible)
+            const apiKey = process.env.DEEPSEK_API_KEY;
+            
+            if (!apiKey) {
+                console.warn('[AI] DeepSeek API Key is missing');
+                return res.status(401).json({ 
+                    error: { message: 'DEEPSEK_API_KEY belum dikonfigurasi di file .env.' } 
+                });
+            }
+
+            const url = 'https://api.deepseek.com/chat/completions';
+            const modelName = model || 'deepseek-chat';
+
+            const deepseekPayload = {
+                model: modelName,
+                messages: messages.map(m => ({
+                    role: m.role,
+                    content: m.content
+                })),
+                temperature: temperature !== undefined ? temperature : 0.2,
+                max_tokens: max_tokens || 8192,
+                stream: false
+            };
+
+            if (response_format && response_format.type === 'json_object') {
+                deepseekPayload.response_format = { type: 'json_object' };
+            }
+
+            console.log(`[AI] DeepSeek Request: Model=${modelName}, Messages=${messages?.length || 0}`);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(deepseekPayload)
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                let errMsg = 'Gagal terhubung ke DeepSeek API';
+                try {
+                    const errData = JSON.parse(errText);
+                    errMsg = errData.error?.message || errMsg;
+                } catch (e) {
+                    errMsg = errText || errMsg;
+                }
+                console.error(`[AI] DeepSeek API HTTP Error: ${response.status} - ${errMsg}`);
+                return res.status(response.status).json({ error: { message: errMsg } });
+            }
+
+            const responseData = await response.json();
+            const responseText = responseData.choices?.[0]?.message?.content || '';
+            
+            const usage = responseData.usage || {};
+            console.log(`[AI] DeepSeek API Success. Response length: ${responseText?.length || 0} chars.`);
+            console.log(`[AI] Token Usage - Input: ${usage.prompt_tokens || 0}, Output: ${usage.completion_tokens || 0}, Total: ${usage.total_tokens || 0}`);
+
+            const mappedResponse = {
+                choices: [
+                    {
+                        message: {
+                            role: 'assistant',
+                            content: responseText
+                        }
+                    }
+                ]
+            };
+            res.json(mappedResponse);
+
         } else {
             // Langsung menggunakan Claude API dari Anthropic
             const apiKey = process.env.CLAUDE_API_KEY;

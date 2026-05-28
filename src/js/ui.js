@@ -735,6 +735,11 @@ const AI_MODELS_BY_PROVIDER = {
         { value: 'claude-opus-4-7', text: 'Claude Opus 4.7' },
         { value: 'claude-haiku-4-5', text: 'Claude Haiku 4.5' },
         { value: 'custom', text: 'Kustom / Custom Model...' }
+    ],
+    deepsek: [
+        { value: 'deepseek-chat', text: 'DeepSeek Chat V3 (Default)' },
+        { value: 'deepseek-reasoner', text: 'DeepSeek R1 (Reasoning)' },
+        { value: 'custom', text: 'Kustom / Custom Model...' }
     ]
 };
 
