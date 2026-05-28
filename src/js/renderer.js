@@ -98,7 +98,10 @@ function updateMindmap(sourceData) {
     if (hintText) hintText.classList.add('hidden');
 
     // Konversi hierarchical data ke d3 hierarchy (sembunyikan anak jika di-collapse)
-    rootNodeData = d3.hierarchy(sourceData, d => d.collapsed ? null : d.children);
+    // Jika viewRoot aktif, render hanya subtree dari node tersebut
+    const root = getViewRoot ? getViewRoot() : null;
+    const treeRoot = root || sourceData;
+    rootNodeData = d3.hierarchy(treeRoot, d => d.collapsed ? null : d.children);
 
     // Hitung posisi pohon
     treeLayout(rootNodeData);
@@ -196,6 +199,16 @@ function updateMindmap(sourceData) {
         .on('click', (event, d) => {
             event.stopPropagation();
             handleNodeClick(d);
+        })
+        .on('dblclick', (event, d) => {
+            event.stopPropagation();
+            // Double-click -> paginate ke subtree node ini
+            const nodeData = d.data;
+            if (nodeData.children && nodeData.children.length > 0) {
+                if (typeof paginateTo === 'function') {
+                    paginateTo(nodeData);
+                }
+            }
         });
 
     nodeCard.append('div')

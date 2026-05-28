@@ -236,6 +236,11 @@
                         <input type="text" id="mindmap-node-search" placeholder="Find a node...">
                     </div>
 
+                    <!-- Breadcrumb Navigation Bar -->
+                    <div id="breadcrumb-bar" class="hidden">
+                        <!-- Diisi oleh renderBreadcrumbs() -->
+                    </div>
+
                     <!-- Zoom Controls bottom left -->
                     <div class="floating-controls" style="left: 1.25rem; bottom: 1.25rem;">
                         <button class="control-btn" id="btn-zoom-in" title="Perbesar">
@@ -287,6 +292,9 @@
                             <button class="icon-btn" id="btn-add-subnode" title="Tambah Sub-Node Manual">
                                 <i data-lucide="plus-circle"></i>
                             </button>
+                            <button class="icon-btn" id="btn-paginate-node" title="Telusuri Sub-tree">
+                                <i data-lucide="search"></i>
+                            </button>
                             <button class="icon-btn" id="btn-edit-node" title="Edit Node Ini">
                                 <i data-lucide="edit-3"></i>
                             </button>
@@ -334,6 +342,10 @@
                                 <button class="dropdown-item" id="btn-mobile-regenerate-node">
                                     <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
                                     <span>Buat Ulang (Regen)</span>
+                                </button>
+                                <button class="dropdown-item" id="btn-mobile-paginate-node">
+                                    <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                                    <span>Telusuri Sub-tree</span>
                                 </button>
                                 <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
                                 <button class="dropdown-item" id="btn-mobile-delete-node" style="color: #ef4444;">

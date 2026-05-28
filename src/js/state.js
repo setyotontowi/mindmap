@@ -305,6 +305,20 @@ function paginateTo(node) {
     }
 
     state.viewRoot = nodeData;
+
+    // Render breadcrumb & zoom fit
+    if (typeof renderBreadcrumbs === 'function') {
+        renderBreadcrumbs();
+    }
+    if (typeof updateMindmap === 'function') {
+        updateMindmap(state.mindmapData);
+    }
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
+
     saveState(true); // Skip DB sync — pagination murni UI
 }
 
@@ -315,6 +329,17 @@ function paginateTo(node) {
 function paginateBack() {
     if (state.breadcrumbs.length === 0) {
         state.viewRoot = null;
+        if (typeof renderBreadcrumbs === 'function') {
+            renderBreadcrumbs();
+        }
+        if (typeof updateMindmap === 'function') {
+            updateMindmap(state.mindmapData);
+        }
+        setTimeout(() => {
+            if (typeof zoomFit === 'function') {
+                zoomFit();
+            }
+        }, 100);
         saveState(true);
         return;
     }
@@ -329,6 +354,18 @@ function paginateBack() {
         state.viewRoot = findNodeByName(state.mindmapData, prev.name);
     }
 
+    if (typeof renderBreadcrumbs === 'function') {
+        renderBreadcrumbs();
+    }
+    if (typeof updateMindmap === 'function') {
+        updateMindmap(state.mindmapData);
+    }
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
+
     saveState(true);
 }
 
@@ -338,6 +375,17 @@ function paginateBack() {
 function resetPagination() {
     state.viewRoot = null;
     state.breadcrumbs = [];
+    if (typeof renderBreadcrumbs === 'function') {
+        renderBreadcrumbs();
+    }
+    if (typeof updateMindmap === 'function') {
+        updateMindmap(state.mindmapData);
+    }
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
     saveState(true);
 }
 
