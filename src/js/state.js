@@ -13,7 +13,9 @@ const state = {
     nodeCache: {},           // nodeName -> { explanation, subtopics } (cache untuk rabbit hole)
     collapsedSidebar: false,
     currentUser: null,       // User yang sedang login (OAuth)
-    isOwner: true
+    isOwner: true,
+    viewRoot: null,          // Root node untuk halaman pagination saat ini (null = root asli)
+    breadcrumbs: []          // Array {name, id} — path dari root asli ke viewRoot sekarang
 };
 
 /* ==========================================================================
@@ -34,6 +36,8 @@ async function saveState(skipDBSync = false) {
         }
         localStorage.setItem('node_cache', JSON.stringify(state.nodeCache));
         localStorage.setItem('node_statuses', JSON.stringify(state.nodeStatuses));
+        localStorage.setItem('pagination_viewRoot', state.viewRoot ? state.viewRoot.name : null);
+        localStorage.setItem('pagination_breadcrumbs', JSON.stringify(state.breadcrumbs));
         
         if (!skipDBSync && state.mindmapData) {
             showSyncStatus('Menyimpan...');
@@ -77,6 +81,20 @@ function loadState() {
         const savedCache = localStorage.getItem('node_cache');
         if (savedCache && !urlId) {
             state.nodeCache = JSON.parse(savedCache);
+        }
+        
+        // Restore pagination state
+        const savedBreadcrumbs = localStorage.getItem('pagination_breadcrumbs');
+        if (savedBreadcrumbs) {
+            try {
+                state.breadcrumbs = JSON.parse(savedBreadcrumbs);
+            } catch (e) {
+                state.breadcrumbs = [];
+            }
+        }
+        const savedViewRootName = localStorage.getItem('pagination_viewRoot');
+        if (savedViewRootName && savedViewRootName !== 'null' && state.mindmapData) {
+            state.viewRoot = findNodeByName(state.mindmapData, savedViewRootName);
         }
     } catch (e) {
         console.warn('Gagal memuat state dari localStorage:', e);
@@ -156,9 +174,13 @@ async function clearState() {
     state.nodeCache = {};
     state.nodeStatuses = {};
     state.activeNode = null;
+    state.viewRoot = null;
+    state.breadcrumbs = [];
     localStorage.removeItem('mindmap_data');
     localStorage.removeItem('node_cache');
     localStorage.removeItem('node_statuses');
+    localStorage.removeItem('pagination_viewRoot');
+    localStorage.removeItem('pagination_breadcrumbs');
     
     showSyncStatus('Menghapus...');
     try {
@@ -205,6 +227,162 @@ window.loadState = loadState;
 window.syncFromDatabase = syncFromDatabase;
 window.clearState = clearState;
 window.applyTheme = applyTheme;
+
+/* ==========================================================================
+   PHASE 1: PAGINATION — State & Data Layer
+   ========================================================================== */
+
+/**
+ * Cari node di pohon berdasarkan nama (depth-first search).
+ * @param {Object} node - Node tree yg mau dicari
+ * @param {string} name - Nama node yg dicari
+ * @returns {Object|null} Node yg ditemukan, atau null
+ */
+function findNodeByName(node, name) {
+    if (!node || !name) return null;
+    if (node.name === name) return node;
+    if (node.children && Array.isArray(node.children)) {
+        for (let i = 0; i < node.children.length; i++) {
+            const found = findNodeByName(node.children[i], name);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+/**
+ * Return node yg jadi viewRoot saat ini.
+ * @returns {Object|null}
+ */
+function getViewRoot() {
+    return state.viewRoot;
+}
+
+/**
+ * Hitung depth node relatif terhadap viewRoot.
+ * Kalau viewRoot = null, return depth absolut.
+ * Kalau viewRoot bukan ancestor node tsb, return depth absolut.
+ * @param {Object} d3Node - D3 hierarchy node
+ * @returns {number} Depth relatif (0 = viewRoot itu sendiri)
+ */
+function getRelativeDepth(d3Node) {
+    if (!state.viewRoot || !d3Node) {
+        return d3Node ? d3Node.depth : 0;
+    }
+    // Cari viewRoot di ancestor chain
+    let current = d3Node;
+    while (current) {
+        if (current.data === state.viewRoot || current.data.name === state.viewRoot.name) {
+            return d3Node.depth - current.depth;
+        }
+        current = current.parent;
+    }
+    // viewRoot bukan ancestor node ini
+    return d3Node.depth;
+}
+
+/**
+ * Pindah ke halaman node baru.
+ * ViewRoot diganti ke node ini, dan viewRoot sebelumnya jadi breadcrumb.
+ * @param {Object} node - D3 hierarchy node (.data) atau raw data node
+ */
+function paginateTo(node) {
+    const nodeData = node.data || node;
+    if (!nodeData || !nodeData.name) return;
+
+    // Catat viewRoot saat ini sebagai breadcrumb
+    if (state.viewRoot) {
+        state.breadcrumbs.push({
+            name: state.viewRoot.name,
+            id: state.viewRoot.name
+        });
+    } else if (state.mindmapData) {
+        // Pertama kali paginate — catat root asli
+        state.breadcrumbs.push({
+            name: state.mindmapData.name,
+            id: state.currentMindmapId || state.mindmapData.name
+        });
+    }
+
+    state.viewRoot = nodeData;
+
+    // Render breadcrumb & zoom fit
+    if (typeof renderBreadcrumbs === 'function') {
+        renderBreadcrumbs();
+    }
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
+
+    saveState(true); // Skip DB sync — pagination murni UI
+}
+
+/**
+ * Balik ke halaman sebelumnya (pop breadcrumb terakhir).
+ * Kalau breadcrumbs habis, viewRoot = null (kembali ke root asli).
+ */
+function paginateBack() {
+    if (state.breadcrumbs.length === 0) {
+        state.viewRoot = null;
+        if (typeof renderBreadcrumbs === 'function') {
+            renderBreadcrumbs();
+        }
+        setTimeout(() => {
+            if (typeof zoomFit === 'function') {
+                zoomFit();
+            }
+        }, 100);
+        saveState(true);
+        return;
+    }
+
+    const prev = state.breadcrumbs.pop();
+
+    // Kembali ke root asli
+    if (!state.mindmapData || prev.name === state.mindmapData.name) {
+        state.viewRoot = null;
+    } else {
+        // Cari node dari breadcrumb di pohon
+        state.viewRoot = findNodeByName(state.mindmapData, prev.name);
+    }
+
+    if (typeof renderBreadcrumbs === 'function') {
+        renderBreadcrumbs();
+    }
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
+
+    saveState(true);
+}
+
+/**
+ * Reset pagination — kembali ke root asli, kosongkan breadcrumbs.
+ */
+function resetPagination() {
+    state.viewRoot = null;
+    state.breadcrumbs = [];
+    if (typeof renderBreadcrumbs === 'function') {
+        renderBreadcrumbs();
+    }
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
+    saveState(true);
+}
+
+// Ekspos ke global
+window.getViewRoot = getViewRoot;
+window.getRelativeDepth = getRelativeDepth;
+window.paginateTo = paginateTo;
+window.paginateBack = paginateBack;
+window.resetPagination = resetPagination;
 
 /* ==========================================================================
    PHASE 3: HELPER GRANULAR NODE SYNC

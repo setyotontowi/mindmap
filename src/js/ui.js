@@ -3696,6 +3696,109 @@ function renderRecentSearches() {
     }
 }
 
+/* ==========================================================================
+   BREADCRUMB UI (Phase 3 M2)
+   ========================================================================== */
+
+/**
+ * Render breadcrumb navigation bar berdasarkan state.breadcrumbs.
+ * Breadcrumbs menunjukkan path dari root asli ke viewRoot saat ini.
+ * Klik breadcrumb item -> paginate ke level itu.
+ * Klik root icon -> resetPagination().
+ */
+function renderBreadcrumbs() {
+    const bar = document.getElementById('breadcrumb-bar');
+    if (!bar) return;
+
+    const crumbs = state.breadcrumbs || [];
+
+    if (crumbs.length === 0) {
+        bar.classList.add('hidden');
+        return;
+    }
+
+    bar.classList.remove('hidden');
+
+    let html = '';
+
+    // Root icon — always shown when breadcrumbs exist
+    html += `<span class="breadcrumb-root" title="Kembali ke root" data-index="-1">🏠 Root</span>`;
+
+    // Render each breadcrumb item
+    crumbs.forEach((crumb, idx) => {
+        const isLast = idx === crumbs.length - 1;
+        html += `<span class="breadcrumb-sep">›</span>`;
+        if (isLast) {
+            // Last item = active / non-clickable
+            html += `<span class="breadcrumb-item active">${escapeHtml(crumb.name)}</span>`;
+        } else {
+            html += `<span class="breadcrumb-item" data-index="${idx}">${escapeHtml(crumb.name)}</span>`;
+        }
+    });
+
+    bar.innerHTML = html;
+
+    // Attach click handlers
+    bar.querySelectorAll('.breadcrumb-item[data-index]').forEach(el => {
+        el.addEventListener('click', () => {
+            const idx = parseInt(el.getAttribute('data-index'), 10);
+            paginateToBreadcrumbIndex(idx);
+        });
+    });
+
+    // Root click handler
+    const rootEl = bar.querySelector('.breadcrumb-root');
+    if (rootEl) {
+        rootEl.addEventListener('click', () => {
+            if (typeof resetPagination === 'function') {
+                resetPagination();
+            }
+        });
+    }
+
+    // Auto-scroll to end
+    bar.scrollLeft = bar.scrollWidth;
+}
+
+/**
+ * Paginate ke breadcrumb pada index tertentu.
+ * Semua breadcrumb setelah index itu dihapus.
+ * @param {number} idx - Index breadcrumb tujuan
+ */
+function paginateToBreadcrumbIndex(idx) {
+    if (idx < 0 || idx >= state.breadcrumbs.length) return;
+
+    // Target node adalah breadcrumb[idx]
+    const target = state.breadcrumbs[idx];
+    state.breadcrumbs = state.breadcrumbs.slice(0, idx + 1);
+
+    // Set viewRoot ke target node
+    if (target.name === state.mindmapData.name) {
+        state.viewRoot = null;
+    } else {
+        state.viewRoot = findNodeByName(state.mindmapData, target.name);
+    }
+
+    renderBreadcrumbs();
+    setTimeout(() => {
+        if (typeof zoomFit === 'function') {
+            zoomFit();
+        }
+    }, 100);
+    saveState(true);
+}
+
+/**
+ * Escape HTML special characters untuk mencegah XSS di breadcrumb.
+ * @param {string} text
+ * @returns {string}
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+}
+
 // Ekspos ke global window agar kompatibel dengan modul lain
 window.getRandomStyleAndSubstyle = getRandomStyleAndSubstyle;
 window.getWritingStyleInstruction = getWritingStyleInstruction;
@@ -3710,4 +3813,6 @@ window.switchScreen = switchScreen;
 window.loadHistoryList = loadHistoryList;
 window.checkAuthStatus = checkAuthStatus;
 window.updateTableOfContents = updateTableOfContents;
+window.renderBreadcrumbs = renderBreadcrumbs;
+window.paginateToBreadcrumbIndex = paginateToBreadcrumbIndex;
 

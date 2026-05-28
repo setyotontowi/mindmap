@@ -415,6 +415,55 @@ a:hover { text-decoration: underline; }
 }
 
 /* ==========================================================================
+   BREADCRUMB BAR
+   ========================================================================== */
+#breadcrumb-bar {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    gap: 4px;
+    overflow-x: auto;
+    font-size: 13px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 32px;
+}
+#breadcrumb-bar .breadcrumb-item {
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-2);
+    transition: background 0.2s;
+    font-size: 13px;
+}
+#breadcrumb-bar .breadcrumb-item:hover {
+    background: var(--bg-hover);
+    color: var(--accent);
+}
+#breadcrumb-bar .breadcrumb-item.active {
+    color: var(--accent);
+    font-weight: 600;
+}
+#breadcrumb-bar .breadcrumb-sep {
+    color: var(--text-3);
+    font-size: 12px;
+    user-select: none;
+}
+#breadcrumb-bar .breadcrumb-root {
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-3);
+    font-size: 13px;
+}
+#breadcrumb-bar .breadcrumb-root:hover {
+    color: var(--accent);
+    background: var(--bg-hover);
+}
+
+/* ==========================================================================
    FLOATING CONTROLS
    ========================================================================== */
 .floating-controls {
