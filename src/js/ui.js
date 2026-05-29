@@ -1151,9 +1151,14 @@ function openDetailDrawer(title) {
     if (percentLabel) percentLabel.textContent = 'Bacaan: 0%';
     if (etaLabel) etaLabel.textContent = '4 min lagi';
     
-    // Cari level kedalaman node
+    // Cari level kedalaman node secara absolut
     let depth = 0;
-    if (rootNodeData) {
+    if (state.mindmapData && typeof window.getAncestorNodePath === 'function') {
+        const foundPath = window.getAncestorNodePath(state.mindmapData, title);
+        if (foundPath.length > 0) {
+            depth = foundPath.length - 1;
+        }
+    } else if (rootNodeData) {
         const found = rootNodeData.descendants().find(d => d.data.name === title);
         if (found) depth = found.depth;
     }
