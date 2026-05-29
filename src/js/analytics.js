@@ -171,8 +171,103 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initCookieConsent();
         syncPrivacyToggle();
+        initStatsEventListeners();
     });
 } else {
     initCookieConsent();
     syncPrivacyToggle();
+    initStatsEventListeners();
+}
+
+/* ==========================================================================
+   STATS DASHBOARD RENDERER
+   ========================================================================== */
+
+function initStatsEventListeners() {
+    const statsBtn = document.getElementById('history-menu-item-stats');
+    if (statsBtn) {
+        statsBtn.addEventListener('click', () => {
+            if (typeof switchSidebarMode === 'function') {
+                switchSidebarMode('stats');
+            }
+            renderStatsDashboard();
+        });
+    }
+
+    // Also listen for the custom event from ui.js switchSidebarMode
+    document.addEventListener('stats-view-opened', renderStatsDashboard);
+}
+
+function renderStatsDashboard() {
+    const area = document.getElementById('stats-content-area');
+    if (!area) return;
+
+    // Show loading
+    area.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 3rem 0;">
+        <i data-lucide="bar-chart-3" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+        <div>Memuat statistik...</div>
+    </div>`;
+
+    fetchUserStats().then(stats => {
+        if (!stats) {
+            area.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 3rem 0;">
+                <i data-lucide="cloud-off" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                <div>Gagal memuat statistik. Pastikan analytics diizinkan.</div>
+            </div>`;
+            return;
+        }
+
+        if (!stats.authenticated) {
+            area.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 3rem 0;">
+                <i data-lucide="log-in" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                <div>Login untuk melihat statistik belajar Anda.</div>
+            </div>`;
+            return;
+        }
+
+        // Format duration
+        const hours = Math.floor(stats.total_study_time / 3600);
+        const minutes = Math.floor((stats.total_study_time % 3600) / 60);
+        const timeStr = hours > 0 ? `${hours}j ${minutes}m` : `${minutes}m`;
+
+        area.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="brain" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${stats.total_mindmaps}</div>
+                    <div class="stat-card-label">Mindmap Dibuat</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="eye" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${stats.total_events}</div>
+                    <div class="stat-card-label">Node Dijelajahi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="clock" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${timeStr}</div>
+                    <div class="stat-card-label">Total Waktu Baca</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="zap" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${stats.total_tokens.toLocaleString()}</div>
+                    <div class="stat-card-label">Token AI</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="calendar" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${stats.active_days}</div>
+                    <div class="stat-card-label">Hari Aktif</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="help-circle" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${stats.total_quizzes}</div>
+                    <div class="stat-card-label">Quiz Dikerjakan</div>
+                </div>
+            </div>
+        `;
+
+        // Re-initialize lucide icons
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    });
 }

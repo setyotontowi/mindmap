@@ -4489,6 +4489,127 @@ mark[data-note]::after {
     background: #d0dfd7;
 }
 
+/* ==========================================================================
+   PHASE 6: STATS DASHBOARD STYLES
+   ========================================================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color var(--t), box-shadow var(--t);
+    box-shadow: var(--shadow-xs);
+}
+
+.stat-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-card-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-subtle);
+    border-radius: 8px;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.stat-card-value {
+    font-family: var(--font-header);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+}
+
+.stat-card-label {
+    font-size: 0.72rem;
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.stat-section-title {
+    font-family: var(--font-header);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-top-nodes {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: var(--shadow-xs);
+}
+
+.stat-top-node-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+}
+
+.stat-top-node-item:last-child {
+    border-bottom: none;
+}
+
+.stat-top-node-name {
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin-right: 12px;
+}
+
+.stat-top-node-value {
+    color: var(--text-2);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .stat-card {
+        padding: 14px 16px;
+    }
+    .stat-card-value {
+        font-size: 1.3rem;
+    }
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .stat-top-nodes {
+    background: var(--surface, #1a2e26);
+}
+
 
 
 

@@ -3456,7 +3456,8 @@ function switchDashboardSubview(subviewName) {
         'exploration': { menuItemId: 'history-menu-item-exploration', elementId: 'subview-exploration' },
         'reader': { menuItemId: 'history-menu-item-reader', elementId: 'subview-reader' },
         'library': { menuItemId: 'history-menu-item-library', elementId: 'subview-library' },
-        'bookmarks': { menuItemId: 'history-menu-item-bookmarks', elementId: 'subview-bookmarks' }
+        'bookmarks': { menuItemId: 'history-menu-item-bookmarks', elementId: 'subview-bookmarks' },
+        'stats': { menuItemId: 'history-menu-item-stats', elementId: 'subview-stats' }
     };
     
     const selected = subviews[subviewName];
@@ -3569,6 +3570,9 @@ function initRedesignNavigation() {
     
     const menuBookmarks = document.getElementById('history-menu-item-bookmarks');
     if (menuBookmarks) menuBookmarks.addEventListener('click', () => switchDashboardSubview('bookmarks'));
+
+    const menuStats = document.getElementById('history-menu-item-stats');
+    if (menuStats) menuStats.addEventListener('click', () => switchDashboardSubview('stats'));
 
     // Library category filters click binding
     document.querySelectorAll('.library-filter-btn').forEach(btn => {
