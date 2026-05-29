@@ -228,6 +228,149 @@ window.syncFromDatabase = syncFromDatabase;
 window.clearState = clearState;
 window.applyTheme = applyTheme;
 
+function findNodeByName(root, name) {
+    if (!root) return null;
+    if (root.name === name) return root;
+    if (root.children) {
+        for (const child of root.children) {
+            const found = findNodeByName(child, name);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+function findParentNode(root, targetName) {
+    if (!root) return null;
+    if (root.children) {
+        for (const child of root.children) {
+            if (child.name === targetName) return root;
+            const parent = findParentNode(child, targetName);
+            if (parent) return parent;
+        }
+    }
+    return null;
+}
+
+function getViewRoot() {
+    return state.viewRoot;
+}
+
+function paginateTo(node) {
+    if (!node) return;
+    state.viewRoot = node;
+    node.collapsed = false; // Ensure the node is uncollapsed so its children render in the new view
+    
+    const path = [];
+    const buildPath = (curr, target, currentPath) => {
+        if (!curr) return false;
+        const newPath = [...currentPath, { name: curr.name, id: curr.id }];
+        if (curr.name === target.name) {
+            path.push(...newPath);
+            return true;
+        }
+        if (curr.children) {
+            for (const child of curr.children) {
+                if (buildPath(child, target, newPath)) return true;
+            }
+        }
+        return false;
+    };
+    buildPath(state.mindmapData, node, []);
+    state.breadcrumbs = path;
+    
+    if (typeof window.renderBreadcrumbs === 'function') {
+        window.renderBreadcrumbs();
+    }
+    if (typeof window.updateMindmap === 'function') {
+        window.updateMindmap(state.mindmapData);
+    }
+    setTimeout(() => {
+        if (typeof window.zoomFit === 'function') {
+            window.zoomFit();
+        }
+    }, 100);
+    saveState(true);
+}
+
+function resetPagination() {
+    state.viewRoot = null;
+    state.breadcrumbs = [];
+    if (typeof window.renderBreadcrumbs === 'function') {
+        window.renderBreadcrumbs();
+    }
+    if (typeof window.updateMindmap === 'function') {
+        window.updateMindmap(state.mindmapData);
+    }
+    setTimeout(() => {
+        if (typeof window.zoomFit === 'function') {
+            window.zoomFit();
+        }
+    }, 100);
+    saveState(true);
+}
+
+function autoAdjustViewRoot(node) {
+    if (!node) return;
+    if (typeof window.getAncestorNodePath !== 'function') return;
+    const path = window.getAncestorNodePath(state.mindmapData, node.name);
+    if (path.length > 0) {
+        const depth = path.length - 1; // 0-based depth
+        if (depth >= 3) {
+            const targetFocusNode = path[depth - 1];
+            state.viewRoot = targetFocusNode;
+            if (state.viewRoot) {
+                state.viewRoot.collapsed = false;
+            }
+            
+            const breadcrumbsPath = [];
+            const focusIndex = depth - 1;
+            for (let i = 0; i <= focusIndex; i++) {
+                breadcrumbsPath.push({ name: path[i].name, id: path[i].id });
+            }
+            state.breadcrumbs = breadcrumbsPath;
+        } else {
+            state.viewRoot = null;
+            state.breadcrumbs = [];
+        }
+    }
+}
+
+function collapseDescendants(node, depth = 0) {
+    if (!node) return;
+    if (depth > 0) {
+        if (node.children && node.children.length > 0) {
+            node.collapsed = true;
+        }
+    }
+    if (node.children) {
+        node.children.forEach(c => collapseDescendants(c, depth + 1));
+    }
+}
+
+function expandAndFocusNode(node) {
+    if (!node) return;
+    node.collapsed = false;
+    if (typeof window.getAncestorNodePath === 'function') {
+        const path = window.getAncestorNodePath(state.mindmapData, node.name);
+        path.forEach(n => {
+            n.collapsed = false;
+        });
+    }
+    autoAdjustViewRoot(node);
+    saveState(true);
+}
+
+window.findNodeByName = findNodeByName;
+window.findParentNode = findParentNode;
+window.getViewRoot = getViewRoot;
+window.paginateTo = paginateTo;
+window.resetPagination = resetPagination;
+window.autoAdjustViewRoot = autoAdjustViewRoot;
+window.collapseDescendants = collapseDescendants;
+window.expandAndFocusNode = expandAndFocusNode;
+
+
 /* ==========================================================================
    PHASE 3: HELPER GRANULAR NODE SYNC
    ========================================================================== */

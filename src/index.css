@@ -362,6 +362,25 @@ a:hover { text-decoration: underline; }
     box-shadow: var(--shadow-sm);
 }
 
+.node-card.is-back-node {
+    border: 1.5px dashed var(--border-mid);
+    background: var(--bg-subtle);
+    border-left: 3px dashed var(--border-mid);
+}
+.node-card.is-back-node:hover {
+    border-color: var(--accent);
+    border-left-color: var(--accent);
+    background: var(--bg-hover);
+    box-shadow: var(--shadow-sm);
+}
+.node-card.is-back-node .node-title {
+    color: var(--text-2) !important;
+}
+.node-card.is-back-node .node-desc {
+    color: var(--accent) !important;
+    font-weight: 500;
+}
+
 .node-title {
     font-size: 0.78rem;
     font-weight: 600;
@@ -429,6 +448,9 @@ a:hover { text-decoration: underline; }
     white-space: nowrap;
     flex-shrink: 0;
     min-height: 32px;
+}
+#breadcrumb-bar:not(.hidden) ~ .mindmap-search-bar {
+    top: 3.75rem;
 }
 #breadcrumb-bar .breadcrumb-item {
     cursor: pointer;
@@ -3856,6 +3878,20 @@ mark[data-note]::after {
 [data-theme="dark"] select option {
     background-color: var(--surface);
     color: var(--text);
+}
+
+/* Sliding Window Path Focus Navigation Classes */
+.node-card.is-transparent-ancestor {
+    opacity: 0.25 !important;
+    border-style: dashed !important;
+    pointer-events: auto !important;
+}
+.node-card.is-transparent-ancestor:hover {
+    opacity: 0.8 !important;
+}
+.link.is-transparent-link {
+    opacity: 0.15 !important;
+    stroke-dasharray: 4 4 !important;
 }
 
 

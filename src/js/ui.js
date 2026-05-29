@@ -3809,8 +3809,17 @@ function paginateToBreadcrumbIndex(idx) {
     // Set viewRoot ke target node
     if (target.name === state.mindmapData.name) {
         state.viewRoot = null;
+        if (typeof window.collapseDescendants === 'function') {
+            window.collapseDescendants(state.mindmapData);
+        }
     } else {
         state.viewRoot = findNodeByName(state.mindmapData, target.name);
+        if (state.viewRoot) {
+            state.viewRoot.collapsed = false;
+            if (typeof window.collapseDescendants === 'function') {
+                window.collapseDescendants(state.viewRoot);
+            }
+        }
     }
 
     renderBreadcrumbs();

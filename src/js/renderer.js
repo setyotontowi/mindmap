@@ -89,9 +89,69 @@ function getNodeHeight(nodeData) {
     return Math.min(90, Math.max(60, calculated));
 }
 
+function getAncestorNodePath(root, targetName) {
+    if (!root) return [];
+    if (root.name === targetName) return [root];
+    if (root.children) {
+        for (const child of root.children) {
+            const path = getAncestorNodePath(child, targetName);
+            if (path.length > 0) {
+                return [root, ...path];
+            }
+        }
+    }
+    return [];
+}
+
+function isAncestorNode(d) {
+    const root = getViewRoot ? getViewRoot() : null;
+    if (!root || !d || !d.data || root.name === d.data.name) return false;
+    const found = typeof findNodeByName === 'function' ? findNodeByName(d.data, root.name) : null;
+    return found !== null;
+}
+
+function isLeftmostTransparentNode(d) {
+    const root = getViewRoot ? getViewRoot() : null;
+    if (!root || !d || !d.data) return false;
+    const path = getAncestorNodePath(state.mindmapData, root.name);
+    if (path.length >= 2) {
+        const startIndex = Math.max(0, path.length - 3);
+        return d.data.name === path[startIndex].name;
+    }
+    return false;
+}
+
+function isTransparentLink(d) {
+    const root = getViewRoot ? getViewRoot() : null;
+    if (!root || !d || !d.source || !d.source.data) return false;
+    const path = getAncestorNodePath(state.mindmapData, root.name);
+    if (path.length >= 2) {
+        const startIndex = Math.max(0, path.length - 3);
+        return d.source.data.name === path[startIndex].name;
+    }
+    return false;
+}
+
+function autoCollapseDeepNodes(node, currentDepth, maxDepth) {
+    if (!node) return;
+    if (currentDepth >= maxDepth) {
+        if (node.children && node.children.length > 0) {
+            node.collapsed = true;
+        }
+    }
+    if (node.children) {
+        node.children.forEach(child => autoCollapseDeepNodes(child, currentDepth + 1, maxDepth));
+    }
+}
+
 // Fungsi utama untuk me-render / memperbarui Mindmap
 function updateMindmap(sourceData) {
     if (!sourceData) return;
+
+    // Sinkronisasi/render breadcrumbs
+    if (typeof window.renderBreadcrumbs === 'function') {
+        window.renderBreadcrumbs();
+    }
 
     // Sembunyikan hint overlay jika mindmap ada
     const hintText = document.getElementById('mindmap-hint-text');
@@ -100,8 +160,38 @@ function updateMindmap(sourceData) {
     // Konversi hierarchical data ke d3 hierarchy (sembunyikan anak jika di-collapse)
     // Jika viewRoot aktif, render hanya subtree dari node tersebut
     const root = getViewRoot ? getViewRoot() : null;
-    const treeRoot = root || sourceData;
-    rootNodeData = d3.hierarchy(treeRoot, d => d.collapsed ? null : d.children);
+    let treeRoot = sourceData;
+    let path = [];
+    if (root && root.name !== sourceData.name) {
+        path = getAncestorNodePath(sourceData, root.name);
+        if (path.length >= 2) {
+            const startIndex = Math.max(0, path.length - 3);
+            treeRoot = path[startIndex];
+        }
+    }
+
+    // Auto collapse nodes that are too deep to keep the screen clean (max 4 levels rendered)
+    autoCollapseDeepNodes(treeRoot, 0, 4);
+
+    rootNodeData = d3.hierarchy(treeRoot, d => {
+        if (d.collapsed) return null;
+        if (!d.children) return null;
+        
+        // Jika viewRoot aktif dan path valid, filter children pada level leftmost transparent node
+        if (root && path.length >= 2) {
+            const idx = path.findIndex(n => n.name === d.name);
+            if (idx !== -1) {
+                const startIndex = Math.max(0, path.length - 3);
+                // Jika node ini adalah leftmost transparent node (path[startIndex])
+                if (idx === startIndex && startIndex + 1 < path.length) {
+                    // Hanya return leluhur aktif berikutnya dalam path
+                    const nextNodeInPath = path[startIndex + 1];
+                    return d.children.filter(c => c.name === nextNodeInPath.name);
+                }
+            }
+        }
+        return d.children;
+    });
 
     // Hitung posisi pohon
     treeLayout(rootNodeData);
@@ -144,7 +234,7 @@ function updateMindmap(sourceData) {
 
     // Link Enter
     const linkEnter = link.enter().append('path')
-        .attr('class', 'link')
+        .attr('class', d => `link ${isTransparentLink(d) ? 'is-transparent-link' : ''}`)
         .attr('d', d => {
             const parent = d.parent || d.source;
             const startX = parent.y + getNodeWidth(parent.data);
@@ -159,7 +249,7 @@ function updateMindmap(sourceData) {
     // Link Update + Enter (Animasi Transisi Posisi)
     linkEnter.merge(link)
         .transition().duration(500)
-        .attr('class', d => `link ${state.activeNode && (d.target.data.id === state.activeNode.id || d.target.data.name === state.activeNode.name) ? 'active' : ''}`)
+        .attr('class', d => `link ${state.activeNode && (d.target.data.id === state.activeNode.id || d.target.data.name === state.activeNode.name) ? 'active' : ''} ${isTransparentLink(d) ? 'is-transparent-link' : ''}`)
         .attr('d', d => {
             return d3.linkHorizontal()
                 .source(l => ({ x: l.source.y + getNodeWidth(l.source.data), y: l.source.x })) // Centered
@@ -195,7 +285,11 @@ function updateMindmap(sourceData) {
 
     // Render HTML Node Card ke dalam foreignObject
     const nodeCard = foreignObject.append('xhtml:div')
-        .attr('class', d => `node-card level-${d.depth} ${getNodeStatusClass(d.data.name)}`)
+        .attr('class', d => {
+            const ancestorClass = isAncestorNode(d) ? 'is-back-node' : '';
+            const transparentClass = isLeftmostTransparentNode(d) ? 'is-transparent-ancestor' : '';
+            return `node-card level-${Math.min(d.depth, 4)} ${getNodeStatusClass(d.data.name)} ${ancestorClass} ${transparentClass}`;
+        })
         .on('click', (event, d) => {
             event.stopPropagation();
             handleNodeClick(d);
@@ -205,8 +299,8 @@ function updateMindmap(sourceData) {
             // Double-click -> paginate ke subtree node ini
             const nodeData = d.data;
             if (nodeData.children && nodeData.children.length > 0) {
-                if (typeof paginateTo === 'function') {
-                    paginateTo(nodeData);
+                if (typeof window.paginateTo === 'function') {
+                    window.paginateTo(nodeData);
                 }
             }
         });
@@ -238,7 +332,9 @@ function updateMindmap(sourceData) {
             const isLoading = d.data.loading ? 'loading' : '';
             const isCollapsed = d.data.collapsed ? 'is-collapsed' : '';
             const hasChildren = d.data.children && d.data.children.length > 0 ? 'has-children' : '';
-            return `node-card level-${d.depth} ${getNodeStatusClass(d.data.name)} ${isLoading} ${isCollapsed} ${hasChildren}`;
+            const ancestorClass = isAncestorNode(d) ? 'is-back-node' : '';
+            const transparentClass = isLeftmostTransparentNode(d) ? 'is-transparent-ancestor' : '';
+            return `node-card level-${Math.min(d.depth, 4)} ${getNodeStatusClass(d.data.name)} ${isLoading} ${isCollapsed} ${hasChildren} ${ancestorClass} ${transparentClass}`;
         });
 
     // Tambahkan atau perbarui collapse/expand toggle button
@@ -255,9 +351,21 @@ function updateMindmap(sourceData) {
                     .on('click', (event) => {
                         console.log('Collapse toggle clicked for:', d.data.name);
                         event.stopPropagation(); // Mencegah drawer terbuka
-                        d.data.collapsed = !d.data.collapsed;
-                        saveState();
-                        updateMindmap(state.mindmapData);
+                        if (d.data.collapsed) {
+                            // Jika terlipat (+), klik akan mengaktifkan sliding window focus
+                            if (typeof window.expandAndFocusNode === 'function') {
+                                window.expandAndFocusNode(d.data);
+                            } else {
+                                d.data.collapsed = false;
+                            }
+                            updateMindmap(state.mindmapData);
+                            setTimeout(zoomFit, 100);
+                        } else {
+                            // Jika terbuka (-), klik akan melipat node tersebut
+                            d.data.collapsed = true;
+                            saveState();
+                            updateMindmap(state.mindmapData);
+                        }
                     });
             }
             
@@ -304,8 +412,27 @@ async function handleNodeClick(d3Node) {
     const nodeName = d3Node.data.name;
     const nodeDesc = d3Node.data.description || '';
 
+    // 1. Node Transparan (paling kiri): Jika di-klik, geser kembali viewnya ke kiri
+    if (isLeftmostTransparentNode(d3Node)) {
+        const breadcrumbs = state.breadcrumbs || [];
+        const ancestorIdx = breadcrumbs.findIndex(crumb => crumb.name === d3Node.data.name);
+        if (ancestorIdx !== -1) {
+            if (typeof window.paginateToBreadcrumbIndex === 'function') {
+                window.paginateToBreadcrumbIndex(ancestorIdx);
+            }
+        }
+        return;
+    }
+
+    // Hitung absolute depth
+    const path = getAncestorNodePath(state.mindmapData, d3Node.data.name);
+    const absoluteDepth = path.length > 0 ? path.length - 1 : d3Node.depth;
+
+    // 2. Node Parent (di sebelah kanan node transparan): Hanya tampilkan artikel tanpa geser view
+    const isParentNode = isAncestorNode(d3Node) && !isLeftmostTransparentNode(d3Node);
+
     // Jika kedalaman melebihi 3, fold semua node yang tidak bersinggungan
-    if (d3Node.depth > 3) {
+    if (absoluteDepth > 3) {
         const activePathIds = new Set();
         let current = d3Node;
         while (current) {
@@ -317,19 +444,28 @@ async function handleNodeClick(d3Node) {
         saveState();
     }
 
-    // Batasi kedalaman maksimal 5 level untuk eksplorasi baru
-    if (d3Node.depth >= 5 && !state.nodeCache[nodeName]) {
-        const warningMsg = state.language === 'en'
-            ? 'Maximum depth of 5 levels reached. You cannot explore deeper than this.'
-            : 'Batas maksimal kedalaman 5 level tercapai. Anda tidak dapat menjelajah lebih dalam dari ini.';
-        alert(warningMsg);
-        return;
-    }
-
     // Jika data sudah tercache (pernah di-deep dive sebelumnya)
     if (state.nodeCache[nodeName]) {
         state.activeNode = d3Node.data;
-        updateMindmap(state.mindmapData);
+        
+        if (isParentNode) {
+            // Node Parent: Hanya buka artikel, tidak menggeser view
+            updateMindmap(state.mindmapData);
+        } else if (absoluteDepth >= 4) {
+            // Node Grandchildren: Geser view ke kanan
+            if (typeof window.expandAndFocusNode === 'function') {
+                window.expandAndFocusNode(d3Node.data);
+            } else {
+                d3Node.data.collapsed = false;
+            }
+            updateMindmap(state.mindmapData);
+            setTimeout(zoomFit, 100);
+        } else {
+            // Node Children: Buka/uncollapse saja jika memiliki children, tidak menggeser view
+            d3Node.data.collapsed = false;
+            updateMindmap(state.mindmapData);
+        }
+        
         openDetailDrawer(nodeName);
         renderNodeDetail(nodeName, state.nodeCache[nodeName].explanation);
         return;
@@ -471,7 +607,19 @@ async function handleNodeClick(d3Node) {
             }
 
             // Update visualisasi mindmap & persist (selalu jalankan untuk membersihkan spinner loading)
+            if (isParentNode) {
+                d3Node.data.collapsed = false;
+            } else if (absoluteDepth >= 4) {
+                if (typeof window.expandAndFocusNode === 'function') {
+                    window.expandAndFocusNode(d3Node.data);
+                } else {
+                    d3Node.data.collapsed = false;
+                }
+            } else {
+                d3Node.data.collapsed = false;
+            }
             updateMindmap(state.mindmapData);
+            setTimeout(zoomFit, 100);
             saveState();
 
             // Render isi penjelasan ke drawer JIKA user saat ini sedang aktif membuka node ini dan drawer terbuka
@@ -527,6 +675,8 @@ function zoomFit() {
     const width = container.clientWidth;
     const height = container.clientHeight;
     
+    if (width <= 0 || height <= 0) return;
+    
     // Temukan batas-batas grafik
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     let maxNode = null;
@@ -540,14 +690,29 @@ function zoomFit() {
         if (d.x > maxX) maxX = d.x;
     });
 
+    if (minX === Infinity || maxX === -Infinity || minY === Infinity || maxY === -Infinity) {
+        return;
+    }
+
     const maxNodeWidth = maxNode ? getNodeWidth(maxNode.data) : 180;
     const graphWidth = (maxY - minY) + maxNodeWidth + 100;
     const graphHeight = (maxX - minX) + nodeHeight + 100;
 
-    const scale = Math.min(0.9, Math.min(width / graphWidth, height / graphHeight));
+    if (isNaN(graphWidth) || isNaN(graphHeight) || graphWidth <= 0 || graphHeight <= 0) {
+        return;
+    }
+
+    let scale = Math.min(0.9, Math.min(width / graphWidth, height / graphHeight));
+    if (isNaN(scale) || scale <= 0 || scale === Infinity) {
+        scale = 0.8;
+    }
     
     const midX = minY + (maxY - minY) / 2 + maxNodeWidth / 2;
     const midY = minX + (maxX - minX) / 2 + nodeHeight / 2;
+
+    if (isNaN(midX) || isNaN(midY)) {
+        return;
+    }
 
     const transform = d3.zoomIdentity
         .translate(width / 2 - midX * scale, height / 2 - midY * scale)
@@ -616,6 +781,7 @@ window.zoomIn = zoomIn;
 window.zoomOut = zoomOut;
 window.searchNode = searchNode;
 window.handleNodeClick = handleNodeClick;
+window.getAncestorNodePath = getAncestorNodePath;
 
 // Ekspos rootNodeData getter/setter
 Object.defineProperty(window, 'rootNodeData', {
