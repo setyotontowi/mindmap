@@ -15,7 +15,9 @@ const state = {
     currentUser: null,       // User yang sedang login (OAuth)
     isOwner: true,
     viewRoot: null,          // Root node untuk halaman pagination saat ini (null = root asli)
-    breadcrumbs: []          // Array {name, id} — path dari root asli ke viewRoot sekarang
+    breadcrumbs: [],         // Array {name, id} — path dari root asli ke viewRoot sekarang
+    bookmarks: JSON.parse(localStorage.getItem('app_bookmarks') || '[]'),
+    library: JSON.parse(localStorage.getItem('app_library') || '[]')
 };
 
 /* ==========================================================================
@@ -159,6 +161,7 @@ async function syncFromDatabase(id = state.currentMindmapId) {
         }
         // Muat daftar riwayat
         await loadHistoryList();
+        await fetchUserLibraryAndBookmarks();
     } catch (error) {
         console.warn('Gagal sinkron dari database PostgreSQL:', error);
         if (state.isOwner) {
@@ -419,3 +422,130 @@ async function fetchNodeExplanation(mindmapId, nodeName) {
 window.syncNodeStatus = syncNodeStatus;
 window.saveNodeExplanation = saveNodeExplanation;
 window.fetchNodeExplanation = fetchNodeExplanation;
+
+/* ==========================================================================
+   PHASE 10 & 11: LIBRARY & BOOKMARKS SYNC & MUTATIONS
+   ========================================================================== */
+
+async function toggleBookmarkState(mindmapId, nodeName, isRemove = false) {
+    if (!mindmapId || !nodeName) return;
+    
+    // Optimistic UI update
+    if (isRemove) {
+        state.bookmarks = state.bookmarks.filter(b => !(b.mindmap_id === mindmapId && b.node_name === nodeName));
+    } else {
+        const exists = state.bookmarks.some(b => b.mindmap_id === mindmapId && b.node_name === nodeName);
+        if (!exists) {
+            state.bookmarks.push({
+                mindmap_id: mindmapId,
+                node_name: nodeName,
+                mindmap_name: state.mindmapData ? state.mindmapData.name : 'Untitled',
+                explanation: state.nodeCache[nodeName]?.explanation || '',
+                created_at: new Date().toISOString()
+            });
+        }
+    }
+    localStorage.setItem('app_bookmarks', JSON.stringify(state.bookmarks));
+    
+    // Refresh UI immediately
+    if (typeof window.renderBookmarksList === 'function') {
+        window.renderBookmarksList();
+    }
+    
+    try {
+        await fetch('/api/bookmarks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mindmap_id: mindmapId,
+                node_name: nodeName,
+                action: isRemove ? 'remove' : 'add'
+            })
+        });
+    } catch (e) {
+        console.warn('Gagal sinkronisasi bookmark ke database:', e);
+    }
+}
+
+async function toggleLibraryState(mindmapId, category = 'Buku', isRemove = false) {
+    if (!mindmapId) return;
+    
+    // Optimistic UI update
+    if (isRemove) {
+        state.library = state.library.filter(item => item.id !== mindmapId);
+    } else {
+        const exists = state.library.some(item => item.id === mindmapId);
+        if (!exists && state.mindmapData) {
+            state.library.push({
+                id: mindmapId,
+                name: state.mindmapData.name,
+                category: category,
+                tree_data: state.mindmapData,
+                node_cache: state.nodeCache,
+                node_statuses: state.nodeStatuses,
+                saved_at: new Date().toISOString()
+            });
+        } else if (exists) {
+            state.library = state.library.map(item => item.id === mindmapId ? { ...item, category } : item);
+        }
+    }
+    localStorage.setItem('app_library', JSON.stringify(state.library));
+    
+    // Refresh UI immediately
+    if (typeof window.renderLibraryGrid === 'function') {
+        window.renderLibraryGrid();
+    }
+    
+    try {
+        await fetch('/api/library', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mindmap_id: mindmapId,
+                category: category,
+                action: isRemove ? 'remove' : 'add'
+            })
+        });
+    } catch (e) {
+        console.warn('Gagal sinkronisasi library ke database:', e);
+    }
+}
+
+async function fetchUserLibraryAndBookmarks() {
+    try {
+        const libRes = await fetch('/api/library');
+        if (libRes.ok) {
+            const dbLibrary = await libRes.json();
+            if (dbLibrary) {
+                state.library = dbLibrary;
+                localStorage.setItem('app_library', JSON.stringify(state.library));
+            }
+        }
+    } catch (e) {
+        console.warn('Gagal fetch data library dari DB:', e);
+    }
+    
+    try {
+        const bmkRes = await fetch('/api/bookmarks');
+        if (bmkRes.ok) {
+            const dbBookmarks = await bmkRes.json();
+            if (dbBookmarks) {
+                state.bookmarks = dbBookmarks;
+                localStorage.setItem('app_bookmarks', JSON.stringify(state.bookmarks));
+            }
+        }
+    } catch (e) {
+        console.warn('Gagal fetch data bookmarks dari DB:', e);
+    }
+    
+    if (typeof window.renderLibraryGrid === 'function') {
+        window.renderLibraryGrid();
+    }
+    if (typeof window.renderBookmarksList === 'function') {
+        window.renderBookmarksList();
+    }
+}
+
+window.toggleBookmarkState = toggleBookmarkState;
+window.toggleLibraryState = toggleLibraryState;
+window.fetchUserLibraryAndBookmarks = fetchUserLibraryAndBookmarks;

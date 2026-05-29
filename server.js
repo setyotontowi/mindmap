@@ -105,6 +105,32 @@ const initDb = async () => {
         `);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_nodes_mindmap_id ON nodes(mindmap_id)`);
         console.log('Tabel nodes relasional siap digunakan.');
+
+        // Phase 10: library_collections table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS library_collections (
+                id SERIAL PRIMARY KEY,
+                mindmap_id VARCHAR(255) REFERENCES mindmaps(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                category VARCHAR(100) DEFAULT 'Buku',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT unique_mindmap_user UNIQUE(mindmap_id, user_id)
+            )
+        `);
+        console.log('Tabel library_collections siap digunakan.');
+
+        // Phase 11: bookmarks table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS bookmarks (
+                id SERIAL PRIMARY KEY,
+                mindmap_id VARCHAR(255) REFERENCES mindmaps(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                node_name VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT unique_mindmap_node_user UNIQUE(mindmap_id, node_name, user_id)
+            )
+        `);
+        console.log('Tabel bookmarks siap digunakan.');
     } catch (err) {
         console.error('Gagal menginisialisasi skema database:', err.message);
     }
@@ -319,6 +345,139 @@ app.delete('/api/mindmap/:id', async (req, res) => {
     } catch (err) {
         console.error(`[Mindmap] Failed to delete mindmap ID: ${id}:`, err.message);
         res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
+    }
+});
+
+// GET endpoint - Ambil semua mindmap yang disimpan di library
+app.get('/api/library', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    console.log(`[Library] Fetching library collections for user ID: ${userId || 'guest'}`);
+    try {
+        const query = userId 
+            ? `SELECT lc.category, lc.created_at as saved_at, mm.* 
+               FROM library_collections lc
+               JOIN mindmaps mm ON lc.mindmap_id = mm.id
+               WHERE lc.user_id = $1
+               ORDER BY lc.created_at DESC`
+            : `SELECT lc.category, lc.created_at as saved_at, mm.* 
+               FROM library_collections lc
+               JOIN mindmaps mm ON lc.mindmap_id = mm.id
+               WHERE lc.user_id IS NULL
+               ORDER BY lc.created_at DESC`;
+        const params = userId ? [userId] : [];
+        const result = await pool.query(query, params);
+        
+        const collections = result.rows.map(row => ({
+            id: row.id,
+            name: row.name,
+            category: row.category,
+            saved_at: row.saved_at,
+            tree_data: JSON.parse(row.tree_data || 'null'),
+            node_cache: JSON.parse(row.node_cache || '{}'),
+            node_statuses: JSON.parse(row.node_statuses || '{}')
+        }));
+        res.json(collections);
+    } catch (e) {
+        console.error('[Library] Gagal mengambil koleksi:', e);
+        res.status(500).json({ error: 'Gagal mengambil data library' });
+    }
+});
+
+// POST endpoint - Tambah/Hapus mindmap dari library
+app.post('/api/library', async (req, res) => {
+    const { mindmap_id, category, action } = req.body;
+    const userId = req.user ? req.user.id : null;
+    if (!mindmap_id) return res.status(400).json({ error: 'mindmap_id diperlukan.' });
+    
+    console.log(`[Library] ${action === 'remove' ? 'Removing' : 'Adding'} mindmap ID: ${mindmap_id} for user ID: ${userId || 'guest'}`);
+    try {
+        if (action === 'remove') {
+            const deleteQuery = userId
+                ? 'DELETE FROM library_collections WHERE mindmap_id = $1 AND user_id = $2'
+                : 'DELETE FROM library_collections WHERE mindmap_id = $1 AND user_id IS NULL';
+            const params = userId ? [mindmap_id, userId] : [mindmap_id];
+            await pool.query(deleteQuery, params);
+            return res.json({ success: true, is_saved: false });
+        } else {
+            const insertQuery = `
+                INSERT INTO library_collections (mindmap_id, user_id, category)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (mindmap_id, user_id) DO UPDATE SET category = EXCLUDED.category
+            `;
+            await pool.query(insertQuery, [mindmap_id, userId, category || 'Buku']);
+            return res.json({ success: true, is_saved: true });
+        }
+    } catch (e) {
+        console.error('[Library] Gagal menyimpan/menghapus dari library:', e);
+        res.status(500).json({ error: 'Gagal memproses request library.' });
+    }
+});
+
+// GET endpoint - Ambil semua bookmarks user
+app.get('/api/bookmarks', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    console.log(`[Bookmarks] Fetching bookmarks list for user ID: ${userId || 'guest'}`);
+    try {
+        const query = userId
+            ? `SELECT b.id as bookmark_id, b.node_name, b.created_at, mm.id as mindmap_id, mm.name as mindmap_name, mm.node_cache
+               FROM bookmarks b
+               JOIN mindmaps mm ON b.mindmap_id = mm.id
+               WHERE b.user_id = $1
+               ORDER BY b.created_at DESC`
+            : `SELECT b.id as bookmark_id, b.node_name, b.created_at, mm.id as mindmap_id, mm.name as mindmap_name, mm.node_cache
+               FROM bookmarks b
+               JOIN mindmaps mm ON b.mindmap_id = mm.id
+               WHERE b.user_id IS NULL
+               ORDER BY b.created_at DESC`;
+        const params = userId ? [userId] : [];
+        const result = await pool.query(query, params);
+        
+        const bookmarks = result.rows.map(row => {
+            const cache = JSON.parse(row.node_cache || '{}');
+            const nodeExplanation = cache[row.node_name]?.explanation || '';
+            return {
+                id: row.bookmark_id,
+                mindmap_id: row.mindmap_id,
+                mindmap_name: row.mindmap_name,
+                node_name: row.node_name,
+                explanation: nodeExplanation,
+                created_at: row.created_at
+            };
+        });
+        res.json(bookmarks);
+    } catch (e) {
+        console.error('[Bookmarks] Gagal mengambil bookmark:', e);
+        res.status(500).json({ error: 'Gagal mengambil bookmarks' });
+    }
+});
+
+// POST endpoint - Tambah/Hapus bookmarks node
+app.post('/api/bookmarks', async (req, res) => {
+    const { mindmap_id, node_name, action } = req.body;
+    const userId = req.user ? req.user.id : null;
+    if (!mindmap_id || !node_name) return res.status(400).json({ error: 'mindmap_id dan node_name diperlukan.' });
+    
+    console.log(`[Bookmarks] ${action === 'remove' ? 'Removing' : 'Adding'} bookmark for node: ${node_name} in mindmap ID: ${mindmap_id} for user ID: ${userId || 'guest'}`);
+    try {
+        if (action === 'remove') {
+            const deleteQuery = userId
+                ? 'DELETE FROM bookmarks WHERE mindmap_id = $1 AND node_name = $2 AND user_id = $3'
+                : 'DELETE FROM bookmarks WHERE mindmap_id = $1 AND node_name = $2 AND user_id IS NULL';
+            const params = userId ? [mindmap_id, node_name, userId] : [mindmap_id, node_name];
+            await pool.query(deleteQuery, params);
+            return res.json({ success: true, is_bookmarked: false });
+        } else {
+            const insertQuery = `
+                INSERT INTO bookmarks (mindmap_id, user_id, node_name)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (mindmap_id, node_name, user_id) DO NOTHING
+            `;
+            await pool.query(insertQuery, [mindmap_id, userId, node_name]);
+            return res.json({ success: true, is_bookmarked: true });
+        }
+    } catch (e) {
+        console.error('[Bookmarks] Gagal memproses bookmark:', e);
+        res.status(500).json({ error: 'Gagal memproses request bookmark.' });
     }
 });
 

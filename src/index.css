@@ -3894,6 +3894,411 @@ mark[data-note]::after {
     stroke-dasharray: 4 4 !important;
 }
 
+/* ==========================================================================
+   PHASE 10 & 11: PREMIUM LIBRARY & BOOKMARKS STYLES
+   ========================================================================== */
+
+/* Active Bookmark Button */
+.icon-btn#btn-bookmark-node.active {
+    color: #f59e0b !important;
+    transform: scale(1.15);
+    filter: drop-shadow(0 2px 8px rgba(245, 158, 11, 0.4));
+}
+.icon-btn#btn-bookmark-node {
+    transition: color 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.25s ease;
+}
+
+/* Library Filter Bar & Tabs */
+.library-filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+.library-filter-btn {
+    font-family: var(--font-header);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all var(--t);
+    white-space: nowrap;
+}
+.library-filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--bg-hover);
+}
+.library-filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-inv) !important;
+    font-weight: 700;
+}
+
+/* Library Grid Layout */
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Premium Curated Library Card */
+.library-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color var(--t), box-shadow var(--t), transform var(--t);
+    position: relative;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+}
+.library-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+.library-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 8px;
+}
+.library-card-category-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-subtle);
+    color: var(--accent);
+    border: 1px solid var(--border);
+}
+.library-card-title {
+    font-family: var(--font-header);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.library-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.72rem;
+    color: var(--text-3);
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: auto;
+}
+.library-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.library-card-meta-item i {
+    width: 13px;
+    height: 13px;
+}
+.library-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+}
+.library-card-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all var(--t);
+}
+.library-card-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+    border-color: var(--accent);
+}
+.library-card-btn.btn-open-mm {
+    background: var(--accent);
+    color: var(--accent-inv) !important;
+    border-color: var(--accent);
+}
+.library-card-btn.btn-open-mm:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+}
+.library-card-remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--t);
+}
+.library-card-remove-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+.library-card-remove-btn i {
+    width: 15px;
+    height: 15px;
+}
+
+/* Bookmarks Styling */
+.bookmark-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color var(--t), box-shadow var(--t);
+    position: relative;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+}
+.bookmark-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+}
+.bookmark-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.bookmark-card-path {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.bookmark-card-title {
+    font-family: var(--font-header);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 2px 0 6px 0;
+}
+.bookmark-card-snippet {
+    font-size: 0.8rem;
+    color: var(--text-2);
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.bookmark-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    font-size: 0.72rem;
+    color: var(--text-3);
+    margin-top: 4px;
+}
+.bookmark-card-time {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.bookmark-card-time i {
+    width: 12px;
+    height: 12px;
+}
+.bookmark-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.bookmark-card-remove-btn {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    transition: color var(--t);
+}
+.bookmark-card-remove-btn:hover {
+    color: #ef4444;
+}
+.bookmark-card-remove-btn i {
+    width: 13px;
+    height: 13px;
+}
+.bookmark-card-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent);
+    font-weight: 600;
+    transition: color var(--t);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.72rem;
+}
+.bookmark-card-link-btn:hover {
+    color: var(--accent-2);
+}
+.bookmark-card-link-btn i {
+    width: 13px;
+    height: 13px;
+}
+
+/* Save to Library Modal Styles */
+.save-lib-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t);
+}
+.save-lib-modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+.save-lib-modal {
+    width: 380px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transform: scale(0.95);
+    transition: transform var(--t);
+}
+.save-lib-modal-overlay.open .save-lib-modal {
+    transform: scale(1);
+}
+.save-lib-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.save-lib-modal-header h3 {
+    font-family: var(--font-header);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+.save-lib-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+.save-lib-modal-close:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+.save-lib-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.save-lib-modal-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-2);
+}
+.save-lib-modal-select {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
+    color: var(--text);
+    font-size: 0.85rem;
+    outline: none;
+}
+.save-lib-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.save-lib-btn-cancel {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--t);
+}
+.save-lib-btn-cancel:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+.save-lib-btn-save {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: var(--accent-inv) !important;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--t);
+}
+.save-lib-btn-save:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+}
+
 
 
 

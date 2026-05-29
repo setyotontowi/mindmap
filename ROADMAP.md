@@ -320,6 +320,45 @@ File: `src/js/navi.js`
 
 ---
 
+### Phase 10: Fitur Library & Pengorganisasian Materi
+
+#### Task 10.1: UI Grid Koleksi Terkurasi
+File: `index.html` + `src/index.css`
+- Ubah subview-library dari placeholder menjadi tampilan grid card koleksi yang menarik.
+- Sediakan kategori visual: "Buku", "Jurnal Akademik", "Koleksi Pribadi".
+
+#### Task 10.2: Agregasi Catatan & Ekspor E-book
+File: `src/js/ui.js` (atau `src/js/library.js`)
+- Buat fungsi untuk mengompilasi seluruh node explanation dari satu mindmap menjadi satu dokumen Markdown terstruktur.
+- Sediakan tombol unduh untuk menyimpan hasil kompilasi tersebut sebagai file Markdown.
+
+#### Task 10.3: Database Koleksi Library
+File: `server.js`
+- Inisialisasi tabel SQLite `library_collections` untuk memisahkan history mentah dengan mindmap yang sengaja disimpan pengguna di Library.
+- Buat endpoint `GET /api/library` dan `POST /api/library`.
+
+---
+
+### Phase 11: Fitur Bookmark (Penyimpanan Cepat Node & Artikel)
+
+#### Task 11.1: Ikon Bookmark di Detail Drawer
+File: `index.html` + `src/index.css` + `src/js/ui.js`
+- Tambahkan tombol bookmark di header detail drawer (sejajar dengan tombol Q&A).
+- Gunakan ikon Lucide `bookmark` yang berubah status aktif/nonaktif saat diklik.
+
+#### Task 11.2: Subview/List Bookmark di Dashboard
+File: `index.html` + `src/js/ui.js`
+- Tambahkan daftar khusus bookmark di subview Library atau tab terpisah.
+- Tampilkan cuplikan singkat artikel yang di-bookmark beserta tautan langsung untuk membuka node tersebut kembali di mindmap.
+
+#### Task 11.3: Database Bookmark & State Sync
+File: `server.js` + `src/js/state.js`
+- Buat tabel SQLite `bookmarks` dengan kolom `{ id, mindmap_id, node_name, created_at }`.
+- Tambahkan endpoint REST: `POST /api/bookmarks` (add/remove) dan `GET /api/bookmarks`.
+- Sinkronisasikan state bookmark agar langsung diperbarui saat user berinteraksi dengan tombol di drawer.
+
+---
+
 ## Milestone
 
 | Milestone | Target | Isi |
@@ -331,6 +370,8 @@ File: `src/js/navi.js`
 | **M5: Analytics** | **Phase 6** | **Cookie consent, event tracking, stats dashboard, admin panel** |
 | **M6: Navi Core** | **Phase 7-8** | **Generate path API, quiz API, floating bubble, weak spot** |
 | **M7: Navi Integration** | **Phase 9** | **Trigger logic, learning path UI, quiz flow mulus** |
+| **M8: Library Curation** | **Phase 10** | **Tampilan grid kurasi, agregator catatan, database koleksi** |
+| **M9: Bookmark System** | **Phase 11** | **Tombol bookmark di drawer, daftar bookmark di dashboard, database sync** |
 
 ---
 
@@ -338,13 +379,14 @@ File: `src/js/navi.js`
 
 | File | Changes |
 |---|---|
-| src/js/state.js | Tambah viewRoot, breadcrumbs, helper functions |
+| src/js/state.js | Tambah viewRoot, breadcrumbs, helper functions, state bookmarks |
 | src/js/renderer.js | Hierarchy dari viewRoot, level class relatif, ganti hard limit ke paginasi |
-| src/js/ui.js | renderBreadcrumbs(), hook close drawer → trigger Navi |
-| index.html | Breadcrumb bar, quiz modal, learning path input, **cookie consent banner** |
-| src/index.css | Breadcrumb CSS, Navi bubble, quiz modal styling, **cookie banner, stats panel** |
+| src/js/ui.js | renderBreadcrumbs(), hook close drawer → trigger Navi, event listener bookmark & library |
+| index.html | Breadcrumb bar, quiz modal, learning path input, cookie consent banner, UI grid library, tombol bookmark drawer |
+| src/index.css | Breadcrumb CSS, Navi bubble, quiz modal styling, cookie banner, stats panel, styling grid library & bookmark |
 | **src/js/navi.js** | **(BARU) Navi agent: suggestion bubble, quiz modal, weak spot** |
 | **src/js/analytics.js** | **(BARU) Analytics: event tracking, consent check, stats dashboard** |
 | **server.js** | **+3 Navi endpoint: generate-path, generate-quiz, track-node-view** |
 | **server.js** | **+4 Analytics endpoint: track-node-event, track-session-event, stats/mindmap, stats/user** |
-| **server.js** | **(initDb) +2 tabel: node_events, session_events** |
+| **server.js** | **(initDb) +4 tabel: node_events, session_events, library_collections, bookmarks** |
+| **server.js** | **+Endpoints Library & Bookmark: /api/library, /api/bookmarks** |

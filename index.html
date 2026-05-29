@@ -258,6 +258,9 @@
                         <button class="control-btn" id="btn-share-mindmap" title="Bagikan Mindmap (Copy Link)">
                             <i data-lucide="share-2"></i>
                         </button>
+                        <button class="control-btn" id="btn-save-to-library" title="Simpan ke Library">
+                            <i data-lucide="library"></i>
+                        </button>
                     </div>
 
                     <!-- Filter toggles & help button bottom right -->
@@ -287,25 +290,44 @@
                             <span class="node-tag" id="drawer-node-level" style="background: var(--accent-light); color: var(--accent); padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; flex-shrink: 0;">Level 0</span>
                             <h3 id="drawer-node-title" style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Judul Topik</h3>
                         </div>
-                        <div class="drawer-header-actions" style="display: flex; gap: 6px; align-items: center;">
-                            <button class="icon-btn" id="btn-add-subnode" title="Tambah Sub-Node Manual">
-                                <i data-lucide="plus-circle"></i>
-                            </button>
-                            <button class="icon-btn" id="btn-paginate-node" title="Telusuri Sub-tree">
-                                <i data-lucide="search"></i>
-                            </button>
-                            <button class="icon-btn" id="btn-edit-node" title="Edit Node Ini">
-                                <i data-lucide="edit-3"></i>
-                            </button>
-                            <button class="icon-btn" id="btn-regenerate-node" title="Buat Ulang (Regenerasi) Materi">
-                                <i data-lucide="refresh-cw"></i>
-                            </button>
-                            <button class="icon-btn" id="btn-delete-node" title="Hapus Node & Cabangnya">
-                                <i data-lucide="trash-2"></i>
-                            </button>
+                        <div class="drawer-header-actions" style="position: relative; display: flex; gap: 6px; align-items: center;">
                             <button class="icon-btn" id="btn-toggle-drawer-qa" title="Tanya Jawab Topik">
                                 <i data-lucide="message-square"></i>
                             </button>
+                            <button class="icon-btn" id="btn-bookmark-node" title="Bookmark Node Ini">
+                                <i data-lucide="bookmark"></i>
+                            </button>
+                            
+                            <!-- Dropdown Trigger Opsi Lainnya -->
+                            <button class="icon-btn" id="btn-desktop-more" title="Opsi Node">
+                                <i data-lucide="more-vertical"></i>
+                            </button>
+                            
+                            <!-- Dropdown Menu Desktop -->
+                            <div class="user-dropdown" id="desktop-more-dropdown" style="top: 100%; right: 40px; min-width: 180px;">
+                                <button class="dropdown-item" id="btn-add-subnode">
+                                    <i data-lucide="plus-circle" style="width: 14px; height: 14px;"></i>
+                                    <span>Tambah Sub-Node</span>
+                                </button>
+                                <button class="dropdown-item" id="btn-paginate-node">
+                                    <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                                    <span>Telusuri Sub-tree</span>
+                                </button>
+                                <button class="dropdown-item" id="btn-edit-node">
+                                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                    <span>Edit Node</span>
+                                </button>
+                                <button class="dropdown-item" id="btn-regenerate-node">
+                                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                                    <span>Buat Ulang (Regen)</span>
+                                </button>
+                                <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
+                                <button class="dropdown-item" id="btn-delete-node" style="color: #ef4444;">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    <span>Hapus Node</span>
+                                </button>
+                            </div>
+                            
                             <div style="width: 1px; height: 16px; background: var(--border); margin: 0 4px;"></div>
                             <button class="icon-btn" id="btn-close-drawer" title="Tutup">
                                 <i data-lucide="x"></i>
@@ -345,6 +367,10 @@
                                 <button class="dropdown-item" id="btn-mobile-paginate-node">
                                     <i data-lucide="search" style="width: 14px; height: 14px;"></i>
                                     <span>Telusuri Sub-tree</span>
+                                </button>
+                                <button class="dropdown-item" id="btn-mobile-bookmark-node">
+                                    <i data-lucide="bookmark" style="width: 14px; height: 14px;"></i>
+                                    <span id="mobile-bookmark-text">Bookmark Node</span>
                                 </button>
                                 <div style="height: 1px; background: var(--border); margin: 4px 0;"></div>
                                 <button class="dropdown-item" id="btn-mobile-delete-node" style="color: #ef4444;">
@@ -466,6 +492,10 @@
                                 <i data-lucide="library"></i>
                                 <span>Library</span>
                             </button>
+                            <button class="history-menu-item" id="history-menu-item-bookmarks">
+                                <i data-lucide="bookmark"></i>
+                                <span>Bookmarks</span>
+                            </button>
                         </div>
                     </aside>
 
@@ -549,9 +579,37 @@
                             <h2 class="history-title-redesign">Library</h2>
                             <p class="history-subtitle-redesign">Koleksi rangkuman buku, materi akademik, dan catatan belajar Anda.</p>
                         </div>
-                        <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0;">
-                            <i data-lucide="library" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px;"></i>
-                            <div>Koleksi belajar Anda akan dikurasi di sini.</div>
+                        
+                        <!-- Library Filter Tabs -->
+                        <div class="library-filter-bar">
+                            <button class="library-filter-btn active" data-category="all">Semua</button>
+                            <button class="library-filter-btn" data-category="Buku">Buku</button>
+                            <button class="library-filter-btn" data-category="Jurnal">Jurnal Akademik</button>
+                            <button class="library-filter-btn" data-category="Koleksi Pribadi">Koleksi Pribadi</button>
+                        </div>
+                        
+                        <!-- Curated Grid Container -->
+                        <div class="library-grid" id="library-grid-container">
+                            <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
+                                <i data-lucide="library" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                                <div>Belum ada materi terkurasi di perpustakaan Anda.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bookmarks Content (Subview 5) -->
+                    <div class="history-main-content hidden" id="subview-bookmarks">
+                        <div class="history-header-block">
+                            <h2 class="history-title-redesign">Bookmarks</h2>
+                            <p class="history-subtitle-redesign">Koleksi penjelasan node dan artikel penting yang Anda tandai.</p>
+                        </div>
+                        
+                        <!-- Bookmarks Cards List -->
+                        <div class="history-cards-list" id="redesign-bookmarks-container">
+                            <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
+                                <i data-lucide="bookmark" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                                <div>Belum ada artikel penting yang ditandai.</div>
+                            </div>
                         </div>
                     </div>
                 </div>

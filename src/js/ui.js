@@ -555,6 +555,18 @@ function initUIEventListeners() {
     const btnMobileShare = document.getElementById('btn-mobile-share');
     if (btnShareMindmap) btnShareMindmap.addEventListener('click', shareMindmap);
     if (btnMobileShare) btnMobileShare.addEventListener('click', shareMindmap);
+    
+    const btnSaveToLibrary = document.getElementById('btn-save-to-library');
+    if (btnSaveToLibrary) {
+        btnSaveToLibrary.addEventListener('click', () => {
+            if (!state.currentMindmapId) {
+                alert(state.language === 'en' ? 'No active mindmap to save!' : 'Tidak ada mindmap aktif untuk disimpan!');
+                return;
+            }
+            openSaveToLibraryModal();
+        });
+    }
+
     if (btnCloseExport) btnCloseExport.addEventListener('click', closeExportModal);
     if (btnCancelExport) btnCancelExport.addEventListener('click', closeExportModal);
     if (exportModal) {
@@ -664,6 +676,27 @@ function initUIEventListeners() {
         });
     }
 
+    const btnDesktopMore = document.getElementById('btn-desktop-more');
+    const desktopMoreDropdown = document.getElementById('desktop-more-dropdown');
+    if (btnDesktopMore && desktopMoreDropdown) {
+        btnDesktopMore.addEventListener('click', (e) => {
+            e.stopPropagation();
+            desktopMoreDropdown.classList.toggle('open');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (!desktopMoreDropdown.contains(e.target) && e.target !== btnDesktopMore) {
+                desktopMoreDropdown.classList.remove('open');
+            }
+        });
+
+        desktopMoreDropdown.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                desktopMoreDropdown.classList.remove('open');
+            });
+        });
+    }
+
     const mobileAddSubnode = document.getElementById('btn-mobile-add-subnode');
     if (mobileAddSubnode) {
         mobileAddSubnode.addEventListener('click', () => {
@@ -706,6 +739,41 @@ function initUIEventListeners() {
             const btn = document.getElementById('btn-paginate-node');
             if (btn) btn.click();
             if (mobileMoreDropdown) mobileMoreDropdown.classList.remove('open');
+        });
+    }
+
+    // Hook bookmark buttons
+    const btnBookmarkNode = document.getElementById('btn-bookmark-node');
+    if (btnBookmarkNode) {
+        btnBookmarkNode.addEventListener('click', () => {
+            const active = state.activeNode;
+            if (!active) return;
+            const isBookmarked = state.bookmarks.some(b => b.mindmap_id === state.currentMindmapId && b.node_name === active.name);
+            toggleBookmarkState(state.currentMindmapId, active.name, isBookmarked);
+            
+            // Toggle active class on btnBookmarkNode
+            if (isBookmarked) {
+                btnBookmarkNode.classList.remove('active');
+                btnBookmarkNode.title = 'Bookmark Node Ini';
+                showToast(state.language === 'en' ? 'Bookmark removed' : 'Bookmark dihapus');
+            } else {
+                btnBookmarkNode.classList.add('active');
+                btnBookmarkNode.title = 'Hapus Bookmark';
+                showToast(state.language === 'en' ? 'Bookmark added' : 'Bookmark ditambahkan');
+            }
+            const mobileBookmarkText = document.getElementById('mobile-bookmark-text');
+            if (mobileBookmarkText) {
+                mobileBookmarkText.textContent = isBookmarked ? 'Bookmark Node' : 'Hapus Bookmark';
+            }
+        });
+    }
+
+    const btnMobileBookmarkNode = document.getElementById('btn-mobile-bookmark-node');
+    if (btnMobileBookmarkNode) {
+        btnMobileBookmarkNode.addEventListener('click', () => {
+            const dropdown = document.getElementById('mobile-more-dropdown');
+            if (dropdown) dropdown.classList.remove('open');
+            if (btnBookmarkNode) btnBookmarkNode.click();
         });
     }
 }
@@ -1333,6 +1401,26 @@ function renderDrawerError(title, errorMsg) {
 
 function renderNodeDetail(title, markdownText) {
     stopDrawerLoadingTrivia();
+    
+    // Update Bookmark Button Visual Status
+    if (state.bookmarks) {
+        const isBookmarked = state.bookmarks.some(b => b.mindmap_id === state.currentMindmapId && b.node_name === title);
+        const btnBookmark = document.getElementById('btn-bookmark-node');
+        if (btnBookmark) {
+            if (isBookmarked) {
+                btnBookmark.classList.add('active');
+                btnBookmark.title = 'Hapus Bookmark';
+            } else {
+                btnBookmark.classList.remove('active');
+                btnBookmark.title = 'Bookmark Node Ini';
+            }
+        }
+        const mobileBookmarkText = document.getElementById('mobile-bookmark-text');
+        if (mobileBookmarkText) {
+            mobileBookmarkText.textContent = isBookmarked ? 'Hapus Bookmark' : 'Bookmark Node';
+        }
+    }
+
     const content = document.getElementById('drawer-markdown-content');
     if (!content) return;
     // Gunakan marked.js untuk merender Markdown ke HTML
@@ -3351,7 +3439,8 @@ function switchDashboardSubview(subviewName) {
         'history': { menuItemId: 'history-menu-item-history', elementId: 'subview-history' },
         'exploration': { menuItemId: 'history-menu-item-exploration', elementId: 'subview-exploration' },
         'reader': { menuItemId: 'history-menu-item-reader', elementId: 'subview-reader' },
-        'library': { menuItemId: 'history-menu-item-library', elementId: 'subview-library' }
+        'library': { menuItemId: 'history-menu-item-library', elementId: 'subview-library' },
+        'bookmarks': { menuItemId: 'history-menu-item-bookmarks', elementId: 'subview-bookmarks' }
     };
     
     const selected = subviews[subviewName];
@@ -3373,6 +3462,16 @@ function switchDashboardSubview(subviewName) {
     
     // If switching to exploration, make sure icons are rendered
     if (subviewName === 'exploration' && window.lucide) {
+        window.lucide.createIcons();
+    }
+    
+    if (subviewName === 'library' && typeof window.renderLibraryGrid === 'function') {
+        window.renderLibraryGrid();
+    }
+    if (subviewName === 'bookmarks' && typeof window.renderBookmarksList === 'function') {
+        window.renderBookmarksList();
+    }
+    if (window.lucide) {
         window.lucide.createIcons();
     }
     
@@ -3451,6 +3550,20 @@ function initRedesignNavigation() {
     if (menuExploration) menuExploration.addEventListener('click', () => switchDashboardSubview('exploration'));
     if (menuReader) menuReader.addEventListener('click', () => switchDashboardSubview('reader'));
     if (menuLibrary) menuLibrary.addEventListener('click', () => switchDashboardSubview('library'));
+    
+    const menuBookmarks = document.getElementById('history-menu-item-bookmarks');
+    if (menuBookmarks) menuBookmarks.addEventListener('click', () => switchDashboardSubview('bookmarks'));
+
+    // Library category filters click binding
+    document.querySelectorAll('.library-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.library-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            if (typeof window.renderLibraryGrid === 'function') {
+                window.renderLibraryGrid();
+            }
+        });
+    });
     
     // 2. Hook "New Research" Buttons
     const btnNewTopicSearch = document.getElementById('btn-new-topic');
@@ -3861,6 +3974,320 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+/* ==========================================================================
+   PHASE 10 & 11: PREMIUM LIBRARY & BOOKMARKS RENDERERS & ACTIONS
+   ========================================================================== */
+
+function openSaveToLibraryModal() {
+    let overlay = document.getElementById('save-lib-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'save-lib-modal-overlay';
+        overlay.className = 'save-lib-modal-overlay';
+        overlay.innerHTML = `
+            <div class="save-lib-modal">
+                <div class="save-lib-modal-header">
+                    <h3>Simpan ke Library</h3>
+                    <button class="save-lib-modal-close" id="btn-close-save-lib"><i data-lucide="x"></i></button>
+                </div>
+                <div class="save-lib-modal-body">
+                    <div class="save-lib-modal-label">Pilih Kategori:</div>
+                    <select class="save-lib-modal-select" id="save-lib-category-select">
+                        <option value="Buku">Buku</option>
+                        <option value="Jurnal">Jurnal Akademik</option>
+                        <option value="Koleksi Pribadi">Koleksi Pribadi</option>
+                    </select>
+                </div>
+                <div class="save-lib-modal-footer">
+                    <button class="save-lib-btn-cancel" id="btn-cancel-save-lib">Batal</button>
+                    <button class="save-lib-btn-save" id="btn-submit-save-lib">Simpan</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        // Bind events
+        document.getElementById('btn-close-save-lib').addEventListener('click', closeSaveToLibraryModal);
+        document.getElementById('btn-cancel-save-lib').addEventListener('click', closeSaveToLibraryModal);
+        document.getElementById('btn-submit-save-lib').addEventListener('click', () => {
+            const category = document.getElementById('save-lib-category-select').value;
+            toggleLibraryState(state.currentMindmapId, category, false);
+            showToast(state.language === 'en' ? 'Saved to library!' : 'Disimpan ke perpustakaan!');
+            closeSaveToLibraryModal();
+        });
+        
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeSaveToLibraryModal();
+        });
+    }
+    
+    // Check current category if already saved
+    if (state.library) {
+        const exists = state.library.find(item => item.id === state.currentMindmapId);
+        if (exists) {
+            document.getElementById('save-lib-category-select').value = exists.category || 'Buku';
+        }
+    }
+    
+    overlay.classList.add('open');
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function closeSaveToLibraryModal() {
+    const overlay = document.getElementById('save-lib-modal-overlay');
+    if (overlay) overlay.classList.remove('open');
+}
+
+function renderLibraryGrid() {
+    const container = document.getElementById('library-grid-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // Get active filter category
+    const activeBtn = document.querySelector('.library-filter-btn.active');
+    const activeCategory = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
+    
+    // Filter library items
+    const items = (state.library || []).filter(item => {
+        if (activeCategory === 'all') return true;
+        return item.category === activeCategory;
+    });
+    
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
+                <i data-lucide="library" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                <div>${state.language === 'en' ? 'No curated materials found in this category.' : 'Belum ada materi terkurasi di kategori ini.'}</div>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+    }
+    
+    items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'library-card';
+        
+        // Count total nodes inside tree
+        let totalNodes = 1;
+        const countNodes = (n) => {
+            let count = 1;
+            if (n.children) {
+                n.children.forEach(c => { count += countNodes(c); });
+            }
+            return count;
+        };
+        if (item.tree_data) {
+            totalNodes = countNodes(item.tree_data);
+        }
+        
+        // Count done progress
+        const doneNodes = Object.values(item.node_statuses || {}).filter(s => s === 'done').length || 0;
+        const progressPercent = Math.round((doneNodes / totalNodes) * 100) || 0;
+        
+        let dateStr = '';
+        try {
+            const date = new Date(item.saved_at || item.updated_at);
+            dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        } catch (e) {
+            dateStr = item.saved_at || '';
+        }
+        
+        let displayCategory = item.category || 'Buku';
+        if (displayCategory === 'Jurnal') displayCategory = 'Jurnal Akademik';
+        
+        card.innerHTML = `
+            <div class="library-card-header">
+                <span class="library-card-category-badge">${displayCategory}</span>
+                <button class="library-card-remove-btn" title="Hapus dari Library" data-id="${item.id}">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            </div>
+            <div class="library-card-title" title="${item.name}">${item.name}</div>
+            
+            <div class="card-progress-right" style="width: 100%; margin: 8px 0; display: block;">
+                <div class="progress-bar-outer">
+                    <div class="progress-bar-inner" style="width: ${progressPercent}%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-3); margin-top: 4px;">
+                    <span>Progress Belajar</span>
+                    <span style="font-weight: 700; color: var(--text);">${progressPercent}%</span>
+                </div>
+            </div>
+            
+            <div class="library-card-meta">
+                <div class="library-card-meta-item"><i data-lucide="calendar"></i><span>${dateStr}</span></div>
+                <div class="library-card-meta-item"><i data-lucide="git-branch"></i><span>${totalNodes} Nodes</span></div>
+            </div>
+            
+            <div class="library-card-actions">
+                <button class="library-card-btn btn-export-notes" data-id="${item.id}"><i data-lucide="download"></i>Notes</button>
+                <button class="library-card-btn btn-open-mm" data-id="${item.id}"><i data-lucide="external-link"></i>Buka</button>
+            </div>
+        `;
+        
+        // Open mindmap click
+        card.querySelector('.btn-open-mm').addEventListener('click', (e) => {
+            e.stopPropagation();
+            loadMindmapById(item.id);
+            switchScreen('mindmaps');
+        });
+        
+        // Export notes click
+        card.querySelector('.btn-export-notes').addEventListener('click', (e) => {
+            e.stopPropagation();
+            exportMindmapNotesToMarkdown(item);
+        });
+        
+        // Remove from Library click
+        card.querySelector('.library-card-remove-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(state.language === 'en' ? `Remove "${item.name}" from your library?` : `Hapus "${item.name}" dari perpustakaan Anda?`)) {
+                toggleLibraryState(item.id, item.category, true);
+                showToast(state.language === 'en' ? 'Removed from library' : 'Dihapus dari perpustakaan');
+            }
+        });
+        
+        container.appendChild(card);
+    });
+    
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function renderBookmarksList() {
+    const container = document.getElementById('redesign-bookmarks-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!state.bookmarks || state.bookmarks.length === 0) {
+        container.innerHTML = `
+            <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
+                <i data-lucide="bookmark" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                <div>${state.language === 'en' ? 'No bookmarked articles yet.' : 'Belum ada penjelasan materi yang di-bookmark.'}</div>
+            </div>
+        `;
+        if (window.lucide) window.lucide.createIcons();
+        return;
+    }
+    
+    state.bookmarks.forEach(bm => {
+        const card = document.createElement('div');
+        card.className = 'bookmark-card';
+        
+        let dateStr = '';
+        try {
+            const date = new Date(bm.created_at);
+            dateStr = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            dateStr = bm.created_at || '';
+        }
+        
+        const rawSnippet = bm.explanation || 'Pilih "Buka Node" untuk membaca penjelasan mendalam mengenai topik ini.';
+        const snippet = rawSnippet.replace(/[#*`]/g, '').trim().substring(0, 180) + '...';
+        
+        card.innerHTML = `
+            <div class="bookmark-card-header">
+                <span class="bookmark-card-path">${bm.mindmap_name || 'Mind Map'}</span>
+                <span class="bookmark-card-time"><i data-lucide="clock"></i>${dateStr}</span>
+            </div>
+            <div class="bookmark-card-title">${bm.node_name}</div>
+            <div class="bookmark-card-snippet">${snippet}</div>
+            <div class="bookmark-card-meta">
+                <button class="bookmark-card-remove-btn" data-mindmap="${bm.mindmap_id}" data-node="${bm.node_name}">
+                    <i data-lucide="trash-2"></i><span>Hapus Bookmark</span>
+                </button>
+                <button class="bookmark-card-link-btn" data-mindmap="${bm.mindmap_id}" data-node="${bm.node_name}">
+                    <i data-lucide="arrow-up-right"></i><span>Buka Node</span>
+                </button>
+            </div>
+        `;
+        
+        // Remove click
+        card.querySelector('.bookmark-card-remove-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleBookmarkState(bm.mindmap_id, bm.node_name, true);
+            showToast(state.language === 'en' ? 'Bookmark removed' : 'Bookmark dihapus');
+        });
+        
+        // Link to node click
+        card.addEventListener('click', () => {
+            loadMindmapById(bm.mindmap_id).then(() => {
+                switchScreen('mindmaps');
+                setTimeout(() => {
+                    if (typeof selectAndOpenNode === 'function') {
+                        selectAndOpenNode(bm.node_name);
+                    }
+                }, 400);
+            });
+        });
+        
+        card.querySelector('.bookmark-card-link-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            loadMindmapById(bm.mindmap_id).then(() => {
+                switchScreen('mindmaps');
+                setTimeout(() => {
+                    if (typeof selectAndOpenNode === 'function') {
+                        selectAndOpenNode(bm.node_name);
+                    }
+                }, 400);
+            });
+        });
+        
+        container.appendChild(card);
+    });
+    
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function exportMindmapNotesToMarkdown(item) {
+    if (!item || !item.name) return;
+    
+    const tree = item.tree_data;
+    const cache = item.node_cache || {};
+    
+    let markdown = `# 📚 Ringkasan Lengkap Belajar: ${item.name}\n\n`;
+    markdown += `*Koleksi terkurasi dari Rabbithole Mindmap Learner*\n`;
+    markdown += `*Kategori: ${item.category || 'Buku'} | Tanggal Ekspor: ${new Date().toLocaleDateString('id-ID')}*\n\n`;
+    markdown += `---\n\n`;
+    
+    // Pre-order traversal to compile explanation
+    const compileNotes = (node, path = []) => {
+        const currentPath = [...path, node.name];
+        const cacheData = cache[node.name];
+        
+        if (cacheData && cacheData.explanation) {
+            markdown += `## 🧭 ${currentPath.join(' ➔ ')}\n\n`;
+            markdown += `${cacheData.explanation}\n\n`;
+            markdown += `---\n\n`;
+        }
+        
+        if (node.children && node.children.length > 0) {
+            node.children.forEach(c => compileNotes(c, currentPath));
+        }
+    };
+    
+    if (tree) {
+        compileNotes(tree);
+    } else {
+        markdown += `*Tidak ada data catatan penjelasan.*`;
+    }
+    
+    // Download Markdown File
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8;' });
+    const link = document.createElement('a');
+    const filename = `${item.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_curated_notes.md`;
+    
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 // Ekspos ke global window agar kompatibel dengan modul lain
 window.getRandomStyleAndSubstyle = getRandomStyleAndSubstyle;
 window.getWritingStyleInstruction = getWritingStyleInstruction;
@@ -3877,4 +4304,9 @@ window.checkAuthStatus = checkAuthStatus;
 window.updateTableOfContents = updateTableOfContents;
 window.renderBreadcrumbs = renderBreadcrumbs;
 window.paginateToBreadcrumbIndex = paginateToBreadcrumbIndex;
+window.openSaveToLibraryModal = openSaveToLibraryModal;
+window.closeSaveToLibraryModal = closeSaveToLibraryModal;
+window.renderLibraryGrid = renderLibraryGrid;
+window.renderBookmarksList = renderBookmarksList;
+window.exportMindmapNotesToMarkdown = exportMindmapNotesToMarkdown;
 

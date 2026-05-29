@@ -176,5 +176,33 @@ Sebagian besar fase telah selesai diimplementasikan. Beberapa fitur baru masih d
   - [ ] Modifikasi dropdown pemilih gaya di detail drawer agar menampilkan 6 gaya berorientasi marketing yang baru beserta sub-gayanya.
   - [ ] Gabungkan *Anti-AI Slop rules* ke dalam `getWritingStyleInstruction` sehingga diterapkan secara universal pada semua pembentukan materi oleh Gemini API.
 
+---
+
+## ⬜ FASE 10: Fitur Library & Pengorganisasian Materi (PROPOSAL)
+**Tujuan:** Mengaktifkan tab Library pada Dashboard untuk mengurasi, menyimpan, dan mengorganisasi peta pikiran serta materi hasil eksplorasi secara permanen.
+
+- [ ] **Modul 1: Kurasi Buku & Materi Akademik**
+  - [ ] Sediakan template kurasi otomatis untuk memilah mindmap berdasarkan jenis topik (misal: "Buku", "Jurnal", "Koleksi Pribadi").
+  - [ ] Tambahkan grid view yang menarik dengan cover buatan atau representasi visual peta di subview Library.
+- [ ] **Modul 2: Ekspor & Gabung Catatan**
+  - [ ] Sediakan opsi untuk menggabungkan seluruh penjelasan node dalam satu mindmap menjadi "E-book" ringkas berformat PDF atau Markdown langsung dari Library.
+- [ ] **Modul 3: Persistensi Koleksi**
+  - [ ] Buat tabel `library_collections` di SQLite untuk mengelola koleksi terkurasi secara terpisah dari riwayat pencarian mentah (history).
+
+---
+
+## ⬜ FASE 11: Fitur Bookmark (Penyimpanan Cepat Node & Artikel) (PROPOSAL)
+**Tujuan:** Memungkinkan pengguna menandai (bookmark) materi/artikel dari node tertentu di canvas mindmap agar dapat diakses langsung dari Dashboard/Library tanpa perlu mencari node tersebut di dalam struktur mindmap.
+
+- [ ] **Modul 1: Tombol Bookmark di Detail Drawer & Node Card**
+  - [ ] Tambahkan ikon bookmark (misalnya bintang atau pita pembatas buku) di sebelah judul artikel pada detail drawer.
+  - [ ] Sediakan shortcut cepat untuk menambahkan/menghapus bookmark langsung dari node di canvas.
+- [ ] **Modul 2: Tab/Koleksi Khusus Bookmark di Dashboard**
+  - [ ] Integrasikan subview khusus atau bagian baru di dalam Library untuk mengelompokkan semua artikel/node yang di-bookmark.
+  - [ ] Tampilkan daftar bookmark yang berisi judul node, nama mindmap asal, dan tanggal ditambahkan.
+- [ ] **Modul 3: Database Integration & State Sync**
+  - [ ] Buat tabel `bookmarks` di SQLite dengan skema `{ id, mindmap_id, node_name, created_at }`.
+  - [ ] Sinkronisasikan state bookmark ke LocalStorage sebagai fallback dan ke server secara real-time.
+
 
 
