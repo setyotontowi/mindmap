@@ -1,0 +1,178 @@
+/* ==========================================================================
+   PHASE 6: ANALYTICS & COOKIE CONSENT
+   Privacy-first analytics tracker for Rabbit Hole Mindmap
+   ========================================================================== */
+
+/**
+ * Get consent preference from localStorage
+ * Returns: { analytics: boolean, essential: true }
+ */
+function getConsent() {
+    try {
+        const raw = localStorage.getItem('rabbit_hole_consent');
+        if (raw) return JSON.parse(raw);
+    } catch (e) { /* ignore */ }
+    return null;
+}
+
+/**
+ * Save consent preference to localStorage
+ */
+function saveConsent(analytics) {
+    const pref = { analytics: !!analytics, essential: true };
+    localStorage.setItem('rabbit_hole_consent', JSON.stringify(pref));
+    return pref;
+}
+
+/**
+ * Show cookie consent banner if not yet decided
+ */
+function initCookieConsent() {
+    const consent = getConsent();
+    if (consent) return; // Already decided
+
+    const banner = document.getElementById('cookie-consent-banner');
+    if (!banner) return;
+
+    // Remove hidden class to show banner with slide-up animation
+    banner.classList.remove('hidden');
+
+    // Accept all
+    document.getElementById('cookie-accept')?.addEventListener('click', () => {
+        saveConsent(true);
+        banner.classList.add('hidden');
+    });
+
+    // Reject
+    document.getElementById('cookie-reject')?.addEventListener('click', () => {
+        saveConsent(false);
+        banner.classList.add('hidden');
+    });
+}
+
+/**
+ * Set the privacy toggle in settings modal based on current consent
+ */
+function syncPrivacyToggle() {
+    const consent = getConsent();
+    const toggle = document.getElementById('privacy-analytics-toggle');
+    if (toggle && consent) {
+        toggle.checked = consent.analytics;
+    }
+}
+
+/**
+ * Check if analytics tracking is allowed
+ */
+function isAnalyticsAllowed() {
+    const consent = getConsent();
+    return consent ? consent.analytics : false;
+}
+
+/**
+ * Track a node-level event (view, explain, etc.)
+ * Only fires if consent is given.
+ */
+function trackNodeEvent(mindmapId, nodeName, action, durationSeconds, tokensUsed, model) {
+    if (!isAnalyticsAllowed()) return;
+    if (!mindmapId || !nodeName || !action) return;
+
+    fetch('/api/track/node-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            mindmap_id: mindmapId,
+            node_name: nodeName,
+            action: action,
+            duration_seconds: durationSeconds || 0,
+            tokens_used: tokensUsed || 0,
+            model: model || null
+        })
+    }).catch(e => console.warn('[Analytics] trackNodeEvent error:', e));
+}
+
+/**
+ * Track a session-level event (mindmap_create, quiz_complete, etc.)
+ * Only fires if consent is given.
+ */
+function trackSessionEvent(mindmapId, eventType, metadata) {
+    if (!isAnalyticsAllowed()) return;
+    if (!mindmapId || !eventType) return;
+
+    fetch('/api/track/session-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            mindmap_id: mindmapId,
+            event_type: eventType,
+            metadata: metadata || {}
+        })
+    }).catch(e => console.warn('[Analytics] trackSessionEvent error:', e));
+}
+
+/**
+ * Fetch user stats for the dashboard
+ */
+async function fetchUserStats() {
+    try {
+        const res = await fetch('/api/stats/user');
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.warn('[Analytics] fetchUserStats error:', e);
+        return null;
+    }
+}
+
+/**
+ * Fetch mindmap-specific stats
+ */
+async function fetchMindmapStats(mindmapId) {
+    try {
+        const res = await fetch(`/api/stats/mindmap/${encodeURIComponent(mindmapId)}`);
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        console.warn('[Analytics] fetchMindmapStats error:', e);
+        return null;
+    }
+}
+
+/* ==========================================================================
+   AUTOMATIC TRACKING — hook into existing event flow
+   ========================================================================== */
+
+/**
+ * Duration tracker for drawer open -> close
+ * Usage: startDrawerTimer(nodeName) when drawer opens, stopDrawerTimer() when closes
+ */
+let _drawerTimer = null;
+let _drawerNodeName = null;
+
+function startDrawerTimer(nodeName) {
+    _drawerNodeName = nodeName;
+    _drawerTimer = Date.now();
+}
+
+function stopDrawerTimer() {
+    if (!_drawerTimer || !_drawerNodeName) return 0;
+    const elapsed = Math.floor((Date.now() - _drawerTimer) / 1000);
+    // Skip accidental clicks (< 3 seconds)
+    if (elapsed >= 3 && window.state && window.state.mindmapData) {
+        trackNodeEvent(window.state.mindmapData.id, _drawerNodeName, 'view', elapsed);
+    }
+    _drawerTimer = null;
+    _drawerNodeName = null;
+    return elapsed;
+}
+
+// Auto-init on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initCookieConsent();
+        syncPrivacyToggle();
+    });
+} else {
+    initCookieConsent();
+    syncPrivacyToggle();
+}
