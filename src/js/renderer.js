@@ -448,6 +448,21 @@ async function handleNodeClick(d3Node) {
     if (state.nodeCache[nodeName]) {
         state.activeNode = d3Node.data;
         
+        // Proteksi Tambahan: Jika di cache ada subtopics tapi di D3 children-nya kosong, bangun ulang children-nya!
+        const cacheData = state.nodeCache[nodeName];
+        if (cacheData.subtopics && cacheData.subtopics.length > 0) {
+            if (!d3Node.data.children) {
+                d3Node.data.children = [];
+            }
+            cacheData.subtopics.forEach(sub => {
+                const exists = d3Node.data.children.some(child => child.name === sub.name);
+                if (!exists) {
+                    sub.id = `${nodeName}-${sub.name}-${Date.now()}`; // Unique ID
+                    d3Node.data.children.push(sub);
+                }
+            });
+        }
+
         if (isParentNode) {
             // Node Parent: Hanya buka artikel, tidak menggeser view
             updateMindmap(state.mindmapData);
