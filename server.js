@@ -106,6 +106,36 @@ const initDb = async () => {
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_nodes_mindmap_id ON nodes(mindmap_id)`);
         console.log('Tabel nodes relasional siap digunakan.');
 
+        // Phase 6: Analytics tables
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS node_events (
+                id SERIAL PRIMARY KEY,
+                mindmap_id VARCHAR(255) REFERENCES mindmaps(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                node_name VARCHAR(500),
+                action VARCHAR(50),
+                duration_seconds INT DEFAULT 0,
+                tokens_used INT DEFAULT 0,
+                model VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log('Tabel node_events siap digunakan.');
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS session_events (
+                id SERIAL PRIMARY KEY,
+                mindmap_id VARCHAR(255) REFERENCES mindmaps(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                event_type VARCHAR(50),
+                metadata JSONB,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_session_events_mindmap ON session_events(mindmap_id)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_node_events_mindmap ON node_events(mindmap_id)`);
+        console.log('Tabel session_events siap digunakan.');
+
         // Phase 10: library_collections table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS library_collections (
