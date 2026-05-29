@@ -166,17 +166,48 @@ function stopDrawerTimer() {
     return elapsed;
 }
 
+/* ==========================================================================
+   USER SESSION DURATION TRACKING
+   ========================================================================== */
+
+let _sessionStartTime = null;
+
+function initSessionTracker() {
+    _sessionStartTime = Date.now();
+
+    // Use pagehide for better mobile support (fires reliably on tab close)
+    window.addEventListener('pagehide', () => {
+        if (!_sessionStartTime) return;
+        const durationSeconds = Math.floor((Date.now() - _sessionStartTime) / 1000);
+        // Only track meaningful sessions (> 10 seconds)
+        if (durationSeconds < 10) return;
+
+        const consent = getConsent();
+        if (!consent || !consent.analytics) return;
+
+        const payload = JSON.stringify({
+            mindmap_id: window.state?.mindmapData?.id || null,
+            event_type: 'session_duration',
+            metadata: { duration_seconds: durationSeconds }
+        });
+
+        navigator.sendBeacon('/api/track/session-event', new Blob([payload], { type: 'application/json' }));
+    });
+}
+
 // Auto-init on DOM ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         initCookieConsent();
         syncPrivacyToggle();
         initStatsEventListeners();
+        initSessionTracker();
     });
 } else {
     initCookieConsent();
     syncPrivacyToggle();
     initStatsEventListeners();
+    initSessionTracker();
 }
 
 /* ==========================================================================
@@ -230,6 +261,11 @@ function renderStatsDashboard() {
         const minutes = Math.floor((stats.total_study_time % 3600) / 60);
         const timeStr = hours > 0 ? `${hours}j ${minutes}m` : `${minutes}m`;
 
+        // Format session time
+        const sessHours = Math.floor((stats.total_session_seconds || 0) / 3600);
+        const sessMinutes = Math.floor(((stats.total_session_seconds || 0) % 3600) / 60);
+        const sessionTimeStr = sessHours > 0 ? `${sessHours}j ${sessMinutes}m` : `${sessMinutes}m`;
+
         area.innerHTML = `
             <div class="stats-grid">
                 <div class="stat-card">
@@ -245,7 +281,12 @@ function renderStatsDashboard() {
                 <div class="stat-card">
                     <div class="stat-card-icon"><i data-lucide="clock" style="width: 16px; height: 16px;"></i></div>
                     <div class="stat-card-value">${timeStr}</div>
-                    <div class="stat-card-label">Total Waktu Baca</div>
+                    <div class="stat-card-label">Waktu Baca Node</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="activity" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${sessionTimeStr}</div>
+                    <div class="stat-card-label">Total Sesi Online</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-card-icon"><i data-lucide="zap" style="width: 16px; height: 16px;"></i></div>
@@ -261,6 +302,11 @@ function renderStatsDashboard() {
                     <div class="stat-card-icon"><i data-lucide="help-circle" style="width: 16px; height: 16px;"></i></div>
                     <div class="stat-card-value">${stats.total_quizzes}</div>
                     <div class="stat-card-label">Quiz Dikerjakan</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-icon"><i data-lucide="layers" style="width: 16px; height: 16px;"></i></div>
+                    <div class="stat-card-value">${stats.total_sessions || 0}</div>
+                    <div class="stat-card-label">Total Kunjungan</div>
                 </div>
             </div>
         `;

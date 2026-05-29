@@ -627,6 +627,14 @@ app.get('/api/stats/user', async (req, res) => {
             WHERE user_id = $1 AND event_type = 'quiz_complete'
         `, [userId]);
 
+        const sessionDurationStats = await pool.query(`
+            SELECT
+                COUNT(*) AS total_sessions,
+                COALESCE(SUM((metadata->>'duration_seconds')::numeric), 0) AS total_session_seconds
+            FROM session_events
+            WHERE user_id = $1 AND event_type = 'session_duration'
+        `, [userId]);
+
         const mindmapCount = await pool.query(`
             SELECT COUNT(*) AS total FROM mindmaps WHERE user_id = $1
         `, [userId]);
@@ -640,7 +648,9 @@ app.get('/api/stats/user', async (req, res) => {
             active_days: parseInt(nodeStats.rows[0].active_days) || 0,
             total_quizzes: parseInt(quizStats.rows[0].total_quizzes) || 0,
             avg_quiz_score: parseFloat(quizStats.rows[0].avg_score) || 0,
-            total_mindmaps_created: parseInt(mindmapCount.rows[0].total) || 0
+            total_mindmaps_created: parseInt(mindmapCount.rows[0].total) || 0,
+            total_sessions: parseInt(sessionDurationStats.rows[0].total_sessions) || 0,
+            total_session_seconds: parseInt(sessionDurationStats.rows[0].total_session_seconds) || 0
         });
     } catch (e) {
         console.error('[Analytics] Gagal ambil stats user:', e.message);
