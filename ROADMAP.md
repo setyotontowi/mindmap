@@ -367,7 +367,7 @@ File: `server.js` + `src/js/state.js`
 | M2: Breadcrumb UI | Phase 3 | Breadcrumb bar, back navigation, reset |
 | M3: Stability | Phase 4 | Search lintas halaman, save/restore, collapse, zoom |
 | M4: Polish | Phase 5 | Animasi, mobile, visual indicator, tooltip |
-| **M5: Analytics** | **Phase 6** | **Cookie consent, event tracking, stats dashboard, admin panel** |
+|| **M5: Analytics** | **Phase 6** | **✅ Selesai — Cookie consent, event tracking, stats dashboard, admin panel, privasi page** |
 | **M6: Navi Core** | **Phase 7-8** | **Generate path API, quiz API, floating bubble, weak spot** |
 | **M7: Navi Integration** | **Phase 9** | **Trigger logic, learning path UI, quiz flow mulus** |
 | **M8: Library Curation** | **Phase 10** | **Tampilan grid kurasi, agregator catatan, database koleksi** |
