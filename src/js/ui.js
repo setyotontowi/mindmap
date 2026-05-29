@@ -1592,19 +1592,30 @@ Anda wajib selalu mengembalikan jawaban dalam format JSON terstruktur dengan for
   "answer": "isi jawaban chat singkat Anda menggunakan format Markdown sederhana (misalnya bold, inline code, atau bullet-point tanpa heading besar)"
 }`;
 
+        let historyString = '';
+        if (nodeData.qaHistory && nodeData.qaHistory.length > 1) {
+            const previousHistory = nodeData.qaHistory.slice(0, -1);
+            historyString = previousHistory.map(h => {
+                const label = h.role === 'user' ? (state.language === 'en' ? 'Learner' : 'Pembelajar') : 'Tutor';
+                return `[${label}]: ${h.content}`;
+            }).join('\n');
+        }
+
         const prompt = state.language === 'en' ? `Current material explanation context:
 "${nodeData.explanation}"
- 
+
+${historyString ? `Previous Q&A history:\n${historyString}\n` : ''}
 Learner's question:
 "${question}"
- 
-Answer the question directly and concisely (to-the-point) in a friendly and casual English. Do not use large headers (#, ##, ###). Keep your answer brief as if replying to a chat message. Return in JSON format: { "answer": "..." }.` : `Konteks penjelasan materi saat ini:
+
+Answer the question directly and concisely (to-the-point) in a friendly and casual English, maintaining context from the previous Q&A history if relevant. Do not use large headers (#, ##, ###). Keep your answer brief as if replying to a chat message. Return in JSON format: { "answer": "..." }.` : `Konteks penjelasan materi saat ini:
 "${nodeData.explanation}"
- 
+
+${historyString ? `Riwayat tanya jawab sebelumnya:\n${historyString}\n` : ''}
 Pertanyaan pembelajar:
 "${question}"
- 
-Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) dengan bahasa Indonesia yang santai dan ramah. Jangan gunakan judul/header besar (#, ##, ###). Jadikan jawaban Anda singkat layaknya membalas pesan chat. Kembalikan dalam format JSON: { "answer": "..." }.`;
+
+Jawablah pertanyaan tersebut secara langsung seperlunya saja (to-the-point) dengan bahasa Indonesia yang santai dan ramah, serta menjaga konteks dari riwayat tanya jawab sebelumnya jika relevan. Jangan gunakan judul/header besar (#, ##, ###). Jadikan jawaban Anda singkat layaknya membalas pesan chat. Kembalikan dalam format JSON: { "answer": "..." }.`;
 
         // Panggil AI API
         const result = await callRouterAI(prompt, systemInstruction);
