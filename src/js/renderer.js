@@ -605,6 +605,11 @@ async function handleNodeClick(d3Node) {
             };
             saveState();
 
+            // Phase 6: Track AI explanation event
+            if (typeof trackNodeEvent === 'function' && state.mindmapData) {
+                trackNodeEvent(state.mindmapData.id, nodeName, 'explain', 0, 0, state.provider || null);
+            }
+
             // Tambahkan subtopics sebagai children baru ke dalam data D3 jika ada subtopics baru
             if (result.subtopics && result.subtopics.length > 0) {
                 if (!d3Node.data.children) {
