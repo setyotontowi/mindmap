@@ -638,14 +638,14 @@ app.post('/api/ai/completions', async (req, res) => {
             };
             res.json(mappedResponse);
 
-        } else if (provider === 'deepsek' || provider === 'deepseek') {
+        } else if (provider === 'deepseek') {
             // DeepSeek API (OpenAI-compatible)
-            const apiKey = process.env.DEEPSEK_API_KEY;
+            const apiKey = process.env.DEEPSEEK_API_KEY;
             
             if (!apiKey) {
                 console.warn('[AI] DeepSeek API Key is missing');
                 return res.status(401).json({ 
-                    error: { message: 'DEEPSEK_API_KEY belum dikonfigurasi di file .env.' } 
+                    error: { message: 'DEEPSEEK_API_KEY belum dikonfigurasi di file .env.' } 
                 });
             }
 
