@@ -648,6 +648,52 @@ app.get('/api/stats/user', async (req, res) => {
     }
 });
 
+// GET /api/admin/stats - Admin overview dashboard (owner only)
+app.get('/api/admin/stats', async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Harus login.' });
+    }
+    try {
+        const totalUsers = await pool.query('SELECT COUNT(*) AS total FROM users');
+        const totalMindmaps = await pool.query('SELECT COUNT(*) AS total FROM mindmaps');
+        const totalNodes = await pool.query('SELECT COUNT(*) AS total FROM nodes');
+        const totalAIcalls = await pool.query('SELECT SUM(tokens_used) AS total FROM node_events');
+        const avgLatency = await pool.query(`
+            SELECT COALESCE(AVG(duration_seconds), 0) AS avg_latency FROM node_events WHERE action = 'view'
+        `);
+
+        const topNodes = await pool.query(`
+            SELECT ne.node_name, COUNT(*) AS views, COALESCE(SUM(ne.duration_seconds), 0) AS total_time
+            FROM node_events ne
+            WHERE ne.action = 'view'
+            GROUP BY ne.node_name
+            ORDER BY views DESC
+            LIMIT 10
+        `);
+
+        const tokenTrend = await pool.query(`
+            SELECT DATE(created_at) AS day, COALESCE(SUM(tokens_used), 0) AS tokens
+            FROM node_events
+            WHERE created_at > CURRENT_TIMESTAMP - INTERVAL '7 days'
+            GROUP BY DATE(created_at)
+            ORDER BY day
+        `);
+
+        res.json({
+            total_users: parseInt(totalUsers.rows[0].total),
+            total_mindmaps: parseInt(totalMindmaps.rows[0].total),
+            total_nodes: parseInt(totalNodes.rows[0].total),
+            total_ai_calls: parseInt(totalAIcalls.rows[0].total) || 0,
+            avg_latency_seconds: parseFloat(avgLatency.rows[0].avg_latency) || 0,
+            top_nodes: topNodes.rows,
+            token_trend_7d: tokenTrend.rows.map(r => ({ date: r.day, tokens: parseInt(r.tokens) || 0 }))
+        });
+    } catch (e) {
+        console.error('[Admin] Gagal ambil admin stats:', e.message);
+        res.status(500).json({ error: 'Gagal mengambil admin statistik.' });
+    }
+});
+
 // --- PHASE 3: NODE GRANULAR ENDPOINTS ---
 
 // PATCH /api/node/:id/status - Update status satu node
