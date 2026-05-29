@@ -1152,6 +1152,11 @@ async function handleChatSubmit(e) {
             state.nodeStatuses = {};
             await saveState();
 
+            // Phase 6: Track mindmap creation
+            if (typeof trackSessionEvent === 'function') {
+                trackSessionEvent(state.currentMindmapId, 'mindmap_create', { name: result.name });
+            }
+
             // Render Mindmap
             initD3Canvas();
             updateMindmap(state.mindmapData);
@@ -1202,6 +1207,11 @@ function openDetailDrawer(title) {
     if (!drawer || !drawerTitle || !drawerLevel) return;
 
     drawerTitle.innerText = title;
+
+    // Start analytics timer for this node view
+    if (typeof startDrawerTimer === 'function') {
+        startDrawerTimer(title);
+    }
     
     // Update mobile drawer title if exists
     const mobileDrawerTitle = document.getElementById('mobile-drawer-node-title');
@@ -1322,6 +1332,12 @@ function stopDrawerLoadingTrivia() {
 
 function closeDetailDrawer() {
     stopDrawerLoadingTrivia();
+
+    // Stop analytics timer for this node view
+    if (typeof stopDrawerTimer === 'function') {
+        stopDrawerTimer();
+    }
+
     const drawer = document.getElementById('detail-drawer');
     if (!drawer) return;
     const qaCol = document.getElementById('drawer-col-qa');
