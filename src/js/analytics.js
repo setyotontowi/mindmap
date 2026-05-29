@@ -204,7 +204,7 @@ function renderStatsDashboard() {
 
     // Show loading
     area.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 3rem 0;">
-        <i data-lucide="bar-chart-3" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+        <i data-lucide="bar-chart-2" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
         <div>Memuat statistik...</div>
     </div>`;
 
