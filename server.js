@@ -511,6 +511,143 @@ app.post('/api/bookmarks', async (req, res) => {
     }
 });
 
+// --- PHASE 6: ANALYTICS ENDPOINTS ---
+
+// POST /api/track/node-event - Track individual node action
+app.post('/api/track/node-event', async (req, res) => {
+    const { mindmap_id, node_name, action, duration_seconds, tokens_used, model } = req.body;
+    const userId = req.user ? req.user.id : null;
+    if (!mindmap_id || !node_name || !action) {
+        return res.status(400).json({ error: 'mindmap_id, node_name, dan action diperlukan.' });
+    }
+    try {
+        await pool.query(
+            `INSERT INTO node_events (mindmap_id, user_id, node_name, action, duration_seconds, tokens_used, model)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [mindmap_id, userId, node_name, action, duration_seconds || 0, tokens_used || 0, model || null]
+        );
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Analytics] Gagal track node-event:', e.message);
+        res.status(500).json({ error: 'Gagal track node event.' });
+    }
+});
+
+// POST /api/track/session-event - Track session-level event
+app.post('/api/track/session-event', async (req, res) => {
+    const { mindmap_id, event_type, metadata } = req.body;
+    const userId = req.user ? req.user.id : null;
+    if (!mindmap_id || !event_type) {
+        return res.status(400).json({ error: 'mindmap_id dan event_type diperlukan.' });
+    }
+    try {
+        await pool.query(
+            `INSERT INTO session_events (mindmap_id, user_id, event_type, metadata)
+             VALUES ($1, $2, $3, $4)`,
+            [mindmap_id, userId, event_type, JSON.stringify(metadata || {})]
+        );
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Analytics] Gagal track session-event:', e.message);
+        res.status(500).json({ error: 'Gagal track session event.' });
+    }
+});
+
+// GET /api/stats/mindmap/:id - Statistics per mindmap
+app.get('/api/stats/mindmap/:id', async (req, res) => {
+    const mindmapId = req.params.id;
+    const userId = req.user ? req.user.id : null;
+    try {
+        const nodeStats = await pool.query(`
+            SELECT
+                COUNT(*) AS total_events,
+                COUNT(DISTINCT node_name) AS total_nodes,
+                COALESCE(SUM(duration_seconds), 0) AS total_read_time,
+                COALESCE(SUM(tokens_used), 0) AS total_tokens
+            FROM node_events
+            WHERE mindmap_id = $1
+        `, [mindmapId]);
+
+        const sessionStats = await pool.query(`
+            SELECT
+                COUNT(*) AS total_sessions,
+                COUNT(*) FILTER (WHERE event_type = 'mindmap_create') AS total_creates,
+                COUNT(*) FILTER (WHERE event_type = 'quiz_complete') AS total_quizzes
+            FROM session_events
+            WHERE mindmap_id = $1
+        `, [mindmapId]);
+
+        const topNodes = await pool.query(`
+            SELECT node_name, COUNT(*) AS views, COALESCE(SUM(duration_seconds), 0) AS total_time
+            FROM node_events
+            WHERE mindmap_id = $1 AND action = 'view'
+            GROUP BY node_name
+            ORDER BY views DESC
+            LIMIT 10
+        `, [mindmapId]);
+
+        res.json({
+            total_events: parseInt(nodeStats.rows[0].total_events) || 0,
+            total_nodes: parseInt(nodeStats.rows[0].total_nodes) || 0,
+            total_read_time: parseInt(nodeStats.rows[0].total_read_time) || 0,
+            total_tokens: parseInt(nodeStats.rows[0].total_tokens) || 0,
+            total_sessions: parseInt(sessionStats.rows[0].total_sessions) || 0,
+            total_creates: parseInt(sessionStats.rows[0].total_creates) || 0,
+            total_quizzes: parseInt(sessionStats.rows[0].total_quizzes) || 0,
+            top_nodes: topNodes.rows
+        });
+    } catch (e) {
+        console.error('[Analytics] Gagal ambil stats mindmap:', e.message);
+        res.status(500).json({ error: 'Gagal mengambil statistik mindmap.' });
+    }
+});
+
+// GET /api/stats/user - User overall statistics
+app.get('/api/stats/user', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    if (!userId) return res.json({ authenticated: false, message: 'Login untuk melihat statistik.' });
+
+    try {
+        const nodeStats = await pool.query(`
+            SELECT
+                COUNT(*) AS total_events,
+                COUNT(DISTINCT mindmap_id) AS total_mindmaps,
+                COALESCE(SUM(duration_seconds), 0) AS total_study_time,
+                COALESCE(SUM(tokens_used), 0) AS total_tokens,
+                COUNT(DISTINCT DATE(created_at)) AS active_days
+            FROM node_events
+            WHERE user_id = $1
+        `, [userId]);
+
+        const quizStats = await pool.query(`
+            SELECT
+                COUNT(*) AS total_quizzes,
+                COALESCE(AVG((metadata->>'score')::numeric), 0) AS avg_score
+            FROM session_events
+            WHERE user_id = $1 AND event_type = 'quiz_complete'
+        `, [userId]);
+
+        const mindmapCount = await pool.query(`
+            SELECT COUNT(*) AS total FROM mindmaps WHERE user_id = $1
+        `, [userId]);
+
+        res.json({
+            authenticated: true,
+            total_events: parseInt(nodeStats.rows[0].total_events) || 0,
+            total_mindmaps: parseInt(nodeStats.rows[0].total_mindmaps) || 0,
+            total_study_time: parseInt(nodeStats.rows[0].total_study_time) || 0,
+            total_tokens: parseInt(nodeStats.rows[0].total_tokens) || 0,
+            active_days: parseInt(nodeStats.rows[0].active_days) || 0,
+            total_quizzes: parseInt(quizStats.rows[0].total_quizzes) || 0,
+            avg_quiz_score: parseFloat(quizStats.rows[0].avg_score) || 0,
+            total_mindmaps_created: parseInt(mindmapCount.rows[0].total) || 0
+        });
+    } catch (e) {
+        console.error('[Analytics] Gagal ambil stats user:', e.message);
+        res.status(500).json({ error: 'Gagal mengambil statistik user.' });
+    }
+});
+
 // --- PHASE 3: NODE GRANULAR ENDPOINTS ---
 
 // PATCH /api/node/:id/status - Update status satu node
