@@ -211,6 +211,126 @@ const WRITING_STYLES = {
                 }
             }
         }
+    },
+    academic: {
+        name: { id: "Academic & Research (Deep Scholar)", en: "Academic & Research" },
+        instruction: {
+            id: "Gunakan gaya penulisan Academic & Research yang berbobot ilmiah tinggi, formal, objektif, dan didukung dengan struktur teori yang kuat layaknya sebuah publikasi akademis terpercaya.",
+            en: "Use an Academic & Research writing style: highly scholarly, formal, objective, and backed by a strong theoretical framework akin to a reputable academic publication."
+        },
+        substyles: {
+            literature: {
+                name: { id: "Literature Review", en: "Literature Review" },
+                instruction: {
+                    id: "Hubungkan topik ini dengan teori-teori dasar yang mendasarinya, tinjau konsensus ilmiah saat ini, serta sebutkan perdebatan atau diskursus akademis yang ada di sekitarnya secara objektif.",
+                    en: "Connect the topic with its underlying foundational theories, review the current scientific consensus, and objectively discuss ongoing academic debates or discourses surrounding it."
+                }
+            },
+            proof: {
+                name: { id: "Rigorous / Mathematical Proof", en: "Rigorous / Mathematical Proof" },
+                instruction: {
+                    id: "Fokus pada definisi formal yang presisi, persamaan/rumus jika relevan, serta deduksi logis langkah demi langkah yang ketat tanpa melakukan generalisasi yang dangkal.",
+                    en: "Focus on precise formal definitions, equations/formulas if applicable, and strict step-by-step logical deduction without superficial generalizations."
+                }
+            },
+            landmark: {
+                name: { id: "Landmark Discoveries", en: "Landmark Discoveries" },
+                instruction: {
+                    id: "Sebutkan studi/paper kunci, lembaga riset terkemuka, atau tokoh perintis utama yang secara historis menemukan atau memajukan konsep ini guna memberikan kredibilitas akademis.",
+                    en: "Mention key milestone papers/studies, prominent research institutions, or pioneer figures who historically discovered or advanced this concept to establish academic credibility."
+                }
+            }
+        }
+    },
+    socratic: {
+        name: { id: "Socratic Dialogue (Critical Thinking)", en: "Socratic Dialogue" },
+        instruction: {
+            id: "Gunakan gaya penulisan Socratic Dialogue yang mengedepankan proses penyelidikan, merangsang pemikiran kritis, serta menuntun pembaca menemukan konsep dasar melalui rangkaian pertanyaan terstruktur.",
+            en: "Use a Socratic Dialogue writing style that emphasizes inquiry, stimulates critical thinking, and guides the reader to discover core concepts through structured sequences of questions."
+        },
+        substyles: {
+            inquiry: {
+                name: { id: "Maieutic Inquiry", en: "Maieutic Inquiry" },
+                instruction: {
+                    id: "Gunakan metode maieutik: ajukan pertanyaan bertahap yang membongkar asumsi yang salah, merangsang rasa tahu, dan menuntun logika pembaca untuk merumuskan kebenaran sendiri.",
+                    en: "Use the maieutic method: pose progressive questions that deconstruct faulty assumptions, spark curiosity, and lead the reader's logic to formulate the truth independently."
+                }
+            },
+            refutation: {
+                name: { id: "Thesis & Refutation", en: "Thesis & Refutation" },
+                instruction: {
+                    id: "Sajikan sebuah tesis umum atau kesalahpahaman populer, lalu hadirkan argumen tandingan (refutasi) yang kuat untuk menyaring pemahaman yang jauh lebih jernih.",
+                    en: "Present a common thesis or popular misconception, then introduce a robust counter-argument (refutation) to distill a much clearer, verified understanding."
+                }
+            },
+            prompts: {
+                name: { id: "Reflective Prompts", en: "Reflective Prompts" },
+                instruction: {
+                    id: "Sertakan pertanyaan reflektif mendalam di sela-sela penjelasan yang memaksa pembaca memikirkan implikasi etis, praktis, atau koneksi antardomain dari topik ini.",
+                    en: "Embed deep reflective prompts throughout the text that compel the reader to contemplate the ethical, practical implications, or cross-domain connections of this topic."
+                }
+            }
+        }
+    },
+    playful: {
+        name: { id: "ELI5 & Gamified Quest (Simple & Playful)", en: "ELI5 & Gamified Quest" },
+        instruction: {
+            id: "Gunakan gaya penulisan ELI5 & Gamified Quest yang sangat santai, imajinatif, ramah anak, dan menyenangkan. Buat konsep tersulit pun terasa seperti sebuah petualangan seru.",
+            en: "Use an ELI5 & Gamified Quest writing style that is highly casual, imaginative, child-friendly, and fun. Make even the most difficult concepts feel like an exciting adventure."
+        },
+        substyles: {
+            eli5: {
+                name: { id: "ELI5 (Explain Like I'm 5)", en: "ELI5 (Explain Like I'm 5)" },
+                instruction: {
+                    id: "Gunakan kosakata yang sangat sederhana (bebas jargon teknis) dan buat analogi super-intuitif menggunakan mainan, makanan, atau petualangan anak-anak.",
+                    en: "Use extremely simple vocabulary (completely free of technical jargon) and build super-intuitive analogies using toys, food, or children's playground activities."
+                }
+            },
+            rpg: {
+                name: { id: "RPG Quest Frame", en: "RPG Quest Frame" },
+                instruction: {
+                    id: "Bingkai materi sebagai misi/quest dalam video game RPG: sebutkan 'item legendaris' yang dicari, musuh yang harus dikalahkan (tantangan), dan keahlian baru yang didapat setelah memahami topik ini.",
+                    en: "Frame the topic as a quest in an RPG video game: identify the 'legendary item' to find, the enemies to defeat (challenges), and the new skills acquired upon mastering this topic."
+                }
+            },
+            simulation: {
+                name: { id: "Mental Simulation", en: "Mental Simulation" },
+                instruction: {
+                    id: "Ajak pembaca melakukan simulasi mental orang pertama: bayangkan diri mereka menjadi objek kecil di dalam sistem (misal: elektron dalam sirkuit) dan rasakan prosesnya secara langsung.",
+                    en: "Invite the reader into a first-person mental simulation: imagine themselves as a tiny object within the system (e.g., an electron in a circuit) and live the process firsthand."
+                }
+            }
+        }
+    },
+    historical: {
+        name: { id: "Historical & Evolutionary (Chronological)", en: "Historical & Evolutionary" },
+        instruction: {
+            id: "Gunakan gaya penulisan Historical & Evolutionary yang memaparkan konsep sebagai sebuah perjalanan sejarah, menelusuri bagaimana ide ini lahir dari kebutuhan manusia memecahkan masalah nyata pada zamannya.",
+            en: "Use a Historical & Evolutionary writing style that presents concepts as a historical journey, tracing how the idea was born out of human necessity to solve real-world problems in its era."
+        },
+        substyles: {
+            eureka: {
+                name: { id: "Eureka Moments", en: "Eureka Moments" },
+                instruction: {
+                    id: "Fokus pada drama penemuan, momen kebetulan yang berharga (serendipity), serta ketegangan emosional sebelum para ilmuwan akhirnya mencapai terobosan spektakuler.",
+                    en: "Focus on the drama of discovery, serendipitous accidents, and the emotional tension experienced by scientists before they finally achieved a spectacular breakthrough."
+                }
+            },
+            evolution: {
+                name: { id: "Evolutionary Path", en: "Evolutionary Path" },
+                instruction: {
+                    id: "Gambarkan bagaimana konsep ini berkembang secara bertahap: dari solusi kuno yang primitif dan penuh kekurangan hingga bertransformasi menjadi teknologi modern yang canggih saat ini.",
+                    en: "Illustrate how this concept evolved incrementally: from primitive, flawed early solutions to its transformation into the advanced modern technology we use today."
+                }
+            },
+            biography: {
+                name: { id: "Biographical Vignette", en: "Biographical Vignette" },
+                instruction: {
+                    id: "Soroti kisah hidup singkat, kepribadian unik, motivasi terdalam, serta rintangan yang dihadapi oleh tokoh sentral di balik penemuan konsep ini.",
+                    en: "Highlight the short life story, unique personality traits, deepest motivations, and obstacles faced by the central figure behind this concept's discovery."
+                }
+            }
+        }
     }
 };
 

@@ -152,6 +152,81 @@ const BRAIN_TRIVIA = [
         id: 30,
         id_text: "Dopamin Kebaruan: Menghadapi lingkungan atau konsep baru melepaskan dopamin, memicu plastisitas otak untuk belajar lebih cepat.",
         en_text: "Novelty Dopamine: Experiencing new environments or concepts releases dopamine, boosting neuroplasticity for faster learning."
+    },
+    {
+        id: 31,
+        id_text: "Efek Spasi Visual: Layout halaman yang bersih dengan banyak ruang kosong (white space) mengurangi kelelahan kognitif dan mempercepat pemahaman visual.",
+        en_text: "Visual Spacing Effect: Clean page layouts with plenty of white space reduce cognitive fatigue and accelerate visual comprehension."
+    },
+    {
+        id: 32,
+        id_text: "Konsolidasi Sinaptik: Meninjau materi pelajaran dalam waktu 24 jam setelah pertama kali dipelajari mencegah retensi informasi turun hingga 80%.",
+        en_text: "Synaptic Consolidation: Reviewing study material within 24 hours of first learning it prevents information retention from dropping by up to 80%."
+    },
+    {
+        id: 33,
+        id_text: "Teori Beban Kognitif: Membebani memori kerja secara berlebihan menurunkan efisiensi transfer informasi ke memori jangka panjang.",
+        en_text: "Cognitive Load Theory: Overloading working memory decreases the efficiency of transferring information into long-term memory."
+    },
+    {
+        id: 34,
+        id_text: "Saraf Cermin (Mirror Neurons): Meniru gaya pemecahan masalah dari seorang mentor secara sadar mempercepat penguasaan keahlian baru secara instan.",
+        en_text: "Mirror Neurons: Actively mimicking a mentor's problem-solving style instantly accelerates the acquisition of new skills."
+    },
+    {
+        id: 35,
+        id_text: "Pengkodean Semantik: Menghubungkan fakta baru dengan konsep yang sudah dipahami sebelumnya menciptakan jalur ingatan yang jauh lebih kokoh.",
+        en_text: "Semantic Encoding: Connecting new facts to previously understood concepts creates much more robust memory pathways."
+    },
+    {
+        id: 36,
+        id_text: "Efek Generasi (Generation Effect): Otak mengingat informasi 60% lebih baik jika Anda aktif merumuskan jawabannya sendiri daripada hanya membacanya.",
+        en_text: "Generation Effect: The brain recalls information 60% better if you actively formulate the answer yourself rather than just reading it."
+    },
+    {
+        id: 37,
+        id_text: "Kecemasan Kognitif: Stres kronis melepaskan hormon kortisol yang secara fisik dapat menyusutkan hipokampus, wilayah otak untuk belajar.",
+        en_text: "Cognitive Anxiety: Chronic stress releases cortisol, which can physically shrink the hippocampus, the brain's learning region."
+    },
+    {
+        id: 38,
+        id_text: "Pola Tidur Ultradian: Fokus kognitif kita bekerja dalam siklus 90-120 menit, setelah itu otak memerlukan istirahat singkat untuk pulih.",
+        en_text: "Ultradian Focus Cycles: Our cognitive focus operates in 90-120 minute cycles, after which the brain requires a short break to recover."
+    },
+    {
+        id: 39,
+        id_text: "Efek Keakraban (Familiarity Bias): Membaca ulang teks secara pasif membuat Anda merasa sudah paham materi, padahal Anda hanya mengenalnya.",
+        en_text: "Familiarity Bias: Passive rereading makes you feel like you understand the material, when in fact you only recognize it."
+    },
+    {
+        id: 40,
+        id_text: "Neurogenesis Dewasa: Otak manusia dewasa terus memproduksi sel-sel saraf baru setiap hari, terutama di area hipokampus.",
+        en_text: "Adult Neurogenesis: The adult human brain continues to produce new neurons every day, especially in the hippocampus area."
+    },
+    {
+        id: 41,
+        id_text: "Tidur Gelombang Lambat (NREM): Selama tidur nyenyak, sistem glymphatic otak membersihkan sisa-sisa metabolik beracun yang menumpuk saat terjaga.",
+        en_text: "Slow-Wave Sleep (NREM): During deep sleep, the brain's glymphatic system flushes away toxic metabolic waste accumulated while awake."
+    },
+    {
+        id: 42,
+        id_text: "Pembelajaran Multisensor: Belajar dengan melibatkan visual, audio, dan gerakan motorik mengaktifkan lebih banyak area otak secara bersamaan.",
+        en_text: "Multisensory Learning: Studying by engaging visual, audio, and motor movements activates more brain regions simultaneously."
+    },
+    {
+        id: 43,
+        id_text: "Hukum Yerkes-Dodson: Tingkat stres ringan (eustress) sebenarnya mengoptimalkan fokus belajar, tetapi stres yang berlebihan justru merusaknya.",
+        en_text: "Yerkes-Dodson Law: A mild level of stress (eustress) actually optimizes study focus, but excessive stress destroys it."
+    },
+    {
+        id: 44,
+        id_text: "Efek Hypercorrection: Otak cenderung mengingat umpan balik dengan sangat kuat ketika Anda menyadari kesalahan yang Anda yakini benar.",
+        en_text: "Hypercorrection Effect: The brain remembers feedback incredibly well when you corrected a mistake you were highly confident about."
+    },
+    {
+        id: 45,
+        id_text: "Metakognisi: Memantau dan menganalisis cara belajar Anda sendiri terbukti secara ilmiah sebagai prediktor terbaik kesuksesan akademis.",
+        en_text: "Metacognition: Actively monitoring and analyzing your own learning process is scientifically proven as the best predictor of academic success."
     }
 ];
 
