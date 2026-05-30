@@ -10,6 +10,7 @@ if (fs.existsSync(envPath)) {
 }
 
 const express = require('express');
+const compression = require('compression');
 
 const { Pool } = require('pg');
 const crypto = require('crypto');
@@ -30,9 +31,13 @@ const parseCookies = (cookieHeader) => {
 };
 
 // Middleware
+app.use(compression()); // Gzip compression
 app.use(express.json({ limit: '50mb' })); // Mendukung data berukuran besar (penjelasan AI & cache)
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'dist')));
+    app.use(express.static(path.join(__dirname, 'dist'), {
+        maxAge: '1y',
+        etag: true
+    }));
 } else {
     app.use(express.static(__dirname));
 }
