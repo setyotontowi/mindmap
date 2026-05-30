@@ -140,69 +140,66 @@ Sebagian besar fase telah selesai diimplementasikan. Beberapa fitur baru masih d
 
 ---
 
-## ⬜ FASE 9: Rombak Gaya Penulisan (Stillwell Marketing & Anti-AI Slop)
+## 🟩 FASE 9: Rombak Gaya Penulisan (Stillwell Marketing & Anti-AI Slop) (SELESAI)
 **Tujuan:** Mengintegrasikan prinsip marketing dari Stillwell Marketing Skills dan mekanisme proteksi anti-AI slop guna memastikan artikel terstruktur secara profesional, SEO-friendly, dan ditulis dengan nada yang alami/manusiawi.
 
-- [ ] **Modul 1: Restrukturisasi 6 Gaya Penulisan Berorientasi Marketing**
-  - [ ] 📈 **Direct Copywriting (Conversion-Focused)** — Fokus pada konversi dan persuasi menggunakan formula teruji (seperti AIDA atau PAS).
-    - [ ] *AIDA Model* — Attention (kait yang kuat) → Interest (fakta menarik) → Desire (manfaat utama) → Action.
-    - [ ] *PAS Formula* — Problem (identifikasi masalah) → Agitate (perdalam emosi/implikasi) → Solution.
-    - [ ] *Benefit-Driven* — Menjelaskan fitur/konsep dengan murni menterjemahkannya ke keuntungan pengguna.
-  - [ ] 🔍 **Technical & SEO Content** — Padat informasi, fokus pada penyusunan heading (H2/H3) yang logis dan *Search Intent* yang tepat.
-    - [ ] *Search Intent Alignment* — Menjawab niat pencarian secara spesifik (informasional/transaksional).
-    - [ ] *Semantic Keyword Rich* — Menyusun artikel agar kaya istilah relevan tanpa melakukan *keyword stuffing*.
-    - [ ] *Actionable Tutorial* — Mengarahkan pembaca dengan langkah-langkah praktis dan terukur.
-  - [ ] 🗣️ **Conversational Persona** — Santai, hangat, dan ramah seperti mentor pribadi.
-    - [ ] *Friendly Coach* — Menggunakan "saya/kamu", mengajukan pertanyaan retoris, empati tinggi.
-    - [ ] *Analogi Membumi* — Menghilangkan istilah rumit dan menggantinya dengan analogi dunia nyata yang sederhana.
-    - [ ] *Q&A Dialogue* — Mengalir seperti dialog tanya-jawab yang antisipatif terhadap keraguan pembaca.
-  - [ ] 🎭 **Story-Driven Content (Copywriting)** — Membungkus informasi/topik menggunakan teknik penceritaan (*storytelling*) yang emosional.
-    - [ ] *Hero's Journey* — Tantangan → perjuangan → titik balik → solusi.
-    - [ ] *Case Story* — Menggunakan kisah nyata/studi kasus singkat untuk membuktikan poin utama.
-    - [ ] *Anecdotal Hook* — Membuka dengan anekdot pendek yang relevan sebelum masuk ke konsep dasar.
-  - [ ] 🔬 **Analytical Case Study** — Mendalam, objektif, dan berbasis data empiris.
-    - [ ] *Data-Driven Breakdown* — Menyajikan metrik, tren, angka, dan statistik.
-    - [ ] *Root-Cause Analysis* — Menganalisis *sebab-akibat* secara runut.
-    - [ ] *First Principles Review* — Membongkar konsep dari elemen penyusun paling mendasar.
-  - [ ] 💡 **Actionable Frameworks (Thought Leadership)** — Mengajarkan metode, model mental, atau kerangka berpikir yang bisa langsung dipraktekkan.
-    - [ ] *Mental Model* — Mengaitkan topik dengan kerangka berpikir terkenal (misalnya: Pareto, SWOT, Eisenhower).
-    - [ ] *SOP / Playbook* — Menyajikan panduan operasional standar yang praktis.
-    - [ ] *Pitfall & Best Practices* — Do's and Don'ts yang diuji di lapangan.
-- [ ] **Modul 2: Implementasi Anti-AI Slop Engine**
-  - [ ] Buat *Anti-Word List* ketat dalam system prompt untuk memblokir kata-kata klise AI (misalnya: *delve*, *testament*, *tapestry*, *furthermore*, *moreover*, *in conclusion*, *crucial*, *vital*, *not only... but also*, *let's embark*, *unlock*, *journey*, dll.).
-  - [ ] Buat aturan struktur kalimat: membatasi kalimat pasif berlebihan, melarang pembukaan/penutup klise (seperti *"In the fast-paced world of..."*), dan memprioritaskan gaya penulisan manusia yang aktif dan to-the-point.
-- [ ] **Modul 3: Integrasi UI & Backend Prompt**
-  - [ ] Perbarui objek `WRITING_STYLES` di `js/ui.js` dengan opsi marketing baru.
-  - [ ] Modifikasi dropdown pemilih gaya di detail drawer agar menampilkan 6 gaya berorientasi marketing yang baru beserta sub-gayanya.
-  - [ ] Gabungkan *Anti-AI Slop rules* ke dalam `getWritingStyleInstruction` sehingga diterapkan secara universal pada semua pembentukan materi oleh Gemini API.
+- [x] **Modul 1: Restrukturisasi 6 Gaya Penulisan Berorientasi Marketing**
+  - [x] 📈 **Direct Copywriting (Conversion-Focused)** — Fokus pada konversi dan persuasi menggunakan formula teruji (seperti AIDA atau PAS).
+    - [x] *AIDA Model* — Attention (kait yang kuat) → Interest (fakta menarik) → Desire (manfaat utama) → Action.
+    - [x] *PAS Formula* — Problem (identifikasi masalah) → Agitate (perdalam emosi/implikasi) → Solution.
+    - [x] *Benefit-Driven* — Menjelaskan fitur/konsep dengan murni menterjemahkannya ke keuntungan pengguna.
+  - [x] 🔍 **Technical & SEO Content** — Padat informasi, fokus pada penyusunan heading (H2/H3) yang logis dan *Search Intent* yang tepat.
+    - [x] *Search Intent Alignment* — Menjawab niat pencarian secara spesifik (informasional/transaksional).
+    - [x] *Semantic Keyword Rich* — Menyusun artikel agar kaya istilah relevan tanpa melakukan *keyword stuffing*.
+    - [x] *Actionable Tutorial* — Mengarahkan pembaca dengan langkah-langkah praktis dan terukur.
+  - [x] 🗣️ **Conversational Persona** — Santai, hangat, dan ramah seperti mentor pribadi.
+    - [x] *Friendly Coach* — Menggunakan "saya/kamu", mengajukan pertanyaan retoris, empati tinggi.
+    - [x] *Analogi Membumi* — Menghilangkan istilah rumit dan menggantinya dengan analogi dunia nyata yang sederhana.
+    - [x] *Q&A Dialogue* — Mengalir seperti dialog tanya-jawab yang antisipatif terhadap keraguan pembaca.
+  - [x] 🎭 **Story-Driven Content (Copywriting)** — Membungkus informasi/topik menggunakan teknik penceritaan (*storytelling*) yang emosional.
+    - [x] *Hero's Journey* — Tantangan → perjuangan → titik balik → solusi.
+    - [x] *Case Story* — Menggunakan kisah nyata/studi kasus singkat untuk membuktikan poin utama.
+    - [x] *Anecdotal Hook* — Membuka dengan anekdot pendek yang relevan sebelum masuk ke konsep dasar.
+  - [x] 🔬 **Analytical Case Study** — Mendalam, objektif, dan berbasis data empiris.
+    - [x] *Data-Driven Breakdown* — Menyajikan metrik, tren, angka, dan statistik.
+    - [x] *Root-Cause Analysis* — Menganalisis *sebab-akibat* secara runut.
+    - [x] *First Principles Review* — Membongkar konsep dari elemen penyusun paling mendasar.
+  - [x] 💡 **Actionable Frameworks (Thought Leadership)** — Mengajarkan metode, model mental, atau kerangka berpikir yang bisa langsung dipraktekkan.
+    - [x] *Mental Model* — Mengaitkan topik dengan kerangka berpikir terkenal (misalnya: Pareto, SWOT, Eisenhower).
+    - [x] *SOP / Playbook* — Menyajikan panduan operasional standar yang praktis.
+    - [x] *Pitfall & Best Practices* — Do's and Don'ts yang diuji di lapangan.
+- [x] **Modul 2: Implementasi Anti-AI Slop Engine**
+  - [x] Buat *Anti-Word List* ketat dalam system prompt untuk memblokir kata-kata klise AI (misalnya: *delve*, *testament*, *tapestry*, *furthermore*, *moreover*, *in conclusion*, *crucial*, *vital*, *not only... but also*, *let's embark*, *unlock*, *journey*, dll.).
+  - [x] Buat aturan struktur kalimat: membatasi kalimat pasif berlebihan, melarang pembukaan/penutup klise (seperti *"In the fast-paced world of..."*), dan memprioritaskan gaya penulisan manusia yang aktif dan to-the-point.
+- [x] **Modul 3: Integrasi UI & Backend Prompt**
+  - [x] Perbarui objek `WRITING_STYLES` di `js/ui.js` dengan opsi marketing baru.
+  - [x] Modifikasi dropdown pemilih gaya di detail drawer agar menampilkan 6 gaya berorientasi marketing yang baru beserta sub-gayanya.
+  - [x] Gabungkan *Anti-AI Slop rules* ke dalam `getWritingStyleInstruction` sehingga diterapkan secara universal pada semua pembentukan materi oleh Gemini API.
 
 ---
 
-## ⬜ FASE 10: Fitur Library & Pengorganisasian Materi (PROPOSAL)
+## 🟩 FASE 10: Fitur Library & Pengorganisasian Materi (SELESAI)
 **Tujuan:** Mengaktifkan tab Library pada Dashboard untuk mengurasi, menyimpan, dan mengorganisasi peta pikiran serta materi hasil eksplorasi secara permanen.
 
-- [ ] **Modul 1: Kurasi Buku & Materi Akademik**
-  - [ ] Sediakan template kurasi otomatis untuk memilah mindmap berdasarkan jenis topik (misal: "Buku", "Jurnal", "Koleksi Pribadi").
-  - [ ] Tambahkan grid view yang menarik dengan cover buatan atau representasi visual peta di subview Library.
-- [ ] **Modul 2: Ekspor & Gabung Catatan**
-  - [ ] Sediakan opsi untuk menggabungkan seluruh penjelasan node dalam satu mindmap menjadi "E-book" ringkas berformat PDF atau Markdown langsung dari Library.
-- [ ] **Modul 3: Persistensi Koleksi**
-  - [ ] Buat tabel `library_collections` di SQLite untuk mengelola koleksi terkurasi secara terpisah dari riwayat pencarian mentah (history).
+- [x] **Modul 1: Kurasi Buku & Materi Akademik**
+  - [x] Sediakan template kurasi otomatis untuk memilah mindmap berdasarkan jenis topik (misal: "Buku", "Jurnal", "Koleksi Pribadi").
+  - [x] Tambahkan grid view yang menarik dengan cover buatan atau representasi visual peta di subview Library.
+- [x] **Modul 2: Ekspor & Gabung Catatan**
+  - [x] Sediakan opsi untuk menggabungkan seluruh penjelasan node dalam satu mindmap menjadi "E-book" ringkas berformat PDF atau Markdown langsung dari Library.
+- [x] **Modul 3: Persistensi Koleksi**
+  - [x] Buat tabel `library_collections` di SQLite/PostgreSQL untuk mengelola koleksi terkurasi secara terpisah dari riwayat pencarian mentah (history).
 
 ---
 
-## ⬜ FASE 11: Fitur Bookmark (Penyimpanan Cepat Node & Artikel) (PROPOSAL)
+## 🟩 FASE 11: Fitur Bookmark (Penyimpanan Cepat Node & Artikel) (SELESAI)
 **Tujuan:** Memungkinkan pengguna menandai (bookmark) materi/artikel dari node tertentu di canvas mindmap agar dapat diakses langsung dari Dashboard/Library tanpa perlu mencari node tersebut di dalam struktur mindmap.
 
-- [ ] **Modul 1: Tombol Bookmark di Detail Drawer & Node Card**
-  - [ ] Tambahkan ikon bookmark (misalnya bintang atau pita pembatas buku) di sebelah judul artikel pada detail drawer.
-  - [ ] Sediakan shortcut cepat untuk menambahkan/menghapus bookmark langsung dari node di canvas.
-- [ ] **Modul 2: Tab/Koleksi Khusus Bookmark di Dashboard**
-  - [ ] Integrasikan subview khusus atau bagian baru di dalam Library untuk mengelompokkan semua artikel/node yang di-bookmark.
-  - [ ] Tampilkan daftar bookmark yang berisi judul node, nama mindmap asal, dan tanggal ditambahkan.
-- [ ] **Modul 3: Database Integration & State Sync**
-  - [ ] Buat tabel `bookmarks` di SQLite dengan skema `{ id, mindmap_id, node_name, created_at }`.
-  - [ ] Sinkronisasikan state bookmark ke LocalStorage sebagai fallback dan ke server secara real-time.
-
-
-
+- [x] **Modul 1: Tombol Bookmark di Detail Drawer & Node Card**
+  - [x] Tambahkan ikon bookmark (misalnya bintang atau pita pembatas buku) di sebelah judul artikel pada detail drawer.
+  - [x] Sediakan shortcut cepat untuk menambahkan/menghapus bookmark langsung dari node di canvas.
+- [x] **Modul 2: Tab/Koleksi Khusus Bookmark di Dashboard**
+  - [x] Integrasikan subview khusus atau bagian baru di dalam Library untuk mengelompokkan semua artikel/node yang di-bookmark.
+  - [x] Tampilkan daftar bookmark yang berisi judul node, nama mindmap asal, dan tanggal ditambahkan.
+- [x] **Modul 3: Database Integration & State Sync**
+  - [x] Buat tabel `bookmarks` di SQLite/PostgreSQL dengan skema `{ id, mindmap_id, node_name, created_at }`.
+  - [x] Sinkronisasikan state bookmark ke LocalStorage sebagai fallback dan ke server secara real-time.

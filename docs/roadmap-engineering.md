@@ -115,19 +115,19 @@ graph TD
 
 ---
 
-## 🟡 FASE 3: Normalisasi Database & Sinkronisasi Granular (PostgreSQL) (DIUSULKAN)
+## 🟩 FASE 3: Normalisasi Database & Sinkronisasi Granular (PostgreSQL) (SELESAI)
 **Tujuan:** Menghentikan pengiriman payload JSON raksasa secara menyeluruh dan beralih ke penyimpanan relasional yang efisien.
 
-- [ ] **Rancang Skema Relasional PostgreSQL Baru:**
+- [x] **Rancang Skema Relasional PostgreSQL Baru:**
   - Buat tabel `mindmaps` (`id`, `name`, `user_id`, `updated_at`).
   - Buat tabel `nodes` (`id`, `mindmap_id`, `parent_id`, `name`, `description`, `explanation`, `status`, `depth`).
-- [ ] **Buat REST API Granular Baru di `server.js`:**
+- [x] **Buat REST API Granular Baru di `server.js`:**
   - `GET /api/mindmaps` — Mengambil semua daftar topik mindmap (seperti saat ini).
   - `GET /api/mindmap/:id` — Mengambil mindmap beserta relasi node-nodenya (dibangun kembali menjadi objek pohon di backend/frontend).
   - `POST /api/node` — Menambahkan satu node kustom baru.
   - `PATCH /api/node/:id/status` — Mengupdate status belajar satu node secara instan.
   - `DELETE /api/node/:id` — Menghapus cabang node tertentu secara rekursif di PostgreSQL.
-- [ ] **Implementasi Lazy-Loading Materi:**
+- [x] **Implementasi Lazy-Loading Materi:**
   - Jangan kirim kolom `explanation` yang sangat besar di awal pemuatan pohon D3.
   - Panggil API `GET /api/node/:id/explanation` hanya ketika pengguna mengeklik kartu node tertentu untuk membuka detail drawer.
 
