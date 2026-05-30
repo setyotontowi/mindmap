@@ -505,7 +505,7 @@
                             </button>
                             <button class="history-menu-item" id="history-menu-item-library">
                                 <i data-lucide="library"></i>
-                                <span>Library</span>
+                                <span>Collections</span>
                             </button>
                             <button class="history-menu-item" id="history-menu-item-bookmarks">
                                 <i data-lucide="bookmark"></i>
@@ -592,19 +592,32 @@
                         </div>
                     </div>
                     
-                    <!-- Library Content (Subview 4) -->
+                    <!-- Collections Content (Subview 4) -->
                     <div class="history-main-content hidden" id="subview-library">
-                        <div class="history-header-block">
-                            <h2 class="history-title-redesign">Library</h2>
-                            <p class="history-subtitle-redesign">Koleksi rangkuman buku, materi akademik, dan catatan belajar Anda.</p>
+                        <div class="history-header-block" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <h2 class="history-title-redesign" style="margin-bottom: 4px;">Collections</h2>
+                                <p class="history-subtitle-redesign" style="margin: 0;">Group and organize your mindmaps into custom learning paths.</p>
+                            </div>
+                            <button class="btn-new-research-history" id="btn-add-collection" style="margin-top: 0; padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px;">
+                                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                                <span>New Collection</span>
+                            </button>
                         </div>
                         
-                        <!-- Library Filter Tabs -->
-                        <div class="library-filter-bar">
-                            <button class="library-filter-btn active" data-category="all">Semua</button>
-                            <button class="library-filter-btn" data-category="Buku">Buku</button>
-                            <button class="library-filter-btn" data-category="Jurnal">Jurnal Akademik</button>
-                            <button class="library-filter-btn" data-category="Koleksi Pribadi">Koleksi Pribadi</button>
+                        <!-- Collections Filter Tabs -->
+                        <div class="library-filter-bar" id="collections-tabs-container" style="margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; gap: 8px;">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                        
+                        <!-- Collection Actions Toolbar (Hidden when 'All' is active) -->
+                        <div class="collection-actions-bar hidden" id="collection-actions-bar" style="display: flex; gap: 8px; margin: -0.5rem 0 1.25rem 0; align-items: center;">
+                            <button class="library-filter-btn" id="btn-edit-collection" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; padding: 4px 10px; height: auto; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; color: var(--text-2); cursor: pointer;">
+                                <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i> Rename
+                            </button>
+                            <button class="library-filter-btn" id="btn-delete-collection" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; padding: 4px 10px; height: auto; color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 4px; background: transparent; cursor: pointer;">
+                                <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> Delete
+                            </button>
                         </div>
                         
                         <!-- Curated Grid Container -->

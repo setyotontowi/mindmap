@@ -152,6 +152,25 @@ const initDb = async () => {
         `);
         console.log('Tabel library_collections siap digunakan.');
 
+        // Phase 12: collections & collection_mindmaps tables
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS collections (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS collection_mindmaps (
+                collection_id INTEGER REFERENCES collections(id) ON DELETE CASCADE,
+                mindmap_id VARCHAR(255) REFERENCES mindmaps(id) ON DELETE CASCADE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (collection_id, mindmap_id)
+            )
+        `);
+        console.log('Tabel collections dan collection_mindmaps siap digunakan.');
+
         // Phase 11: bookmarks table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS bookmarks (
@@ -380,6 +399,189 @@ app.delete('/api/mindmap/:id', async (req, res) => {
     } catch (err) {
         console.error(`[Mindmap] Failed to delete mindmap ID: ${id}:`, err.message);
         res.status(500).json({ error: 'Gagal menghapus mindmap dari database PostgreSQL' });
+    }
+});
+
+// --- PHASE 12: DYNAMIC COLLECTIONS ENDPOINTS ---
+
+// GET /api/collections - Get all collections with nested mindmaps
+app.get('/api/collections', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    console.log(`[Collections] Fetching collections for user ID: ${userId || 'guest'}`);
+    try {
+        let query = userId 
+            ? 'SELECT * FROM collections WHERE user_id = $1 ORDER BY created_at ASC'
+            : 'SELECT * FROM collections WHERE user_id IS NULL ORDER BY created_at ASC';
+        let params = userId ? [userId] : [];
+        let result = await pool.query(query, params);
+        
+        // Migration and default population logic
+        if (result.rows.length === 0) {
+            // Check if there are any old library collections
+            const oldQuery = userId
+                ? 'SELECT * FROM library_collections WHERE user_id = $1'
+                : 'SELECT * FROM library_collections WHERE user_id IS NULL';
+            const oldParams = userId ? [userId] : [];
+            const oldResult = await pool.query(oldQuery, oldParams);
+            
+            if (oldResult.rows.length > 0) {
+                // Migrate old categories to new collections
+                const categories = [...new Set(oldResult.rows.map(r => r.category || 'Koleksi Pribadi'))];
+                for (const cat of categories) {
+                    const colRes = userId
+                        ? await pool.query('INSERT INTO collections (user_id, name) VALUES ($1, $2) RETURNING id', [userId, cat])
+                        : await pool.query('INSERT INTO collections (user_id, name) VALUES (NULL, $1) RETURNING id', [cat]);
+                    const newColId = colRes.rows[0].id;
+                    
+                    const catItems = oldResult.rows.filter(r => (r.category || 'Koleksi Pribadi') === cat);
+                    for (const item of catItems) {
+                        await pool.query(
+                            'INSERT INTO collection_mindmaps (collection_id, mindmap_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                            [newColId, item.mindmap_id]
+                        );
+                    }
+                }
+            } else {
+                // Populate default collections
+                const defaults = ['Buku', 'Jurnal Akademik', 'Koleksi Pribadi'];
+                for (const name of defaults) {
+                    if (userId) {
+                        await pool.query('INSERT INTO collections (user_id, name) VALUES ($1, $2)', [userId, name]);
+                    } else {
+                        await pool.query('INSERT INTO collections (user_id, name) VALUES (NULL, $1)', [name]);
+                    }
+                }
+            }
+            // Re-fetch collections
+            result = await pool.query(query, params);
+        }
+        
+        // Construct the collections with their nested mindmaps
+        const collections = [];
+        for (const col of result.rows) {
+            const mmQuery = `
+                SELECT mm.id, mm.name, mm.tree_data, mm.node_cache, mm.node_statuses, cm.created_at as saved_at
+                FROM collection_mindmaps cm
+                JOIN mindmaps mm ON cm.mindmap_id = mm.id
+                WHERE cm.collection_id = $1
+                ORDER BY cm.created_at DESC
+            `;
+            const mmResult = await pool.query(mmQuery, [col.id]);
+            collections.push({
+                id: col.id,
+                name: col.name,
+                mindmaps: mmResult.rows.map(row => ({
+                    id: row.id,
+                    name: row.name,
+                    saved_at: row.saved_at,
+                    tree_data: JSON.parse(row.tree_data || 'null'),
+                    node_cache: JSON.parse(row.node_cache || '{}'),
+                    node_statuses: JSON.parse(row.node_statuses || '{}')
+                }))
+            });
+        }
+        res.json(collections);
+    } catch (e) {
+        console.error('[Collections] Gagal mengambil koleksi:', e);
+        res.status(500).json({ error: 'Gagal mengambil data collections' });
+    }
+});
+
+// POST /api/collections - Create a new collection
+app.post('/api/collections', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nama koleksi diperlukan.' });
+    try {
+        const query = userId
+            ? 'INSERT INTO collections (user_id, name) VALUES ($1, $2) RETURNING *'
+            : 'INSERT INTO collections (user_id, name) VALUES (NULL, $1) RETURNING *';
+        const params = userId ? [userId, name] : [name];
+        const result = await pool.query(query, params);
+        res.json({ success: true, collection: { id: result.rows[0].id, name: result.rows[0].name, mindmaps: [] } });
+    } catch (e) {
+        console.error('[Collections] Gagal membuat koleksi:', e);
+        res.status(500).json({ error: 'Gagal membuat koleksi.' });
+    }
+});
+
+// PUT /api/collections/:id - Rename a collection
+app.put('/api/collections/:id', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    const colId = req.params.id;
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Nama koleksi diperlukan.' });
+    try {
+        const checkQuery = userId 
+            ? 'SELECT user_id FROM collections WHERE id = $1 AND user_id = $2'
+            : 'SELECT user_id FROM collections WHERE id = $1 AND user_id IS NULL';
+        const checkParams = userId ? [colId, userId] : [colId];
+        const checkRes = await pool.query(checkQuery, checkParams);
+        if (checkRes.rows.length === 0) {
+            return res.status(403).json({ error: 'Akses ditolak atau koleksi tidak ditemukan.' });
+        }
+        
+        const query = 'UPDATE collections SET name = $1 WHERE id = $2 RETURNING *';
+        const result = await pool.query(query, [name, colId]);
+        res.json({ success: true, collection: result.rows[0] });
+    } catch (e) {
+        console.error('[Collections] Gagal mengedit koleksi:', e);
+        res.status(500).json({ error: 'Gagal mengedit koleksi.' });
+    }
+});
+
+// DELETE /api/collections/:id - Delete a collection
+app.delete('/api/collections/:id', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    const colId = req.params.id;
+    try {
+        const checkQuery = userId 
+            ? 'SELECT user_id FROM collections WHERE id = $1 AND user_id = $2'
+            : 'SELECT user_id FROM collections WHERE id = $1 AND user_id IS NULL';
+        const checkParams = userId ? [colId, userId] : [colId];
+        const checkRes = await pool.query(checkQuery, checkParams);
+        if (checkRes.rows.length === 0) {
+            return res.status(403).json({ error: 'Akses ditolak atau koleksi tidak ditemukan.' });
+        }
+        
+        await pool.query('DELETE FROM collections WHERE id = $1', [colId]);
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Collections] Gagal menghapus koleksi:', e);
+        res.status(500).json({ error: 'Gagal menghapus koleksi.' });
+    }
+});
+
+// POST /api/collections/mindmaps - Add/remove mindmap to/from a collection
+app.post('/api/collections/mindmaps', async (req, res) => {
+    const userId = req.user ? req.user.id : null;
+    const { collection_id, mindmap_id, action } = req.body;
+    if (!collection_id || !mindmap_id) {
+        return res.status(400).json({ error: 'collection_id dan mindmap_id diperlukan.' });
+    }
+    try {
+        const checkQuery = userId 
+            ? 'SELECT user_id FROM collections WHERE id = $1 AND user_id = $2'
+            : 'SELECT user_id FROM collections WHERE id = $1 AND user_id IS NULL';
+        const checkParams = userId ? [collection_id, userId] : [collection_id];
+        const checkRes = await pool.query(checkQuery, checkParams);
+        if (checkRes.rows.length === 0) {
+            return res.status(403).json({ error: 'Akses ditolak atau koleksi tidak ditemukan.' });
+        }
+        
+        if (action === 'remove') {
+            await pool.query('DELETE FROM collection_mindmaps WHERE collection_id = $1 AND mindmap_id = $2', [collection_id, mindmap_id]);
+            res.json({ success: true, is_saved: false });
+        } else {
+            await pool.query(
+                'INSERT INTO collection_mindmaps (collection_id, mindmap_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+                [collection_id, mindmap_id]
+            );
+            res.json({ success: true, is_saved: true });
+        }
+    } catch (e) {
+        console.error('[Collections] Gagal mengasosiasikan mindmap:', e);
+        res.status(500).json({ error: 'Gagal mengasosiasikan mindmap.' });
     }
 });
 

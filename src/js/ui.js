@@ -3694,16 +3694,71 @@ function initRedesignNavigation() {
     const menuStats = document.getElementById('history-menu-item-stats');
     if (menuStats) menuStats.addEventListener('click', () => switchDashboardSubview('stats'));
 
-    // Library category filters click binding
-    document.querySelectorAll('.library-filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.library-filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if (typeof window.renderLibraryGrid === 'function') {
-                window.renderLibraryGrid();
+    // Dynamic Collections event listeners
+    const btnAddCollection = document.getElementById('btn-add-collection');
+    if (btnAddCollection) {
+        btnAddCollection.addEventListener('click', async () => {
+            const name = prompt(state.language === 'en' ? 'Enter new collection name:' : 'Masukkan nama koleksi baru:');
+            if (name && name.trim()) {
+                const newCol = await createCollection(name.trim());
+                if (newCol) {
+                    showToast(state.language === 'en' ? 'Collection created!' : 'Koleksi berhasil dibuat!');
+                    // Select the newly created collection tab
+                    state.activeCollectionId = newCol.id;
+                    if (typeof window.renderLibraryGrid === 'function') {
+                        window.renderLibraryGrid();
+                    }
+                }
             }
         });
-    });
+    }
+
+    const btnEditCollection = document.getElementById('btn-edit-collection');
+    if (btnEditCollection) {
+        btnEditCollection.addEventListener('click', async () => {
+            if (!state.activeCollectionId || state.activeCollectionId === 'all') return;
+            const currentCol = state.collections.find(c => c.id === state.activeCollectionId);
+            if (!currentCol) return;
+            
+            const newName = prompt(
+                state.language === 'en' ? 'Rename collection to:' : 'Ubah nama koleksi menjadi:',
+                currentCol.name
+            );
+            if (newName && newName.trim() && newName.trim() !== currentCol.name) {
+                const success = await renameCollection(state.activeCollectionId, newName.trim());
+                if (success) {
+                    showToast(state.language === 'en' ? 'Collection renamed!' : 'Nama koleksi diubah!');
+                    if (typeof window.renderLibraryGrid === 'function') {
+                        window.renderLibraryGrid();
+                    }
+                }
+            }
+        });
+    }
+
+    const btnDeleteCollection = document.getElementById('btn-delete-collection');
+    if (btnDeleteCollection) {
+        btnDeleteCollection.addEventListener('click', async () => {
+            if (!state.activeCollectionId || state.activeCollectionId === 'all') return;
+            const currentCol = state.collections.find(c => c.id === state.activeCollectionId);
+            if (!currentCol) return;
+            
+            const confirmMsg = state.language === 'en' 
+                ? `Are you sure you want to delete collection "${currentCol.name}"? Mindmaps will not be deleted.` 
+                : `Apakah Anda yakin ingin menghapus koleksi "${currentCol.name}"? Mindmap di dalamnya tidak akan dihapus.`;
+                
+            if (confirm(confirmMsg)) {
+                const success = await deleteCollection(state.activeCollectionId);
+                if (success) {
+                    showToast(state.language === 'en' ? 'Collection deleted' : 'Koleksi dihapus');
+                    state.activeCollectionId = 'all';
+                    if (typeof window.renderLibraryGrid === 'function') {
+                        window.renderLibraryGrid();
+                    }
+                }
+            }
+        });
+    }
     
     // 2. Hook "New Research" Buttons
     const btnNewTopicSearch = document.getElementById('btn-new-topic');
@@ -4127,16 +4182,19 @@ function openSaveToLibraryModal() {
         overlay.innerHTML = `
             <div class="save-lib-modal">
                 <div class="save-lib-modal-header">
-                    <h3>Simpan ke Library</h3>
+                    <h3>Simpan ke Koleksi</h3>
                     <button class="save-lib-modal-close" id="btn-close-save-lib"><i data-lucide="x"></i></button>
                 </div>
                 <div class="save-lib-modal-body">
-                    <div class="save-lib-modal-label">Pilih Kategori:</div>
-                    <select class="save-lib-modal-select" id="save-lib-category-select">
-                        <option value="Buku">Buku</option>
-                        <option value="Jurnal">Jurnal Akademik</option>
-                        <option value="Koleksi Pribadi">Koleksi Pribadi</option>
-                    </select>
+                    <div class="save-lib-modal-label">Pilih Koleksi:</div>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 1rem;">
+                        <select class="save-lib-modal-select" id="save-lib-category-select" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; background: var(--bg); color: var(--text);">
+                            <!-- Populated dynamically -->
+                        </select>
+                        <button class="library-filter-btn" id="btn-modal-new-collection" style="padding: 8px 12px; height: 38px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; color: var(--text-2);">
+                            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="save-lib-modal-footer">
                     <button class="save-lib-btn-cancel" id="btn-cancel-save-lib">Batal</button>
@@ -4149,11 +4207,27 @@ function openSaveToLibraryModal() {
         // Bind events
         document.getElementById('btn-close-save-lib').addEventListener('click', closeSaveToLibraryModal);
         document.getElementById('btn-cancel-save-lib').addEventListener('click', closeSaveToLibraryModal);
-        document.getElementById('btn-submit-save-lib').addEventListener('click', () => {
-            const category = document.getElementById('save-lib-category-select').value;
-            toggleLibraryState(state.currentMindmapId, category, false);
-            showToast(state.language === 'en' ? 'Saved to library!' : 'Disimpan ke perpustakaan!');
-            closeSaveToLibraryModal();
+        
+        // Modal "New Collection" button click
+        document.getElementById('btn-modal-new-collection').addEventListener('click', async () => {
+            const name = prompt(state.language === 'en' ? 'Enter new collection name:' : 'Masukkan nama koleksi baru:');
+            if (name && name.trim()) {
+                const newCol = await createCollection(name.trim());
+                if (newCol) {
+                    showToast(state.language === 'en' ? 'Collection created!' : 'Koleksi berhasil dibuat!');
+                    populateModalSelect(newCol.id);
+                }
+            }
+        });
+
+        document.getElementById('btn-submit-save-lib').addEventListener('click', async () => {
+            const colId = parseInt(document.getElementById('save-lib-category-select').value, 10);
+            if (!colId) return;
+            const success = await toggleCollectionMindmap(colId, state.currentMindmapId, 'add');
+            if (success) {
+                showToast(state.language === 'en' ? 'Saved to collection!' : 'Disimpan ke koleksi!');
+                closeSaveToLibraryModal();
+            }
         });
         
         overlay.addEventListener('click', (e) => {
@@ -4161,11 +4235,31 @@ function openSaveToLibraryModal() {
         });
     }
     
-    // Check current category if already saved
-    if (state.library) {
-        const exists = state.library.find(item => item.id === state.currentMindmapId);
-        if (exists) {
-            document.getElementById('save-lib-category-select').value = exists.category || 'Buku';
+    // Function to populate the modal select
+    function populateModalSelect(selectId = null) {
+        const select = document.getElementById('save-lib-category-select');
+        if (!select) return;
+        select.innerHTML = '';
+        state.collections.forEach(col => {
+            const opt = document.createElement('option');
+            opt.value = col.id;
+            opt.textContent = col.name;
+            if (selectId && col.id === selectId) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        });
+    }
+    
+    populateModalSelect();
+    
+    // Check if currently saved in any collection and auto-select it
+    if (state.collections) {
+        const containingCol = state.collections.find(col => 
+            col.mindmaps.some(mm => mm.id === state.currentMindmapId)
+        );
+        if (containingCol) {
+            populateModalSelect(containingCol.id);
         }
     }
     
@@ -4179,26 +4273,79 @@ function closeSaveToLibraryModal() {
 }
 
 function renderLibraryGrid() {
+    const tabsContainer = document.getElementById('collections-tabs-container');
     const container = document.getElementById('library-grid-container');
+    const actionsBar = document.getElementById('collection-actions-bar');
     if (!container) return;
     
+    // Initialize active collection ID if not set
+    if (state.activeCollectionId === undefined) {
+        state.activeCollectionId = 'all';
+    }
+    
+    // Render dynamic collection pills inside collections-tabs-container
+    if (tabsContainer) {
+        tabsContainer.innerHTML = '';
+        
+        // "All" Tab
+        const allBtn = document.createElement('button');
+        allBtn.className = `library-filter-btn ${state.activeCollectionId === 'all' ? 'active' : ''}`;
+        allBtn.textContent = state.language === 'en' ? 'All' : 'Semua';
+        allBtn.addEventListener('click', () => {
+            state.activeCollectionId = 'all';
+            renderLibraryGrid();
+        });
+        tabsContainer.appendChild(allBtn);
+        
+        // Individual Collections Tabs
+        state.collections.forEach(col => {
+            const btn = document.createElement('button');
+            btn.className = `library-filter-btn ${state.activeCollectionId === col.id ? 'active' : ''}`;
+            btn.textContent = col.name;
+            btn.addEventListener('click', () => {
+                state.activeCollectionId = col.id;
+                renderLibraryGrid();
+            });
+            tabsContainer.appendChild(btn);
+        });
+    }
+    
+    // Toggle Actions Bar visibility based on the active collection (hide for 'all' or empty)
+    if (actionsBar) {
+        if (state.activeCollectionId === 'all') {
+            actionsBar.classList.add('hidden');
+        } else {
+            actionsBar.classList.remove('hidden');
+        }
+    }
+    
+    // Get items to display based on selected tab
+    let items = [];
+    if (state.activeCollectionId === 'all') {
+        // Flat map all mindmaps with their collection names
+        const seen = new Set();
+        state.collections.forEach(col => {
+            col.mindmaps.forEach(mm => {
+                if (!seen.has(mm.id)) {
+                    seen.add(mm.id);
+                    items.push({ ...mm, collectionName: col.name, collectionId: col.id });
+                }
+            });
+        });
+    } else {
+        const activeCol = state.collections.find(col => col.id === state.activeCollectionId);
+        if (activeCol) {
+            items = activeCol.mindmaps.map(mm => ({ ...mm, collectionName: activeCol.name, collectionId: activeCol.id }));
+        }
+    }
+    
     container.innerHTML = '';
-    
-    // Get active filter category
-    const activeBtn = document.querySelector('.library-filter-btn.active');
-    const activeCategory = activeBtn ? activeBtn.getAttribute('data-category') : 'all';
-    
-    // Filter library items
-    const items = (state.library || []).filter(item => {
-        if (activeCategory === 'all') return true;
-        return item.category === activeCategory;
-    });
     
     if (items.length === 0) {
         container.innerHTML = `
             <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
                 <i data-lucide="library" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
-                <div>${state.language === 'en' ? 'No curated materials found in this category.' : 'Belum ada materi terkurasi di kategori ini.'}</div>
+                <div>${state.language === 'en' ? 'No mindmaps in this collection yet.' : 'Belum ada mindmap di koleksi ini.'}</div>
             </div>
         `;
         if (window.lucide) window.lucide.createIcons();
@@ -4234,13 +4381,10 @@ function renderLibraryGrid() {
             dateStr = item.saved_at || '';
         }
         
-        let displayCategory = item.category || 'Buku';
-        if (displayCategory === 'Jurnal') displayCategory = 'Jurnal Akademik';
-        
         card.innerHTML = `
             <div class="library-card-header">
-                <span class="library-card-category-badge">${displayCategory}</span>
-                <button class="library-card-remove-btn" title="Hapus dari Library" data-id="${item.id}">
+                <span class="library-card-category-badge">${item.collectionName}</span>
+                <button class="library-card-remove-btn" title="Hapus dari Koleksi" data-id="${item.id}" data-col-id="${item.collectionId}">
                     <i data-lucide="trash-2"></i>
                 </button>
             </div>
@@ -4280,12 +4424,16 @@ function renderLibraryGrid() {
             exportMindmapNotesToMarkdown(item);
         });
         
-        // Remove from Library click
-        card.querySelector('.library-card-remove-btn').addEventListener('click', (e) => {
+        // Remove from Collection click
+        card.querySelector('.library-card-remove-btn').addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm(state.language === 'en' ? `Remove "${item.name}" from your library?` : `Hapus "${item.name}" dari perpustakaan Anda?`)) {
-                toggleLibraryState(item.id, item.category, true);
-                showToast(state.language === 'en' ? 'Removed from library' : 'Dihapus dari perpustakaan');
+            const colId = item.collectionId;
+            if (confirm(state.language === 'en' ? `Remove "${item.name}" from this collection?` : `Hapus "${item.name}" dari koleksi ini?`)) {
+                const success = await toggleCollectionMindmap(colId, item.id, 'remove');
+                if (success) {
+                    showToast(state.language === 'en' ? 'Removed from collection' : 'Dihapus dari koleksi');
+                    renderLibraryGrid();
+                }
             }
         });
         

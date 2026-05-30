@@ -17,7 +17,8 @@ const state = {
     viewRoot: null,          // Root node untuk halaman pagination saat ini (null = root asli)
     breadcrumbs: [],         // Array {name, id} — path dari root asli ke viewRoot sekarang
     bookmarks: JSON.parse(localStorage.getItem('app_bookmarks') || '[]'),
-    library: JSON.parse(localStorage.getItem('app_library') || '[]')
+    library: JSON.parse(localStorage.getItem('app_library') || '[]'),
+    collections: JSON.parse(localStorage.getItem('app_collections') || '[]')
 };
 
 /* ==========================================================================
@@ -470,61 +471,44 @@ async function toggleBookmarkState(mindmapId, nodeName, isRemove = false) {
 async function toggleLibraryState(mindmapId, category = 'Buku', isRemove = false) {
     if (!mindmapId) return;
     
-    // Optimistic UI update
-    if (isRemove) {
-        state.library = state.library.filter(item => item.id !== mindmapId);
-    } else {
-        const exists = state.library.some(item => item.id === mindmapId);
-        if (!exists && state.mindmapData) {
-            state.library.push({
-                id: mindmapId,
-                name: state.mindmapData.name,
-                category: category,
-                tree_data: state.mindmapData,
-                node_cache: state.nodeCache,
-                node_statuses: state.nodeStatuses,
-                saved_at: new Date().toISOString()
-            });
-        } else if (exists) {
-            state.library = state.library.map(item => item.id === mindmapId ? { ...item, category } : item);
-        }
-    }
-    localStorage.setItem('app_library', JSON.stringify(state.library));
-    
-    // Refresh UI immediately
-    if (typeof window.renderLibraryGrid === 'function') {
-        window.renderLibraryGrid();
+    // For backward compatibility, map category string to collection ID if found, otherwise create it.
+    let col = state.collections.find(c => c.name === category);
+    if (!col && !isRemove) {
+        col = await createCollection(category);
     }
     
-    try {
-        await fetch('/api/library', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                mindmap_id: mindmapId,
-                category: category,
-                action: isRemove ? 'remove' : 'add'
-            })
-        });
-    } catch (e) {
-        console.warn('Gagal sinkronisasi library ke database:', e);
+    if (col) {
+        await toggleCollectionMindmap(col.id, mindmapId, isRemove ? 'remove' : 'add');
     }
 }
 
 async function fetchUserLibraryAndBookmarks() {
+    await fetchUserCollections();
+}
+
+// --- PHASE 12: DYNAMIC COLLECTIONS STATE ACTIONS ---
+
+async function fetchUserCollections() {
     try {
-        const libRes = await fetch('/api/library');
-        if (libRes.ok) {
-            const dbLibrary = await libRes.json();
-            if (dbLibrary) {
-                state.library = dbLibrary;
+        const res = await fetch('/api/collections');
+        if (res.ok) {
+            const dbCollections = await res.json();
+            if (dbCollections) {
+                state.collections = dbCollections;
+                localStorage.setItem('app_collections', JSON.stringify(state.collections));
+                
+                // Populating state.library backward compatible array
+                state.library = state.collections.flatMap(col => 
+                    col.mindmaps.map(mm => ({ ...mm, category: col.name }))
+                );
                 localStorage.setItem('app_library', JSON.stringify(state.library));
             }
         }
     } catch (e) {
-        console.warn('Gagal fetch data library dari DB:', e);
+        console.warn('Gagal fetch data collections dari DB:', e);
     }
     
+    // Bookmark fetch
     try {
         const bmkRes = await fetch('/api/bookmarks');
         if (bmkRes.ok) {
@@ -546,6 +530,82 @@ async function fetchUserLibraryAndBookmarks() {
     }
 }
 
+async function createCollection(name) {
+    if (!name) return null;
+    try {
+        const res = await fetch('/api/collections', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            await fetchUserCollections();
+            return data.collection;
+        }
+    } catch (e) {
+        console.warn('Gagal membuat koleksi:', e);
+    }
+    return null;
+}
+
+async function renameCollection(id, name) {
+    if (!id || !name) return false;
+    try {
+        const res = await fetch(`/api/collections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        });
+        if (res.ok) {
+            await fetchUserCollections();
+            return true;
+        }
+    } catch (e) {
+        console.warn('Gagal mengedit koleksi:', e);
+    }
+    return false;
+}
+
+async function deleteCollection(id) {
+    if (!id) return false;
+    try {
+        const res = await fetch(`/api/collections/${id}`, {
+            method: 'DELETE'
+        });
+        if (res.ok) {
+            await fetchUserCollections();
+            return true;
+        }
+    } catch (e) {
+        console.warn('Gagal menghapus koleksi:', e);
+    }
+    return false;
+}
+
+async function toggleCollectionMindmap(collectionId, mindmapId, action = 'add') {
+    if (!collectionId || !mindmapId) return false;
+    try {
+        const res = await fetch('/api/collections/mindmaps', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ collection_id: collectionId, mindmap_id: mindmapId, action })
+        });
+        if (res.ok) {
+            await fetchUserCollections();
+            return true;
+        }
+    } catch (e) {
+        console.warn('Gagal mengubah mindmap di koleksi:', e);
+    }
+    return false;
+}
+
 window.toggleBookmarkState = toggleBookmarkState;
 window.toggleLibraryState = toggleLibraryState;
 window.fetchUserLibraryAndBookmarks = fetchUserLibraryAndBookmarks;
+window.fetchUserCollections = fetchUserCollections;
+window.createCollection = createCollection;
+window.renameCollection = renameCollection;
+window.deleteCollection = deleteCollection;
+window.toggleCollectionMindmap = toggleCollectionMindmap;
