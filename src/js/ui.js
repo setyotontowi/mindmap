@@ -826,7 +826,7 @@ const AI_MODELS_BY_PROVIDER = {
         { value: 'claude-haiku-4-5', text: 'Claude Haiku 4.5' },
         { value: 'custom', text: 'Kustom / Custom Model...' }
     ],
-    deepsek: [
+    deepseek: [
         { value: 'deepseek-chat', text: 'DeepSeek Chat V3 (Default)' },
         { value: 'deepseek-reasoner', text: 'DeepSeek R1 (Reasoning)' },
         { value: 'custom', text: 'Kustom / Custom Model...' }
