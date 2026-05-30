@@ -2112,8 +2112,21 @@ async function loadMindmapById(id) {
     state.currentMindmapId = id;
     localStorage.setItem('current_mindmap_id', id);
     
-    // Sinkronkan
+    // Reset semua state mindmap-specific SEBELUM sync
+    state.activeNode = null;
+    state.viewRoot = null;
+    state.breadcrumbs = [];
+    
+    // Tutup drawer node detail kalo lagi kebuka
+    const drawer = document.getElementById('detail-drawer');
+    if (drawer) drawer.classList.remove('open');
+    renderBreadcrumbs();
+    
+    // Sinkronkan dari DB — ini overwrite mindmapData, nodeCache, nodeStatuses, isOwner
     await syncFromDatabase(id);
+    
+    // Pastikan breadcrumbs tetap kosong setelah sync (saveState di dalam sync udah pake [] )
+    renderBreadcrumbs();
     
     // Pastikan berada di mode riwayat
     switchSidebarMode('history');
