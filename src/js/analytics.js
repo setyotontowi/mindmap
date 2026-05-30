@@ -56,8 +56,13 @@ function initCookieConsent() {
 function syncPrivacyToggle() {
     const consent = getConsent();
     const toggle = document.getElementById('privacy-analytics-toggle');
-    if (toggle && consent) {
-        toggle.checked = consent.analytics;
+    if (toggle) {
+        if (consent) {
+            toggle.checked = consent.analytics;
+        }
+        toggle.addEventListener('change', () => {
+            saveConsent(toggle.checked);
+        });
     }
 }
 
@@ -259,12 +264,12 @@ function renderStatsDashboard() {
         // Format duration
         const hours = Math.floor(stats.total_study_time / 3600);
         const minutes = Math.floor((stats.total_study_time % 3600) / 60);
-        const timeStr = hours > 0 ? `${hours}j ${minutes}m` : `${minutes}m`;
+        const timeStr = hours > 0 ? `${hours} jam ${minutes} menit` : `${minutes} menit`;
 
         // Format session time
         const sessHours = Math.floor((stats.total_session_seconds || 0) / 3600);
         const sessMinutes = Math.floor(((stats.total_session_seconds || 0) % 3600) / 60);
-        const sessionTimeStr = sessHours > 0 ? `${sessHours}j ${sessMinutes}m` : `${sessMinutes}m`;
+        const sessionTimeStr = sessHours > 0 ? `${sessHours} jam ${sessMinutes} menit` : `${sessMinutes} menit`;
 
         area.innerHTML = `
             <div class="stats-grid">
