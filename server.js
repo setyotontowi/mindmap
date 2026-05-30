@@ -233,8 +233,8 @@ app.get('/api/mindmaps', (req, res) => {
     const userId = req.user ? req.user.id : null;
     console.log(`[Mindmaps] Fetching all mindmaps list for user ID: ${userId || 'guest'}`);
     const query = userId 
-        ? 'SELECT id, name, tree_data, node_statuses, updated_at FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC'
-        : 'SELECT id, name, tree_data, node_statuses, updated_at FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC';
+        ? 'SELECT id, name, tree_data, node_statuses, node_cache, updated_at FROM mindmaps WHERE user_id = $1 ORDER BY updated_at DESC'
+        : 'SELECT id, name, tree_data, node_statuses, node_cache, updated_at FROM mindmaps WHERE user_id IS NULL ORDER BY updated_at DESC';
     const params = userId ? [userId] : [];
 
     pool.query(query, params, (err, result) => {

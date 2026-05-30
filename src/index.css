@@ -4627,6 +4627,46 @@ mark[data-note]::after {
     background: var(--surface, #1a2e26);
 }
 
+/* ==========================================================================
+   PHASE 12: DYNAMIC COLLECTIONS & GOOGLE KEEP STUDY NOTES STYLES
+   ========================================================================== */
+
+.highlights-keep-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-items: start;
+    margin-top: 1.5rem;
+}
+
+.highlight-keep-card {
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+    border: 1px solid var(--border);
+    position: relative;
+    cursor: pointer;
+    background: var(--bg);
+}
+
+.highlight-keep-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+}
+
+.highlight-keep-card.hl-yellow { background-color: rgba(253, 224, 71, 0.03); border-left: 5px solid #eab308; }
+.highlight-keep-card.hl-green { background-color: rgba(34, 197, 94, 0.03); border-left: 5px solid #22c55e; }
+.highlight-keep-card.hl-blue { background-color: rgba(59, 130, 246, 0.03); border-left: 5px solid #3b82f6; }
+.highlight-keep-card.hl-pink { background-color: rgba(236, 72, 153, 0.03); border-left: 5px solid #ec4899; }
+
+[data-theme="dark"] .highlight-keep-card.hl-yellow { background-color: rgba(253, 224, 71, 0.05); }
+[data-theme="dark"] .highlight-keep-card.hl-green { background-color: rgba(34, 197, 94, 0.05); }
+[data-theme="dark"] .highlight-keep-card.hl-blue { background-color: rgba(59, 130, 246, 0.05); }
+[data-theme="dark"] .highlight-keep-card.hl-pink { background-color: rgba(236, 72, 153, 0.05); }
+
 
 
 

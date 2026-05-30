@@ -511,6 +511,10 @@
                                 <i data-lucide="bookmark"></i>
                                 <span>Bookmarks</span>
                             </button>
+                            <button class="history-menu-item" id="history-menu-item-highlights">
+                                <i data-lucide="highlighter"></i>
+                                <span>Highlights</span>
+                            </button>
                             <button class="history-menu-item" id="history-menu-item-stats">
                                 <i data-lucide="bar-chart-2"></i>
                                 <span>Stats</span>
@@ -645,6 +649,22 @@
                         </div>
                     </div>
 
+                    <!-- Highlights Content (Subview 7) -->
+                    <div class="history-main-content hidden" id="subview-highlights">
+                        <div class="history-header-block">
+                            <h2 class="history-title-redesign">Highlights & Notes</h2>
+                            <p class="history-subtitle-redesign">Kumpulan semua kutipan penting dan catatan belajar yang Anda tandai di berbagai artikel.</p>
+                        </div>
+                        
+                        <!-- Highlights Cards List -->
+                        <div class="history-cards-list" id="redesign-highlights-container">
+                            <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
+                                <i data-lucide="highlighter" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                                <div>Belum ada kutipan atau catatan belajar yang ditandai.</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Stats Content (Subview 6) -->
                     <div class="history-main-content hidden" id="subview-stats">
                         <div class="history-header-block">
@@ -718,9 +738,9 @@
                 <div class="form-group" style="margin-top: 1rem;">
                     <label for="ai-provider-select">Provider AI</label>
                     <select id="ai-provider-select">
+                        <option value="deepseek" selected>DeepSeek</option>
                         <option value="gemini">Google Gemini</option>
                         <option value="claude">Anthropic Claude</option>
-                        <option value="deepseek">DeepSeek</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-top: 1rem;">

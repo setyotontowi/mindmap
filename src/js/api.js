@@ -28,8 +28,8 @@ async function callRouterAI(prompt, systemInstruction = null) {
         temperature: 0.2,
         stream: false,
         max_tokens: 8192,
-        provider: state.aiProvider || 'gemini',
-        model: state.aiModel || 'gemini-2.5-flash'
+        provider: state.aiProvider || 'deepseek',
+        model: state.aiModel || 'deepseek-chat'
     };
 
     try {

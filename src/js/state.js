@@ -3,8 +3,8 @@
    ========================================================================== */
 const state = {
     language: localStorage.getItem('ai_language') || 'id',
-    aiProvider: localStorage.getItem('ai_provider') || 'gemini',
-    aiModel: localStorage.getItem('ai_model') || 'gemini-2.5-flash',
+    aiProvider: localStorage.getItem('ai_provider') || 'deepseek',
+    aiModel: localStorage.getItem('ai_model') || 'deepseek-chat',
     theme: localStorage.getItem('app_theme') || 'system',
     currentMindmapId: localStorage.getItem('current_mindmap_id') || null,
     mindmapData: null,       // Data pohon (tree) D3

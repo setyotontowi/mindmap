@@ -467,7 +467,7 @@ function initUIEventListeners() {
     if (providerSelect) {
         providerSelect.addEventListener('change', (e) => {
             const selectedProvider = e.target.value;
-            const defaultModel = selectedProvider === 'gemini' ? 'gemini-2.5-flash' : 'claude-sonnet-4-6';
+            const defaultModel = selectedProvider === 'gemini' ? 'gemini-2.5-flash' : (selectedProvider === 'deepseek' ? 'deepseek-chat' : 'claude-sonnet-4-6');
             updateModelSelectOptions(selectedProvider, defaultModel);
         });
     }
@@ -999,16 +999,16 @@ function openSettingsModal() {
     
     const providerSelect = document.getElementById('ai-provider-select');
     if (providerSelect) {
-        providerSelect.value = state.aiProvider || 'gemini';
+        providerSelect.value = state.aiProvider || 'deepseek';
     }
     
     // Migrasi model lama dari 9Router atau model default jika kosong
-    let activeModel = state.aiModel || 'gemini-2.5-flash';
+    let activeModel = state.aiModel || 'deepseek-chat';
     if (state.aiProvider === 'claude' && (!activeModel || activeModel.includes('kr/') || activeModel.includes('latest'))) {
         activeModel = 'claude-sonnet-4-6';
     }
     
-    updateModelSelectOptions(state.aiProvider || 'gemini', activeModel);
+    updateModelSelectOptions(state.aiProvider || 'deepseek', activeModel);
     
     const themeSelect = document.getElementById('app-theme-select');
     if (themeSelect) {
@@ -3577,6 +3577,7 @@ function switchDashboardSubview(subviewName) {
         'reader': { menuItemId: 'history-menu-item-reader', elementId: 'subview-reader' },
         'library': { menuItemId: 'history-menu-item-library', elementId: 'subview-library' },
         'bookmarks': { menuItemId: 'history-menu-item-bookmarks', elementId: 'subview-bookmarks' },
+        'highlights': { menuItemId: 'history-menu-item-highlights', elementId: 'subview-highlights' },
         'stats': { menuItemId: 'history-menu-item-stats', elementId: 'subview-stats' }
     };
     
@@ -3607,6 +3608,9 @@ function switchDashboardSubview(subviewName) {
     }
     if (subviewName === 'bookmarks' && typeof window.renderBookmarksList === 'function') {
         window.renderBookmarksList();
+    }
+    if (subviewName === 'highlights' && typeof window.renderHighlightsList === 'function') {
+        window.renderHighlightsList();
     }
     if (window.lucide) {
         window.lucide.createIcons();
@@ -3690,6 +3694,9 @@ function initRedesignNavigation() {
     
     const menuBookmarks = document.getElementById('history-menu-item-bookmarks');
     if (menuBookmarks) menuBookmarks.addEventListener('click', () => switchDashboardSubview('bookmarks'));
+
+    const menuHighlights = document.getElementById('history-menu-item-highlights');
+    if (menuHighlights) menuHighlights.addEventListener('click', () => switchDashboardSubview('highlights'));
 
     const menuStats = document.getElementById('history-menu-item-stats');
     if (menuStats) menuStats.addEventListener('click', () => switchDashboardSubview('stats'));
@@ -3972,10 +3979,56 @@ function updateTableOfContents() {
 }
 
 function selectAndOpenNode(nodeName) {
-    if (!rootNodeData) return;
-    const foundD3Node = rootNodeData.descendants().find(d => d.data.name === nodeName);
-    if (foundD3Node) {
-        handleNodeClick(foundD3Node);
+    if (!state.mindmapData) return;
+    
+    const nodeFinder = typeof findNodeByName === 'function' ? findNodeByName : (window.findNodeByName || null);
+    if (!nodeFinder) return;
+    
+    const targetNode = nodeFinder(state.mindmapData, nodeName);
+    if (targetNode) {
+        // Ekspansi node dan leluhurnya agar tidak collapsed
+        if (typeof window.expandAndFocusNode === 'function') {
+            window.expandAndFocusNode(targetNode);
+        } else {
+            targetNode.collapsed = false;
+            if (typeof window.getAncestorNodePath === 'function') {
+                const path = window.getAncestorNodePath(state.mindmapData, nodeName);
+                if (path && path.length > 0) {
+                    path.forEach(n => { n.collapsed = false; });
+                }
+            }
+            if (typeof window.autoAdjustViewRoot === 'function') {
+                window.autoAdjustViewRoot(targetNode);
+            }
+            if (typeof saveState === 'function') {
+                saveState(true);
+            }
+        }
+        
+        // Redraw mindmap dengan state baru
+        if (typeof updateMindmap === 'function') {
+            updateMindmap(state.mindmapData);
+        }
+        
+        // Tunggu layout ter-render, cari D3 node-nya, lalu klik secara programatis
+        setTimeout(() => {
+            if (window.rootNodeData) {
+                const d3Node = window.rootNodeData.descendants().find(d => d.data.name === nodeName);
+                if (d3Node) {
+                    if (typeof handleNodeClick === 'function') {
+                        handleNodeClick(d3Node);
+                    }
+                }
+            }
+        }, 150);
+    } else {
+        // Fallback jika tidak ditemukan di virtual tree, cari langsung di descendants D3 saat ini
+        if (window.rootNodeData) {
+            const d3Node = window.rootNodeData.descendants().find(d => d.data.name === nodeName);
+            if (d3Node && typeof handleNodeClick === 'function') {
+                handleNodeClick(d3Node);
+            }
+        }
     }
 }
 
@@ -4576,6 +4629,167 @@ function exportMindmapNotesToMarkdown(item) {
     document.body.removeChild(link);
 }
 
+function renderHighlightsList() {
+    const container = document.getElementById('redesign-highlights-container');
+    if (!container) return;
+    
+    // Switch to Google Keep style grid class dynamically
+    container.className = 'highlights-keep-grid';
+    
+    container.innerHTML = `
+        <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 3rem 0; width: 100%;">
+            <div class="mindmap-loading-spinner" style="margin: 0 auto 12px auto; width: 24px; height: 24px;"></div>
+            <div>Loading highlights...</div>
+        </div>
+    `;
+    
+    fetch('/api/mindmaps')
+        .then(res => res.json())
+        .then(mindmaps => {
+            container.innerHTML = '';
+            
+            // Extract all highlights from mindmaps
+            const allHighlights = [];
+            mindmaps.forEach(mm => {
+                let cache = {};
+                try {
+                    cache = typeof mm.node_cache === 'string' ? JSON.parse(mm.node_cache) : (mm.node_cache || {});
+                } catch(e) {
+                    cache = {};
+                }
+                
+                Object.keys(cache).forEach(nodeName => {
+                    const nodeData = cache[nodeName];
+                    if (nodeData && Array.isArray(nodeData.highlights) && nodeData.highlights.length > 0) {
+                        nodeData.highlights.forEach(hl => {
+                            allHighlights.push({
+                                highlight: hl,
+                                mindmapId: mm.id,
+                                mindmapName: mm.name,
+                                nodeName: nodeName
+                            });
+                        });
+                    }
+                });
+            });
+            
+            if (allHighlights.length === 0) {
+                container.innerHTML = `
+                    <div style="font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 5rem 0; width: 100%;">
+                        <i data-lucide="highlighter" style="width: 48px; height: 48px; color: var(--border-color); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;"></i>
+                        <div>${state.language === 'en' ? 'No highlights or study notes yet.' : 'Belum ada kutipan atau catatan belajar yang ditandai.'}</div>
+                    </div>
+                `;
+                if (window.lucide) window.lucide.createIcons();
+                return;
+            }
+            
+            // Render each highlight as a Google Keep style card
+            allHighlights.forEach(item => {
+                const card = document.createElement('div');
+                const hlColor = item.highlight.color || 'yellow';
+                card.className = `highlight-keep-card hl-${hlColor}`;
+                
+                const noteText = item.highlight.note ? item.highlight.note.trim() : '';
+                
+                card.innerHTML = `
+                    <div class="bookmark-card-header" style="margin-bottom: 8px;">
+                        <span class="bookmark-card-path" style="font-size: 0.65rem; font-weight: 700; opacity: 0.8; letter-spacing: 0.5px;">
+                            ${item.mindmapName} ➔ ${item.nodeName}
+                        </span>
+                    </div>
+                    <div class="bookmark-card-snippet" style="font-style: italic; background: rgba(0,0,0,0.03); padding: 8px 12px; border-radius: 6px; margin: 4px 0 10px 0; border-left: 2px solid rgba(0,0,0,0.1); color: var(--text); font-size: 0.8rem; line-height: 1.4;">
+                        "${item.highlight.text}"
+                    </div>
+                    ${noteText ? `
+                        <div style="font-size: 0.76rem; color: var(--text-2); margin-bottom: 12px; display: flex; gap: 6px; align-items: flex-start; line-height: 1.4;">
+                            <i data-lucide="sticky-note" style="width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; margin-top: 1px;"></i>
+                            <span>${noteText}</span>
+                        </div>
+                    ` : ''}
+                    <div class="bookmark-card-meta" style="margin-top: auto; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 8px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <button class="bookmark-card-remove-btn btn-delete-hl" data-mm="${item.mindmapId}" data-node="${item.nodeName}" data-hl-id="${item.highlight.id}">
+                            <i data-lucide="trash-2"></i><span>Hapus</span>
+                        </button>
+                        <button class="bookmark-card-link-btn btn-open-hl" data-mm="${item.mindmapId}" data-node="${item.nodeName}">
+                            <i data-lucide="arrow-up-right"></i><span>Buka Node</span>
+                        </button>
+                    </div>
+                `;
+                
+                // Open Mindmap and Article side drawer directly
+                const openNodeHandler = (e) => {
+                    e.stopPropagation();
+                    loadMindmapById(item.mindmapId).then(() => {
+                        switchScreen('mindmaps');
+                        
+                        // Robust polling to verify D3 is rendered and open the side drawer article
+                        let attempts = 0;
+                        const openInterval = setInterval(() => {
+                            if (window.rootNodeData) {
+                                clearInterval(openInterval);
+                                selectAndOpenNode(item.nodeName);
+                            }
+                            attempts++;
+                            if (attempts > 20) {
+                                clearInterval(openInterval);
+                            }
+                        }, 100);
+                    });
+                };
+                
+                card.addEventListener('click', openNodeHandler);
+                card.querySelector('.btn-open-hl').addEventListener('click', openNodeHandler);
+                
+                // Bind delete click
+                card.querySelector('.btn-delete-hl').addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    if (confirm(state.language === 'en' ? 'Delete this highlight and note?' : 'Hapus kutipan dan catatan ini?')) {
+                        const mmRes = await fetch(`/api/mindmap?id=${item.mindmapId}`);
+                        if (mmRes.ok) {
+                            const fullMm = await mmRes.json();
+                            if (fullMm) {
+                                const nodeCache = fullMm.node_cache || {};
+                                const nodeData = nodeCache[item.nodeName];
+                                if (nodeData && Array.isArray(nodeData.highlights)) {
+                                    nodeData.highlights = nodeData.highlights.filter(h => h.id !== item.highlight.id);
+                                    
+                                    await fetch('/api/mindmap', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            id: item.mindmapId,
+                                            name: fullMm.name,
+                                            tree_data: fullMm.tree_data,
+                                            node_cache: nodeCache,
+                                            node_statuses: fullMm.node_statuses
+                                        })
+                                    });
+                                    
+                                    if (state.currentMindmapId === item.mindmapId) {
+                                        state.nodeCache = nodeCache;
+                                        localStorage.setItem('node_cache', JSON.stringify(nodeCache));
+                                    }
+                                    
+                                    showToast(state.language === 'en' ? 'Note deleted' : 'Catatan dihapus');
+                                    renderHighlightsList();
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                container.appendChild(card);
+            });
+            
+            if (window.lucide) window.lucide.createIcons();
+        })
+        .catch(err => {
+            console.warn('Error loading highlights:', err);
+            container.innerHTML = `<div style="font-size: 0.85rem; color: #ef4444; text-align: center; padding: 3rem 0;">Gagal memuat highlights.</div>`;
+        });
+}
+
 // Ekspos ke global window agar kompatibel dengan modul lain
 window.getRandomStyleAndSubstyle = getRandomStyleAndSubstyle;
 window.getWritingStyleInstruction = getWritingStyleInstruction;
@@ -4596,5 +4810,6 @@ window.openSaveToLibraryModal = openSaveToLibraryModal;
 window.closeSaveToLibraryModal = closeSaveToLibraryModal;
 window.renderLibraryGrid = renderLibraryGrid;
 window.renderBookmarksList = renderBookmarksList;
+window.renderHighlightsList = renderHighlightsList;
 window.exportMindmapNotesToMarkdown = exportMindmapNotesToMarkdown;
 
