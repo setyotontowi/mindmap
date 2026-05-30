@@ -78,6 +78,9 @@ async function callRouterAI(prompt, systemInstruction = null) {
             // Respon JSON standar
             const data = JSON.parse(rawText);
             jsonText = data.choices[0].message.content;
+            if (data.usage && window.state) {
+                window.state.lastTokenUsage = data.usage;
+            }
         }
 
         // Antisipasi jika LLM membungkus JSON dengan markdown code blocks ```json ... ```

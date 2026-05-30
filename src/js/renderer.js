@@ -596,18 +596,21 @@ async function handleNodeClick(d3Node) {
 
         // Validasi respon JSON
         if (result && result.explanation) {
+            const tokensUsed = (state.lastTokenUsage && state.lastTokenUsage.total_tokens) || 0;
+
             // Update cache & persist
             state.nodeCache[nodeName] = {
                 explanation: result.explanation,
                 subtopics: result.subtopics || [],
                 writingStyle: d3Node.data.writingStyle,
-                writingSubStyle: d3Node.data.writingSubStyle
+                writingSubStyle: d3Node.data.writingSubStyle,
+                tokensUsed: tokensUsed
             };
             saveState();
 
             // Phase 6: Track AI explanation event
             if (typeof trackNodeEvent === 'function' && state.mindmapData) {
-                trackNodeEvent(state.mindmapData.id, nodeName, 'explain', 0, 0, state.provider || null);
+                trackNodeEvent(state.mindmapData.id, nodeName, 'explain', 0, tokensUsed, state.aiProvider || null);
             }
 
             // Tambahkan subtopics sebagai children baru ke dalam data D3 jika ada subtopics baru

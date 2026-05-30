@@ -1851,6 +1851,18 @@ mark[data-note]::after {
     position: relative;
 }
 
+.main-footer .footer-link {
+    color: var(--text-2);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--t), transform var(--t);
+    display: inline-block;
+}
+
+.main-footer .footer-link:hover {
+    color: var(--accent);
+}
+
 @media (max-width: 768px) {
     .search-screen-wrapper {
         padding: 1.5rem 1rem;

@@ -104,6 +104,9 @@ const initDb = async () => {
             )
         `);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_nodes_mindmap_id ON nodes(mindmap_id)`);
+        await pool.query(`
+            ALTER TABLE nodes ADD COLUMN IF NOT EXISTS tokens_used INTEGER DEFAULT 0
+        `);
         console.log('Tabel nodes relasional siap digunakan.');
 
         // Phase 6: Analytics tables
@@ -330,16 +333,18 @@ app.post('/api/mindmap', async (req, res) => {
             for (const node of flatNodes) {
                 const nodeStatus = statuses[node.name] || 'todo';
                 const nodeExplanation = cache[node.name]?.explanation || null;
+                const nodeTokens = cache[node.name]?.tokensUsed || 0;
                 await pool.query(`
-                    INSERT INTO nodes (id, mindmap_id, parent_id, name, status, explanation, depth, position, updated_at)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+                    INSERT INTO nodes (id, mindmap_id, parent_id, name, status, explanation, tokens_used, depth, position, updated_at)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
                     ON CONFLICT(id) DO UPDATE SET
                         status = EXCLUDED.status,
                         explanation = COALESCE(EXCLUDED.explanation, nodes.explanation),
+                        tokens_used = COALESCE(EXCLUDED.tokens_used, nodes.tokens_used),
                         depth = EXCLUDED.depth,
                         position = EXCLUDED.position,
                         updated_at = CURRENT_TIMESTAMP
-                `, [node.id, node.mindmap_id, node.parent_id, node.name, nodeStatus, nodeExplanation, node.depth, node.position]);
+                `, [node.id, node.mindmap_id, node.parent_id, node.name, nodeStatus, nodeExplanation, nodeTokens, node.depth, node.position]);
             }
             console.log(`[Mindmap] Dual-wrote ${flatNodes.length} nodes to relational table.`);
         }
@@ -857,7 +862,12 @@ app.post('/api/ai/completions', async (req, res) => {
                             content: responseText
                         }
                     }
-                ]
+                ],
+                usage: {
+                    prompt_tokens: usage.promptTokenCount || 0,
+                    completion_tokens: usage.candidatesTokenCount || 0,
+                    total_tokens: usage.totalTokenCount || 0
+                }
             };
             res.json(mappedResponse);
 
@@ -929,7 +939,12 @@ app.post('/api/ai/completions', async (req, res) => {
                             content: responseText
                         }
                     }
-                ]
+                ],
+                usage: {
+                    prompt_tokens: usage.prompt_tokens || 0,
+                    completion_tokens: usage.completion_tokens || 0,
+                    total_tokens: usage.total_tokens || 0
+                }
             };
             res.json(mappedResponse);
 
@@ -1009,7 +1024,12 @@ app.post('/api/ai/completions', async (req, res) => {
                             content: responseText
                         }
                     }
-                ]
+                ],
+                usage: {
+                    prompt_tokens: usage.input_tokens || 0,
+                    completion_tokens: usage.output_tokens || 0,
+                    total_tokens: (usage.input_tokens || 0) + (usage.output_tokens || 0)
+                }
             };
             res.json(mappedResponse);
         }
