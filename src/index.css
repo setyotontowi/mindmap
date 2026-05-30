@@ -3390,7 +3390,12 @@ mark[data-note]::after {
         align-items: center !important;
         z-index: 998;
     }
-    
+
+    /* Push search bar down when breadcrumb is visible on mobile */
+    #breadcrumb-bar:not(.hidden) ~ .mindmap-search-bar {
+        top: 56px !important;
+    }
+
     .mindmap-search-bar input {
         font-size: 0.85rem !important;
     }
