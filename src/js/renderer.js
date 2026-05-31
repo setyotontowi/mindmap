@@ -457,7 +457,7 @@ async function handleNodeClick(d3Node) {
             cacheData.subtopics.forEach(sub => {
                 const exists = d3Node.data.children.some(child => child.name === sub.name);
                 if (!exists) {
-                    sub.id = `${nodeName}-${sub.name}-${Date.now()}`; // Unique ID
+                    sub.uuid = sub.uuid || crypto.randomUUID(); // UUID stabil
                     d3Node.data.children.push(sub);
                 }
             });
@@ -623,7 +623,7 @@ async function handleNodeClick(d3Node) {
                 result.subtopics.forEach(sub => {
                     const exists = d3Node.data.children.some(child => child.name === sub.name);
                     if (!exists) {
-                        sub.id = `${nodeName}-${sub.name}-${Date.now()}`; // Unique ID
+                        sub.uuid = crypto.randomUUID(); // UUID stabil untuk URL navigation
                         d3Node.data.children.push(sub);
                     }
                 });

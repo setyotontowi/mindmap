@@ -22,6 +22,36 @@ const state = {
 };
 
 /* ==========================================================================
+   UUID HELPERS — Unique, stable ID untuk setiap node
+   ========================================================================== */
+
+/**
+ * Assign UUID ke node dan semua children-nya jika belum punya
+ * Menggunakan crypto.randomUUID() (tersedia di semua browser modern)
+ */
+function ensureNodeUUID(node) {
+    if (!node) return;
+    if (!node.uuid) {
+        node.uuid = crypto.randomUUID();
+    }
+    if (node.children) {
+        node.children.forEach(child => ensureNodeUUID(child));
+    }
+}
+
+/**
+ * Traverse tree dan assign UUID ke semua node yang belum punya
+ */
+function ensureAllNodeUUIDs(root) {
+    if (!root) return;
+    ensureNodeUUID(root);
+}
+
+/* Ekspos helpers */
+window.ensureNodeUUID = ensureNodeUUID;
+window.ensureAllNodeUUIDs = ensureAllNodeUUIDs;
+
+/* ==========================================================================
    PERSISTENCE — Save & Restore from localStorage & PostgreSQL
    ========================================================================== */
 function showSyncStatus(statusText) {
@@ -102,6 +132,12 @@ function loadState() {
     } catch (e) {
         console.warn('Gagal memuat state dari localStorage:', e);
     }
+    
+    // Pastikan semua node di tree punya UUID
+    if (state.mindmapData && typeof ensureAllNodeUUIDs === 'function') {
+        ensureAllNodeUUIDs(state.mindmapData);
+    }
+    
     // Sinkronisasi data secara asinkron dari PostgreSQL database
     syncFromDatabase();
 }
@@ -125,6 +161,11 @@ async function syncFromDatabase(id = state.currentMindmapId) {
             state.mindmapData = dbData.tree_data || null;
             state.nodeCache = dbData.node_cache || {};
             state.nodeStatuses = dbData.node_statuses || {};
+            
+            // Pastikan semua node di tree punya UUID
+            if (state.mindmapData && typeof ensureAllNodeUUIDs === 'function') {
+                ensureAllNodeUUIDs(state.mindmapData);
+            }
             
             if (state.isOwner) {
                 saveState(true); 
@@ -268,7 +309,7 @@ function paginateTo(node) {
     const path = [];
     const buildPath = (curr, target, currentPath) => {
         if (!curr) return false;
-        const newPath = [...currentPath, { name: curr.name, id: curr.id }];
+        const newPath = [...currentPath, { name: curr.name, id: curr.id, uuid: curr.uuid }];
         if (curr.name === target.name) {
             path.push(...newPath);
             return true;
@@ -295,6 +336,11 @@ function paginateTo(node) {
         }
     }, 100);
     saveState(true);
+    
+    // URL-based navigation: push state dengan UUID node
+    if (typeof window.pushNodeState === 'function') {
+        window.pushNodeState(node);
+    }
 }
 
 function resetPagination() {
@@ -312,6 +358,11 @@ function resetPagination() {
         }
     }, 100);
     saveState(true);
+    
+    // URL-based navigation: bersihkan node param (kembali ke root)
+    if (typeof window.pushNodeState === 'function') {
+        window.pushNodeState(null);
+    }
 }
 
 function autoAdjustViewRoot(node) {

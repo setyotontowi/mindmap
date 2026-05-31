@@ -7,5 +7,6 @@ import './js/api.js';
 import './js/renderer.js';
 import './js/trivia.js';
 import './js/analytics.js';
+import './js/navigation.js';
 import './js/ui.js';
 import './js/main.js';

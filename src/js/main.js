@@ -26,12 +26,17 @@ function initApp() {
             if (state.mindmapData) {
                 updateMindmap(state.mindmapData);
                 setTimeout(zoomFit, 100);
-                
+                    
                 // Welcome message
                 const welcomeText = state.language === 'en'
                     ? `Welcome back! Mindmap **${state.mindmapData.name}** has been restored from your last session. Let's continue learning! 📚`
                     : `Selamat datang kembali! Mindmap **${state.mindmapData.name}** telah dipulihkan dari sesi terakhirmu. Lanjutkan belajar! 📚`;
                 appendChatMessage('bot', welcomeText);
+            }
+                
+            // Inisialisasi URL-based navigation
+            if (typeof initNavigation === 'function') {
+                initNavigation();
             }
         });
     } else {
@@ -40,6 +45,11 @@ function initApp() {
         if (state.mindmapData) {
             updateMindmap(state.mindmapData);
             setTimeout(zoomFit, 100);
+        }
+        
+        // Inisialisasi URL-based navigation
+        if (typeof initNavigation === 'function') {
+            initNavigation();
         }
     }
 }

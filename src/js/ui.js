@@ -1245,11 +1245,11 @@ async function handleChatSubmit(e) {
         }
 
         if (result && result.name) {
-            // Set ID untuk node agar D3 dapat mengontrol transisi
-            result.id = 'root';
+            // Set UUID untuk setiap node agar D3 dapat mengontrol transisi
+            result.uuid = result.uuid || crypto.randomUUID();
             if (result.children) {
-                result.children.forEach((child, index) => {
-                    child.id = `child-${index}-${Date.now()}`;
+                result.children.forEach((child) => {
+                    child.uuid = child.uuid || crypto.randomUUID();
                 });
             }
 
@@ -2630,7 +2630,7 @@ async function submitRegenerateNode(e) {
                 // Tambah children baru
                 if (result.subtopics && result.subtopics.length > 0) {
                     result.subtopics.forEach(sub => {
-                        sub.id = `${nodeName}-${sub.name}-${Date.now()}`;
+                        sub.uuid = sub.uuid || crypto.randomUUID();
                         targetNode.children.push(sub);
                     });
                 }
@@ -2703,7 +2703,7 @@ async function submitRegenerateNode(e) {
                 // Tambah children baru
                 if (result.subtopics && result.subtopics.length > 0) {
                     result.subtopics.forEach(sub => {
-                        sub.id = `${nodeName}-${sub.name}-${Date.now()}`;
+                        sub.uuid = sub.uuid || crypto.randomUUID();
                         targetNode.children.push(sub);
                     });
                 }
