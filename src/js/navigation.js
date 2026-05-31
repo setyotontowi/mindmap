@@ -1,12 +1,27 @@
 /* ==========================================================================
    URL-BASED NODE NAVIGATION (History API)
    ==========================================================================
-   Format URL: ?id=mm_xxx&node=node-uuid
+   Format URL: ?id=mm_xxx&node=node-uuid&s=human-readable-slug
    
-   - Klik/paginate node → pushState dengan UUID node
-   - Browser back/forward → popstate → restore view
+   - node (UUID): primary identifier, stabil buat navigasi & share
+   - s (slug): cosmetic aja biar URL-nya kebaca manusia
+   - Klik/paginate node → pushState dengan UUID + slug
+   - Browser back/forward → popstate → restore view via UUID
    - Pada HP, back button otomatis balik ke node sebelumnya
    ========================================================================== */
+
+/* -------------------------------------------------------------------------
+   Utility: slugify — ubah nama node jadi URL-safe
+   ------------------------------------------------------------------------- */
+function slugify(text) {
+    if (!text) return '';
+    return text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')   // hapus karakter non-alfanumerik kecuali spasi & strip
+        .replace(/[\s_]+/g, '-')     // spasi & underscore jadi strip
+        .replace(/-+/g, '-')         // collapse multiple strip
+        .replace(/^-+|-+$/g, '');    // trim strip di ujung
+}
 
 /* -------------------------------------------------------------------------
    Utility: cari node dalam tree berdasarkan UUID
@@ -48,8 +63,10 @@ function pushNodeState(node) {
         url.searchParams.set('id', state.currentMindmapId);
         if (node && node.uuid) {
             url.searchParams.set('node', node.uuid);
+            url.searchParams.set('s', slugify(node.name));
         } else {
             url.searchParams.delete('node');
+            url.searchParams.delete('s');
         }
         history.pushState({ nodeUUID: node ? node.uuid : null }, '', url.toString());
     } catch (e) {
@@ -66,8 +83,10 @@ function replaceNodeState(node) {
         url.searchParams.set('id', state.currentMindmapId);
         if (node && node.uuid) {
             url.searchParams.set('node', node.uuid);
+            url.searchParams.set('s', slugify(node.name));
         } else {
             url.searchParams.delete('node');
+            url.searchParams.delete('s');
         }
         history.replaceState({ nodeUUID: node ? node.uuid : null }, '', url.toString());
     } catch (e) {
@@ -156,6 +175,7 @@ function initNavigation() {
    ------------------------------------------------------------------------- */
 window.findNodeByUUID = findNodeByUUID;
 window.getPathToNode = getPathToNode;
+window.slugify = slugify;
 window.pushNodeState = pushNodeState;
 window.replaceNodeState = replaceNodeState;
 window.initNavigation = initNavigation;
