@@ -61,6 +61,13 @@ function pushNodeState(node) {
     try {
         const url = new URL(window.location);
         url.searchParams.set('id', state.currentMindmapId);
+        
+        const currentUUID = url.searchParams.get('node');
+        const targetUUID = node ? node.uuid : null;
+        if (currentUUID === targetUUID) {
+            return;
+        }
+
         if (node && node.uuid) {
             url.searchParams.set('node', node.uuid);
             url.searchParams.set('s', slugify(node.name));
@@ -81,6 +88,13 @@ function replaceNodeState(node) {
     try {
         const url = new URL(window.location);
         url.searchParams.set('id', state.currentMindmapId);
+        
+        const currentUUID = url.searchParams.get('node');
+        const targetUUID = node ? node.uuid : null;
+        if (currentUUID === targetUUID) {
+            return;
+        }
+
         if (node && node.uuid) {
             url.searchParams.set('node', node.uuid);
             url.searchParams.set('s', slugify(node.name));
@@ -104,6 +118,18 @@ function handlePopState(event) {
         // Cari node berdasarkan UUID
         const node = findNodeByUUID(state.mindmapData, nodeUUID);
         if (node) {
+            // Trigger click buka drawer juga
+            if (typeof window.handleNodeClick === 'function') {
+                try {
+                    const rootNode = d3.hierarchy(state.mindmapData, d => d.children);
+                    const found = rootNode.descendants().find(d => d.data.uuid === nodeUUID);
+                    if (found) {
+                        window.handleNodeClick(found);
+                    }
+                } catch (e) {
+                    console.warn('[Nav] Gagal trigger click pada popstate:', e);
+                }
+            }
             // Restore view ke node tersebut
             if (typeof window.paginateTo === 'function') {
                 window.paginateTo(node);
@@ -115,6 +141,9 @@ function handlePopState(event) {
     // Fallback: ga ada node di state atau node ga ketemu → balik ke root
     if (typeof window.resetPagination === 'function') {
         window.resetPagination();
+    }
+    if (typeof window.closeDetailDrawer === 'function') {
+        window.closeDetailDrawer();
     }
 }
 

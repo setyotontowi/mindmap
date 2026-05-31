@@ -1517,6 +1517,11 @@ function openDetailDrawer(title) {
     }
 
     drawer.classList.add('open');
+
+    // Update browser URL search parameter to reflect active node on single click
+    if (state.activeNode && typeof window.pushNodeState === 'function') {
+        window.pushNodeState(state.activeNode);
+    }
 }
 
 let drawerLoadingTriviaInterval = null;
@@ -1572,6 +1577,12 @@ function closeDetailDrawer() {
     
     drawer.classList.remove('open');
     state.activeNode = null;
+
+    // Clear node URL search parameter when closing drawer
+    if (typeof window.pushNodeState === 'function') {
+        window.pushNodeState(null);
+    }
+
     updateMindmap(state.mindmapData); // Matikan active border pada link
 
     // Pastikan header & bottom nav terlihat saat detail drawer ditutup
