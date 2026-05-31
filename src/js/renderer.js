@@ -547,8 +547,8 @@ async function handleNodeClick(d3Node) {
         }
 
         // Resolusi auto menjadi style acak dari system
-        if (selectedStyle === 'auto' && typeof getRandomStyleAndSubstyle === 'function') {
-            const randomChoice = getRandomStyleAndSubstyle();
+        if (selectedStyle === 'auto' && typeof getContentAwareStyleAndSubstyle === 'function') {
+            const randomChoice = getContentAwareStyleAndSubstyle(d3Node.data.name, d3Node.data.description);
             selectedStyle = randomChoice.style;
             selectedSubStyle = randomChoice.substyle;
         }
@@ -558,7 +558,7 @@ async function handleNodeClick(d3Node) {
         d3Node.data.writingSubStyle = selectedSubStyle;
 
         const styleInstruction = (typeof getWritingStyleInstruction === 'function')
-            ? getWritingStyleInstruction(selectedStyle, selectedSubStyle)
+            ? getWritingStyleInstruction(selectedStyle, selectedSubStyle, nodeName, nodeDesc)
             : '';
 
         const prompt = state.language === 'en' ? `You are an expert tutor. The user is currently learning the main topic "${rootTopicName}" and wants to deep-dive into the subtopic "${nodeName}" (Description: "${nodeDesc}").

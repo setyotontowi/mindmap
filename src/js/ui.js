@@ -334,6 +334,89 @@ const WRITING_STYLES = {
     }
 };
 
+/* ==========================================================================
+   CONTENT-AWARE STYLE SELECTION + FREQUENCY TRACKING
+   ========================================================================== */
+
+/** Keyword-to-style mapping */
+const STYLE_KEYWORDS = {
+    copywriting: ['marketing', 'sales', 'conversion', 'advert', 'brand', 'persuasion', 'funnel', 'landing page', 'promotion', 'copywriting', 'iklan', 'pemasaran', 'promosi'],
+    seo: ['seo', 'search engine', 'traffic', 'ranking', 'technical', 'tutorial', 'how to', 'guide', 'step by step', 'panduan', 'langkah', 'mesin pencari'],
+    conversational: ['communication', 'soft skill', 'mindset', 'habit', 'conversation', 'public speaking', 'tips', 'personal', 'self', 'percakapan', 'komunikasi', 'kebiasaan', 'pengembangan diri'],
+    storytelling: ['history', 'story', 'narrative', 'culture', 'philosophy', 'biography', 'war', 'ancient', 'myth', 'origin', 'legend', 'sejarah', 'cerita', 'budaya', 'filsafat'],
+    analytical: ['math', 'physics', 'statistics', 'data', 'algorithm', 'analysis', 'formula', 'logic', 'science', 'engineering', 'programming', 'code', 'calculus', 'linear algebra', 'probability', 'neural network', 'machine learning', 'matematika', 'fisika', 'algoritma', 'analisis', 'sains'],
+    frameworks: ['framework', 'methodology', 'strategy', 'management', 'productivity', 'system', 'workflow', 'process', 'template', 'sop', 'playbook', 'metode', 'strategi', 'sistem', 'produktivitas'],
+    leadership: ['leadership', 'team', 'organization', 'business', 'decision', 'vision', 'company', 'corporate', 'startup', 'kepemimpinan', 'tim', 'organisasi', 'bisnis', 'perusahaan'],
+    academic: ['theory', 'research', 'academic', 'scientific', 'paper', 'study', 'paradigm', 'theorem', 'proof', 'literature', 'doktrin', 'teori', 'riset', 'akademik', 'ilmiah', 'penelitian'],
+    socratic: ['critical thinking', 'question', 'debate', 'argument', 'logic fallacy', 'berpikir kritis', 'pertanyaan', 'debat', 'argumen'],
+    playful: ['beginner', 'simple', 'fun', 'game', 'play', 'kids', 'easy', 'pemula', 'mudah', 'menyenangkan', 'game', 'permainan', 'anak'],
+    historical: ['evolution', 'timeline', 'origin', 'era', 'ancient', 'renaissance', 'industrial', 'evolusi', 'kronologi', 'zaman', 'asal usul', 'perkembangan']
+};
+
+/** Content-aware: cari style paling cocok dari keyword nama + deskripsi */
+function getContentAwareStyle(nodeName, nodeDesc) {
+    if (!nodeName) return null;
+    const text = `${nodeName} ${nodeDesc || ''}`.toLowerCase();
+    let bestStyle = null;
+    let bestScore = 0;
+    for (const [style, keywords] of Object.entries(STYLE_KEYWORDS)) {
+        let score = 0;
+        for (const kw of keywords) {
+            if (text.includes(kw)) {
+                score++;
+                if (nodeName.toLowerCase().includes(kw)) score += 2;
+            }
+        }
+        if (score > bestScore) { bestScore = score; bestStyle = style; }
+    }
+    return bestStyle;
+}
+
+/** Weighted random: style jarang dipake punya probabilitas lebih tinggi */
+function getWeightedRandomStyle() {
+    const styles = Object.keys(WRITING_STYLES);
+    const freq = state.styleFrequency || {};
+    const weights = styles.map(s => 1 / ((freq[s] || 0) + 1));
+    const totalWeight = weights.reduce((a, b) => a + b, 0);
+    let rand = Math.random() * totalWeight;
+    for (let i = 0; i < styles.length; i++) {
+        rand -= weights[i];
+        if (rand <= 0) return styles[i];
+    }
+    return styles[styles.length - 1];
+}
+
+/** Track frekuensi pemakaian style */
+function trackStyleUsage(styleName) {
+    if (!styleName) return;
+    if (!state.styleFrequency) {
+        state.styleFrequency = JSON.parse(localStorage.getItem('style_frequency') || '{}');
+    }
+    state.styleFrequency[styleName] = (state.styleFrequency[styleName] || 0) + 1;
+    localStorage.setItem('style_frequency', JSON.stringify(state.styleFrequency));
+    if (typeof saveState === 'function') saveState(true);
+}
+
+/**
+ * Main function: content-aware -> weighted random -> track
+ */
+function getContentAwareStyleAndSubstyle(nodeName, nodeDesc) {
+    let selectedStyle = null;
+    if (nodeName) {
+        selectedStyle = getContentAwareStyle(nodeName, nodeDesc);
+        if (selectedStyle) console.log(`[Style] Content-aware: ${selectedStyle} for "${nodeName}"`);
+    }
+    if (!selectedStyle) {
+        selectedStyle = getWeightedRandomStyle();
+        console.log(`[Style] Weighted random: ${selectedStyle} (fallback)`);
+    }
+    trackStyleUsage(selectedStyle);
+    const styleData = WRITING_STYLES[selectedStyle];
+    const substyles = Object.keys(styleData.substyles);
+    const randomSubstyle = substyles[Math.floor(Math.random() * substyles.length)];
+    return { style: selectedStyle, substyle: randomSubstyle };
+}
+
 function updateSubStyleDropdown(styleSelectId, substyleSelectId, selectedSubStyle = 'auto') {
     const styleSelect = document.getElementById(styleSelectId);
     const substyleSelect = document.getElementById(substyleSelectId);
@@ -381,17 +464,19 @@ function getRandomStyleAndSubstyle() {
     return { style: randomStyle, substyle: randomSubstyle };
 }
 
-function getWritingStyleInstruction(style, substyle) {
+function getWritingStyleInstruction(style, substyle, nodeName, nodeDesc) {
     const slopRules = state.language === 'en' ? ANTI_AI_SLOP_INSTRUCTION.en : ANTI_AI_SLOP_INSTRUCTION.id;
 
     let targetStyle = style;
     let targetSubstyle = substyle;
 
     if (!style || style === 'auto') {
-        const randomChoice = getRandomStyleAndSubstyle();
-        targetStyle = randomChoice.style;
-        targetSubstyle = randomChoice.substyle;
-        console.log(`[System Style Engine] Randomly chose style: ${targetStyle}, substyle: ${targetSubstyle}`);
+        const choice = typeof getContentAwareStyleAndSubstyle === 'function'
+            ? getContentAwareStyleAndSubstyle(nodeName, nodeDesc)
+            : getRandomStyleAndSubstyle();
+        targetStyle = choice.style;
+        targetSubstyle = choice.substyle;
+        console.log(`[System Style Engine] Chose style: ${targetStyle}, substyle: ${targetSubstyle}`);
     }
 
     const styleData = WRITING_STYLES[targetStyle];
@@ -1199,12 +1284,12 @@ async function handleChatSubmit(e) {
     try {
         let selectedStyle = 'auto';
         let selectedSubStyle = 'auto';
-        if (typeof getRandomStyleAndSubstyle === 'function') {
-            const randomChoice = getRandomStyleAndSubstyle();
-            selectedStyle = randomChoice.style;
-            selectedSubStyle = randomChoice.substyle;
+        if (typeof getContentAwareStyleAndSubstyle === 'function') {
+            const choice = getContentAwareStyleAndSubstyle(topic);
+            selectedStyle = choice.style;
+            selectedSubStyle = choice.substyle;
         }
-        const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle);
+        const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle, topic);
         const prompt = state.language === 'en' ? `Analyze the user's input/request: "${topic}". Identify their core intent/topic and rephrase it into a concise, professional, and clear topic title (this will be the Level 0 / root node name).
 
         Create a structured learning roadmap for this rephrased topic. Generate valid JSON format with a single root node (whose "name" is the rephrased topic) and several main subtopics as its children dynamically. Decide the most relevant number of main subtopics yourself (e.g. 2, 3, 5, or more) based on the scope and complexity of the topic. Provide a brief but clear description (max 10 words) for each node.
@@ -2497,10 +2582,10 @@ async function submitRegenerateNode(e) {
     let selectedStyle = regenStyleSelect ? regenStyleSelect.value : 'auto';
     let selectedSubStyle = regenSubstyleSelect ? regenSubstyleSelect.value : 'auto';
 
-    if (selectedStyle === 'auto' && typeof getRandomStyleAndSubstyle === 'function') {
-        const randomChoice = getRandomStyleAndSubstyle();
-        selectedStyle = randomChoice.style;
-        selectedSubStyle = randomChoice.substyle;
+    if (selectedStyle === 'auto' && typeof getContentAwareStyleAndSubstyle === 'function') {
+        const choice = getContentAwareStyleAndSubstyle(nodeName, nodeDesc);
+        selectedStyle = choice.style;
+        selectedSubStyle = choice.substyle;
     }
 
     // Simpan pilihan gaya penulisan ini ke state node
@@ -2515,7 +2600,7 @@ async function submitRegenerateNode(e) {
         updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', selectedSubStyle);
     }
 
-    const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle);
+    const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle, nodeName, nodeDesc);
 
     closeRegenerateNodeModal();
 
@@ -4805,6 +4890,7 @@ function renderHighlightsList() {
 
 // Ekspos ke global window agar kompatibel dengan modul lain
 window.getRandomStyleAndSubstyle = getRandomStyleAndSubstyle;
+window.getContentAwareStyleAndSubstyle = getContentAwareStyleAndSubstyle;
 window.getWritingStyleInstruction = getWritingStyleInstruction;
 window.initUIEventListeners = initUIEventListeners;
 window.appendChatMessage = appendChatMessage;
