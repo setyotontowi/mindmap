@@ -387,7 +387,7 @@ function getWeightedRandomStyle() {
 }
 
 /** Track frekuensi pemakaian style */
-function trackStyleUsage(styleName) {
+function trackStyleUsage(styleName, substyle, method, nodeName) {
     if (!styleName) return;
     if (!state.styleFrequency) {
         state.styleFrequency = JSON.parse(localStorage.getItem('style_frequency') || '{}');
@@ -395,6 +395,21 @@ function trackStyleUsage(styleName) {
     state.styleFrequency[styleName] = (state.styleFrequency[styleName] || 0) + 1;
     localStorage.setItem('style_frequency', JSON.stringify(state.styleFrequency));
     if (typeof saveState === 'function') saveState(true);
+    
+    // Kirim ke backend analytics (fire & forget — ga perlu nunggu response)
+    if (state.currentMindmapId && state.mindmapData) {
+        fetch('/api/track/style-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mindmap_id: state.currentMindmapId,
+                node_name: nodeName || 'unknown',
+                style: styleName,
+                substyle: substyle || null,
+                selection_method: method || 'weighted-random'
+            })
+        }).catch(e => console.warn('[Analytics] Gagal kirim style-event:', e));
+    }
 }
 
 /**
@@ -402,18 +417,25 @@ function trackStyleUsage(styleName) {
  */
 function getContentAwareStyleAndSubstyle(nodeName, nodeDesc) {
     let selectedStyle = null;
+    let selectionMethod = 'weighted-random';
     if (nodeName) {
         selectedStyle = getContentAwareStyle(nodeName, nodeDesc);
-        if (selectedStyle) console.log(`[Style] Content-aware: ${selectedStyle} for "${nodeName}"`);
+        if (selectedStyle) {
+            selectionMethod = 'content-aware';
+            console.log(`[Style] Content-aware: ${selectedStyle} for "${nodeName}"`);
+        }
     }
     if (!selectedStyle) {
         selectedStyle = getWeightedRandomStyle();
         console.log(`[Style] Weighted random: ${selectedStyle} (fallback)`);
     }
-    trackStyleUsage(selectedStyle);
     const styleData = WRITING_STYLES[selectedStyle];
     const substyles = Object.keys(styleData.substyles);
     const randomSubstyle = substyles[Math.floor(Math.random() * substyles.length)];
+    
+    // Track usage (localStorage + backend)
+    trackStyleUsage(selectedStyle, randomSubstyle, selectionMethod, nodeName);
+    
     return { style: selectedStyle, substyle: randomSubstyle };
 }
 

@@ -144,6 +144,23 @@ const initDb = async () => {
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_node_events_mindmap ON node_events(mindmap_id)`);
         console.log('Tabel session_events siap digunakan.');
 
+        // Phase: writing_style_events table (content-aware style analytics)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS writing_style_events (
+                id SERIAL PRIMARY KEY,
+                mindmap_id VARCHAR(255),
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                node_name VARCHAR(500),
+                style VARCHAR(50),
+                substyle VARCHAR(50),
+                selection_method VARCHAR(50) DEFAULT 'content-aware',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_style_events_mindmap ON writing_style_events(mindmap_id)`);
+        await pool.query(`CREATE INDEX IF NOT EXISTS idx_style_events_style ON writing_style_events(style)`);
+        console.log('Tabel writing_style_events siap digunakan.');
+
         // Phase 10: library_collections table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS library_collections (
@@ -762,6 +779,26 @@ app.post('/api/track/session-event', async (req, res) => {
     } catch (e) {
         console.error('[Analytics] Gagal track session-event:', e.message);
         res.status(500).json({ error: 'Gagal track session event.' });
+    }
+});
+
+// POST /api/track/style-event — Track writing style usage
+app.post('/api/track/style-event', async (req, res) => {
+    const { mindmap_id, node_name, style, substyle, selection_method } = req.body;
+    const userId = req.user ? req.user.id : null;
+    if (!mindmap_id || !node_name || !style) {
+        return res.status(400).json({ error: 'mindmap_id, node_name, dan style diperlukan.' });
+    }
+    try {
+        await pool.query(
+            `INSERT INTO writing_style_events (mindmap_id, user_id, node_name, style, substyle, selection_method)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [mindmap_id, userId, node_name, style, substyle || null, selection_method || 'content-aware']
+        );
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[Analytics] Gagal track style-event:', e.message);
+        res.status(500).json({ error: 'Gagal track style event.' });
     }
 });
 
