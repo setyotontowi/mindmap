@@ -3413,22 +3413,32 @@ async function shareMindmap() {
     const mindmapName = state.mindmapData?.name || 'Mindmap';
     const shareUrl = `${window.location.origin}${window.location.pathname}?id=${state.currentMindmapId}`;
     
-    // Coba Web Share API dulu — langsung panggil tanpa async, biar gesture ga ilang
+    // Coba Web Share API dulu — pake precaptured image klo ada
     if (navigator.share) {
         try {
             const shareText = state.language === 'en'
                 ? `🧠 ${mindmapName}\n\nExplore this mindmap: ${shareUrl}`
                 : `🧠 ${mindmapName}\n\nJelajahi mindmap ini: ${shareUrl}`;
-                
-            await navigator.share({
-                title: `🧠 ${mindmapName}`,
-                text: shareText
-            });
+            
+            // Image dari precapture (udah siap, ga blocking)
+            const imageBlob = state.mindmapImage;
+            if (imageBlob && navigator.canShare && navigator.canShare({ files: [new File([imageBlob], 'm.png', { type: 'image/png' })] })) {
+                await navigator.share({
+                    title: `🧠 ${mindmapName}`,
+                    text: shareText,
+                    files: [new File([imageBlob], `mindmap-${state.currentMindmapId}.png`, { type: 'image/png' })]
+                });
+            } else {
+                await navigator.share({
+                    title: `🧠 ${mindmapName}`,
+                    text: shareText
+                });
+            }
             
             showToast(state.language === 'en' ? 'Shared successfully!' : 'Berhasil dibagikan!');
             return;
         } catch (err) {
-            if (err.name === 'AbortError') return; // user cancel — diem aja
+            if (err.name === 'AbortError') return;
             console.warn('[Share] Web Share gagal, fallback ke clipboard:', err);
         }
     }
@@ -3442,7 +3452,7 @@ async function shareMindmap() {
         appendChatMessage('bot', msg);
         showToast(state.language === 'en' ? 'Share link copied to clipboard!' : 'Link bagikan telah disalin ke clipboard!');
     } else {
-        prompt(state.language === 'en' ? 'Copy this link to share:' : 'Salin link ini untuk membagikan:', shareUrl);
+        prompt(state.language === 'en' ? 'Copy this link to share:' : 'Salin link ini untuk bagikan:', shareUrl);
     }
 }
 

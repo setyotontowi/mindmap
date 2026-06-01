@@ -381,6 +381,13 @@ function updateMindmap(sourceData) {
     if (window.lucide) {
         window.lucide.createIcons();
     }
+
+    // Precapture gambar mindmap untuk share (async, ga blocking)
+    setTimeout(() => {
+        if (typeof precaptureMindmapImage === 'function') {
+            precaptureMindmapImage();
+        }
+    }, 600); // Tunggu animasi D3 selesai
 }
 
 // Fungsi helper status node class
@@ -807,6 +814,162 @@ window.handleNodeClick = handleNodeClick;
 window.getAncestorNodePath = getAncestorNodePath;
 
 // Ekspos rootNodeData getter/setter
+/* ==========================================================================
+   PRECAPTURE: Render mindmap to Canvas for sharing (image in Web Share)
+   ========================================================================== */
+const LEVEL_COLORS = { 0: '#006644', 1: '#0e7490', 2: '#15803d', 3: '#0369a1', 4: '#b45309' };
+
+function precaptureMindmapImage() {
+    state.mindmapImage = null; // Reset
+    if (!rootNodeData) return;
+
+    const nodes = rootNodeData.descendants();
+    if (nodes.length === 0) return;
+
+    // Compute bounding box
+    const pad = 40;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    nodes.forEach(d => {
+        const nw = getNodeWidth(d.data);
+        const nh = getNodeHeight(d.data);
+        const nx = d.y;
+        const ny = d.x - nh / 2;
+        if (nx < minX) minX = nx;
+        if (nx + nw > maxX) maxX = nx + nw;
+        if (ny < minY) minY = ny;
+        if (ny + nh > maxY) maxY = ny + nh;
+    });
+
+    const w = Math.round(maxX - minX + pad * 2);
+    const h = Math.round(maxY - minY + pad * 2);
+    const maxDim = 1200;
+    const scale = Math.min(1, maxDim / Math.max(w, h));
+    const cw = Math.round(w * scale);
+    const ch = Math.round(h * scale);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = cw;
+    canvas.height = ch;
+    const ctx = canvas.getContext('2d');
+
+    ctx.scale(scale, scale);
+    ctx.translate(pad - minX, pad - minY);
+
+    // White background
+    ctx.fillStyle = '#f4f9f4';
+    ctx.fillRect(minX - pad, minY - pad, w, h);
+
+    // Draw links (bezier)
+    rootNodeData.links().forEach(link => {
+        const src = link.source, tgt = link.target;
+        const sx = src.y + getNodeWidth(src.data), sy = src.x;
+        const ex = tgt.y, ey = tgt.x;
+        const mx = (sx + ex) / 2;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.bezierCurveTo(mx, sy, mx, ey, ex, ey);
+        ctx.strokeStyle = '#b3cbbd';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+    });
+
+    // Draw nodes
+    nodes.forEach(d => {
+        const nw = getNodeWidth(d.data);
+        const nh = getNodeHeight(d.data);
+        const x = d.y, y = d.x - nh / 2;
+        const level = Math.min(d.depth, 4);
+        const cr = 6; // corner radius
+
+        // Card shadow
+        ctx.shadowColor = 'rgba(0,102,68,0.06)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetY = 1;
+
+        // Card bg
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(x + cr, y);
+        ctx.lineTo(x + nw - cr, y);
+        ctx.quadraticCurveTo(x + nw, y, x + nw, y + cr);
+        ctx.lineTo(x + nw, y + nh - cr);
+        ctx.quadraticCurveTo(x + nw, y + nh, x + nw - cr, y + nh);
+        ctx.lineTo(x + cr, y + nh);
+        ctx.quadraticCurveTo(x, y + nh, x, y + nh - cr);
+        ctx.lineTo(x, y + cr);
+        ctx.quadraticCurveTo(x, y, x + cr, y);
+        ctx.closePath();
+        ctx.fill();
+
+        // Reset shadow for borders
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        // Card border
+        ctx.strokeStyle = '#d0dfd7';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Level accent (left border)
+        ctx.beginPath();
+        ctx.moveTo(x + 0.5, y + 3);
+        ctx.lineTo(x + 0.5, y + nh - 3);
+        ctx.strokeStyle = LEVEL_COLORS[level];
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Title
+        ctx.fillStyle = LEVEL_COLORS[level];
+        ctx.font = `600 11px "Plus Jakarta Sans", system-ui, sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+        const textX = x + 8;
+        const tw = nw - 20;
+        let title = d.data.name || '';
+        if (ctx.measureText(title).width > tw) {
+            while (ctx.measureText(title + '…').width > tw && title.length > 1) {
+                title = title.slice(0, -1);
+            }
+            title += '…';
+        }
+        ctx.fillText(title, textX, y + 6);
+
+        // Description
+        if (d.data.description) {
+            ctx.fillStyle = '#8ba89a';
+            ctx.font = `400 9px "Plus Jakarta Sans", system-ui, sans-serif`;
+            let desc = d.data.description;
+            if (ctx.measureText(desc).width > tw) {
+                while (ctx.measureText(desc + '…').width > tw && desc.length > 1) {
+                    desc = desc.slice(0, -1);
+                }
+                desc += '…';
+            }
+            ctx.fillText(desc, textX, y + 20);
+        }
+
+        // Status dot
+        const status = state.nodeStatuses?.[d.data.name];
+        if (status === 'doing') ctx.fillStyle = '#f59e0b';
+        else if (status === 'done') ctx.fillStyle = '#22c55e';
+        else ctx.fillStyle = '#b3cbbd';
+        ctx.beginPath();
+        ctx.arc(x + nw - 8, y + nh - 8, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    // Store as blob
+    canvas.toBlob(blob => {
+        state.mindmapImage = blob;
+        if (blob) {
+            console.log(`[Precapture] Mindmap image ready: ${(blob.size / 1024).toFixed(1)}KB`);
+        }
+    }, 'image/png', 0.85);
+}
+
+// Ekspos ke global
+window.precaptureMindmapImage = precaptureMindmapImage;
+
 Object.defineProperty(window, 'rootNodeData', {
     get: () => rootNodeData,
     set: (v) => { rootNodeData = v; },
