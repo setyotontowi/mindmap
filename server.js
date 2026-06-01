@@ -235,10 +235,14 @@ app.use(async (req, res, next) => {
 });
 
 // Helper: Ratakan tree rekursif menjadi array flat nodes
+// Gunakan node.uuid sebagai primary key (dari crypto.randomUUID di client)
 function flattenTree(node, mindmapId, parentId = null, depth = 0, position = 0, result = []) {
     if (!node || !node.name) return result;
-    const nodeId = `${mindmapId}::${node.name}`;
-    result.push({ id: nodeId, mindmap_id: mindmapId, parent_id: parentId, name: node.name, depth, position });
+    // Fallback: kalau node belum punya UUID, generate dari mindmapId::name
+    const nodeId = node.uuid || `${mindmapId}::${node.name}`;
+    // parentId juga pake UUID child, bukan format mindmapId::name
+    const resolvedParentId = parentId;
+    result.push({ id: nodeId, mindmap_id: mindmapId, parent_id: resolvedParentId, name: node.name, depth, position });
     if (Array.isArray(node.children)) {
         node.children.forEach((child, i) => flattenTree(child, mindmapId, nodeId, depth + 1, i, result));
     }
