@@ -3409,7 +3409,102 @@ async function shareMindmap() {
         alert(state.language === 'en' ? 'No active mindmap to share!' : 'Tidak ada mindmap aktif untuk dibagikan!');
         return;
     }
+    
+    const mindmapName = state.mindmapData?.name || 'Mindmap';
     const shareUrl = `${window.location.origin}${window.location.pathname}?id=${state.currentMindmapId}`;
+    const shareText = state.language === 'en'
+        ? `🧠 ${mindmapName}\n\nExplore this mindmap: ${shareUrl}`
+        : `🧠 ${mindmapName}\n\nJelajahi mindmap ini: ${shareUrl}`;
+    
+    // Coba Web Share API dulu (bekerja di HP — WhatsApp, dll)
+    if (navigator.share && window.matchMedia('(max-width: 768px)').matches) {
+        try {
+            // Generate gambar dari SVG canvas
+            let imageBlob = null;
+            const svgEl = document.getElementById('mindmap-svg');
+            if (svgEl) {
+                try {
+                    const svgClone = svgEl.cloneNode(true);
+                    // Apply computed styles ke elemen SVG
+                    const allElements = svgClone.querySelectorAll('*');
+                    allElements.forEach(el => {
+                        const computed = window.getComputedStyle(el);
+                        const style = el.style;
+                        // Copy critical visual properties
+                        const props = ['fill', 'stroke', 'stroke-width', 'color', 'font-size', 
+                                      'font-family', 'font-weight', 'opacity', 'background'];
+                        props.forEach(p => {
+                            const val = computed.getPropertyValue(p);
+                            if (val && !style.getPropertyValue(p)) {
+                                style.setProperty(p, val);
+                            }
+                        });
+                    });
+                    
+                    const svgData = new XMLSerializer().serializeToString(svgClone);
+                    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(svgBlob);
+                    
+                    const img = new Image();
+                    await new Promise((resolve, reject) => {
+                        img.onload = () => {
+                            // Resize biar ga terlalu gede
+                            const maxW = 1200;
+                            const scale = Math.min(1, maxW / img.width);
+                            const w = Math.round(img.width * scale);
+                            const h = Math.round(img.height * scale);
+                            
+                            const canvas = document.createElement('canvas');
+                            canvas.width = w;
+                            canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            // White background
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, w, h);
+                            ctx.drawImage(img, 0, 0, w, h);
+                            
+                            canvas.toBlob(blob => {
+                                if (blob) imageBlob = blob;
+                                URL.revokeObjectURL(url);
+                                resolve();
+                            }, 'image/png', 0.85);
+                        };
+                        img.onerror = () => {
+                            URL.revokeObjectURL(url);
+                            resolve();
+                        };
+                        img.src = url;
+                    });
+                } catch (e) {
+                    console.warn('[Share] Gagal generate gambar:', e);
+                }
+            }
+            
+            // Web Share dengan image klo berhasil generate
+            if (imageBlob) {
+                const files = [new File([imageBlob], `mindmap-${state.currentMindmapId}.png`, { type: 'image/png' })];
+                await navigator.share({
+                    title: `🧠 ${mindmapName}`,
+                    text: shareText,
+                    files
+                });
+            } else {
+                await navigator.share({
+                    title: `🧠 ${mindmapName}`,
+                    text: shareText
+                });
+            }
+            
+            showToast(state.language === 'en' ? 'Shared successfully!' : 'Berhasil dibagikan!');
+            return;
+        } catch (err) {
+            // User cancel atau error — fallback ke clipboard
+            if (err.name === 'AbortError') return;
+            console.warn('[Share] Web Share gagal, fallback ke clipboard:', err);
+        }
+    }
+    
+    // Fallback: copy link ke clipboard
     const copied = await copyToClipboard(shareUrl);
     if (copied) {
         const msg = state.language === 'en'

@@ -1778,6 +1778,8 @@ mark[data-note]::after {
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .brand-logo {
@@ -1786,6 +1788,9 @@ mark[data-note]::after {
     font-weight: 800;
     color: var(--accent);
     letter-spacing: -0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .global-nav {
@@ -3027,6 +3032,10 @@ mark[data-note]::after {
         font-size: 1.15rem;
         font-weight: 700;
         color: var(--primary-green-dark);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60vw;
     }
     
     #btn-mobile-header-search {
