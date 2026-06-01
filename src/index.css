@@ -1550,29 +1550,37 @@ a:hover { text-decoration: underline; }
     /* Visual blend for mobile QA header */
     .qa-header {
         border-top: 1px solid var(--border);
-        padding: 0 1rem !important;
+        padding: 0 0.75rem !important;
     }
 
-    /* Full-width QA content — hilangin padding kiri/kanan biar menyatu */
+    /* Edge-to-edge QA content — minimal padding */
     .qa-content-body {
-        padding: 0.75rem 0 !important;
+        padding: 0.5rem 0 !important;
     }
 
     .qa-content-body .qa-messages-list {
-        padding: 0 1rem;
+        padding: 0 0.75rem;
+        gap: 0.5rem;
     }
 
     .qa-footer {
-        padding: 0.5rem 0.75rem !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+
+    .qa-footer .drawer-qa-form {
+        gap: 4px;
+        padding: 2px 2px 2px 6px;
     }
 
     /* QA bubbles full-width di mobile */
     .qa-bubble {
-        max-width: 92%;
+        max-width: 95%;
+        padding: 0.45rem 0.6rem;
+        font-size: 0.85rem;
     }
 
     .drawer-qa-form textarea {
-        font-size: 0.85rem;
+        font-size: 0.88rem;
     }
 }
 
