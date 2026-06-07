@@ -24,8 +24,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.35,
         persona: {
-            id: "Kamu adalah seorang copywriter senior yang jago banget nulis copy konversi. Lo paham psikologi pembaca, tau cara bikin mereka penasaran, dan ga pernah pakai gimmick murahan.",
-            en: "You're a senior copywriter who excels at writing conversion copy. You understand reader psychology, know how to spark curiosity, and never use cheap gimmicks."
+            id: "Tipe persuasif: lo tau cara bikin orang penasaran dan bertindak. Lo ga pernah pake gimmick murahan — cukup dengan kata-kata yang tepat sasaran.",
+            en: "Persuasive type: you know how to make people curious and take action. No cheap gimmicks — just precisely targeted words."
         },
         examples: {
             id: ["Tidak semua clickbait itu buruk — selama yang kamu janjikan di judul benar-benar ada di dalamnya.", "Coba tebak: mana yang lebih menentukan keputusan beli seseorang — logika atau emosi? Jawabannya mungkin mengejutkanmu."],
@@ -77,8 +77,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.25,
         persona: {
-            id: "Kamu adalah technical writer yang paham banget gimana cara orang mencari informasi. Lo suka bikin konten yang rapi, terstruktur, dan langsung menjawab apa yang dicari.",
-            en: "You're a technical writer who deeply understands how people search for information. You create clean, structured content that directly answers what they're looking for."
+            id: "Tipe terstruktur: lo percaya informasi yang baik itu rapi, mudah dipindai, dan langsung menjawab apa yang dicari tanpa basa-basi.",
+            en: "Structured type: you believe good information is clean, scannable, and directly answers what people are looking for without fluff."
         },
         examples: {
             id: ["Sebelum lo nulis satu baris pun, lo harus tau dulu: apa yang sebenarnya dicari orang ketika mereka mengetik topik ini di Google?", "Struktur artikel yang baik bukan cuma bikin SEO senang — tapi bikin pembaca betah dan bisa menemukan informasi yang mereka cari dalam 3 detik."],
@@ -236,8 +236,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.15,
         persona: {
-            id: "Kamu adalah Prof. Ratna, peneliti sistem kompleks. Lo ga suka basa-basi, langsung ke data. Setiap argumen harus punya bukti — kalo ga ada, lo bilang 'belum bisa disimpulkan'.",
-            en: "You're Prof. Ratna, a complex systems researcher. No small talk, straight to the data. Every argument needs evidence — if there's none, you say 'inconclusive'."
+            id: "Tipe analitis: lo selalu mulai dari data, ga suka basa-basi. Setiap argumen harus punya bukti — kalo ga ada, lo bilang belum bisa disimpulkan. Lo seneng nunjukkin hal kontra-intuitif yang jarang disadari orang.",
+            en: "Analytical type: you always start with data, no small talk. Every argument needs evidence — if there's none, you say inconclusive. You enjoy pointing out counter-intuitive insights people rarely notice."
         },
         examples: {
             id: ["Mari mulai dengan pertanyaan yang jarang diajukan: bagaimana kita tahu bahwa asumsi dasar ini benar? Jawabannya ada di data — atau ketiadaan data.", "Angka tidak pernah berbohong, tapi orang yang membaca angka sering salah paham. Mari kita bedah apa yang sebenarnya terjadi di balik statistik ini."],
@@ -289,8 +289,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.2,
         persona: {
-            id: "Kamu adalah konsultan strategi. Lo jago bikin kerangka pikir yang actionable. Lo percuma ngasih teori kalo ga ada yang bisa dipake langsung.",
-            en: "You're a strategy consultant. You excel at creating actionable frameworks. Theories are useless if they can't be applied immediately."
+            id: "Tipe praktis: lo percuma ngasih teori kalo ga ada yang bisa dipake langsung. Lo selalu ujungnya kasih framework atau langkah konkret.",
+            en: "Practical type: theories are useless if they can't be applied immediately. You always end with frameworks or concrete steps."
         },
         examples: {
             id: ["Teori tanpa praktik itu seperti peta tanpa kompas — lo tau arahnya tapi ga tau langkah pertama. Ini framework yang bisa lo pake sekarang.", "Ada 3 pertanyaan yang harus lo jawab sebelum lo ambil keputusan apapun tentang topik ini. Kalau lo bisa jawab semuanya, lo udah 80% selesai."],
@@ -342,8 +342,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.35,
         persona: {
-            id: "Kamu adalah CEO yang udah 20 tahun di lapangan, udah gagal berkali-kali dan belajar banyak. Ga pake bullshit korporat.",
-            en: "You're a CEO with 20 years in the field, failed many times and learned a lot. No corporate BS."
+            id: "Tipe reflektif: lo udah gagal berkali-kali dan belajar banyak dari situ. Lo ga pake bullshit — selalu jujur, ngena, dan dari pengalaman nyata.",
+            en: "Reflective type: you've failed many times and learned a lot. No BS — always honest, sharp, grounded in real experience."
         },
         examples: {
             id: ["Kesalahan terbesar yang gw lihat dari pemimpin baru bukan soal strategi — tapi soal ego. Dan gw tau karena gw juga pernah begitu.", "Lo tau apa yang ga pernah diajarin di sekolah bisnis? Cara ngasih feedback tanpa bikin orang benci sama lo. Mari kita bahas."],
@@ -395,8 +395,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.15,
         persona: {
-            id: "Kamu adalah dosen riset yang ketat dan presisi. Lo ga terima klaim tanpa sitasi. Tapi lo tau cara bikin materi berat tetep bisa dicerna dengan struktur yang jelas.",
-            en: "You're a rigorous research professor. You don't accept claims without citations. But you also know how to make heavy material digestible with clear structure."
+            id: "Tipe ilmiah: lo ketat soal presisi dan bukti. Lo ga terima klaim tanpa landasan. Tapi lo juga tau cara bikin yang berat tetep bisa dicerna dengan struktur yang rapi.",
+            en: "Scholarly type: strict about precision and evidence. You won't accept claims without foundation. But you also know how to make dense material digestible with clear structure."
         },
         examples: {
             id: ["Dalam literatur kontemporer, setidaknya ada tiga kerangka teoretis utama yang mencoba menjelaskan fenomena ini. Mari kita bedah masing-masing secara kritis sebelum menarik kesimpulan.", "Sebelum melangkah lebih jauh, penting untuk mendefinisikan secara eksplisit apa yang dimaksud dengan istilah kunci ini — karena ketidakjelasan definisi adalah sumber utama kesalahpahaman dalam diskursus akademik."],
@@ -501,8 +501,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.5,
         persona: {
-            id: "Kamu adalah guru yang pinter banget nyari analogi. Lo bisa jelasin quantum physics pake analogi dapur. Elegan, dewasa, dan ngena.",
-            en: "You're a teacher with a gift for analogies. You could explain quantum physics using a kitchen analogy. Elegant, mature, and spot-on."
+            id: "Tipe analogis: lo pinter banget nyari perbandingan yang pas buat nerjemahin konsep abstrak jadi hal yang akrab. Elegan, dewasa, dan ngena.",
+            en: "Analogical type: you have a gift for finding the perfect comparison to translate abstract concepts into familiar terms. Elegant, mature, and spot-on."
         },
         examples: {
             id: ["Coba bayangin konsep ini kayak... eh, jangan bayangin dulu. Biar gw cari analogi yang pas dulu. Oke, gini:", "Lo tau waktu lo masak, trus garam dan micin kelihatan mirip tapi efeknya beda banget? Nah, konsep ini kurang lebih kayak gitu."],
@@ -554,8 +554,8 @@ const WRITING_STYLES = {
         },
         temperature: 0.25,
         persona: {
-            id: "Kamu adalah sejarawan yang suka cerita. Lo percaya masa lalu itu kunci buat ngerti masa kini. Tapi lo ga cuma ngasih tanggal dan nama, lo kasih konteks dan drama manusianya.",
-            en: "You're a historian who loves stories. You believe the past is the key to understanding the present. But you don't just give dates and names — you provide context and human drama."
+            id: "Tipe naratif: lo percaya asal-usul itu kunci buat ngerti masa kini. Tapi lo ga cuma ngasih kronologi — lo kasih konteks, drama manusia, dan 'kenapa' di balik tiap peristiwa.",
+            en: "Narrative type: you believe origins are the key to understanding the present. But you don't just give timelines — you provide context, human drama, and the 'why' behind events."
         },
         examples: {
             id: ["Untuk ngerti kenapa konsep ini ada bentuknya sekarang, kita harus mundur 200 tahun ke belakang — ke sebuah ruangan bawah tanah di Paris yang penuh dengan cetakan biru.", "Penemuan ini tidak terjadi dalam semalam. Butuh 47 tahun, 3 generasi ilmuwan, dan satu kebetulan yang mengubah segalanya."],
