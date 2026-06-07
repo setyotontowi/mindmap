@@ -31,6 +31,20 @@ const WRITING_STYLES = {
             id: ["Tidak semua clickbait itu buruk — selama yang kamu janjikan di judul benar-benar ada di dalamnya.", "Coba tebak: mana yang lebih menentukan keputusan beli seseorang — logika atau emosi? Jawabannya mungkin mengejutkanmu."],
             en: ["Not all clickbait is bad — as long as what you promise in the headline actually delivers.", "Guess what matters more in a purchase decision: logic or emotion? The answer might surprise you."]
         },
+        opening_structures: {
+            id: [
+            "Buka dengan pertanyaan yang menyentuh pain point pembaca secara langsung -> perdalam rasa sakit itu -> posisikan solusi sebagai jawaban alami",
+            "Buka dengan klaim berani yang kontra-intuitif -> buktikan dengan data -> tarik ke kebutuhan pembaca",
+            "Buka dengan skenario realistis yang relatable -> tunjukkin gap antara realita dan potensi -> tawarkan solusi",
+            "Buka dengan cerita singkat tentang seseorang yang mengalami masalah ini -> hubungkan langsung ke pembaca -> kasih jalan keluar"
+        ],
+            en: [
+            "Open with a question that hits the reader's pain point directly -> deepen the pain -> position the solution as the natural answer",
+            "Open with a bold counter-intuitive claim -> back it with data -> connect to the reader's needs",
+            "Open with a relatable scenario -> show the gap between reality and potential -> offer the solution",
+            "Open with a short story about someone with this problem -> connect directly to the reader -> provide a way out"
+        ]
+        },
         substyles: {
             aida: {
                 name: { id: "AIDA Model", en: "AIDA Model" },
@@ -83,6 +97,20 @@ const WRITING_STYLES = {
         examples: {
             id: ["Sebelum lo nulis satu baris pun, lo harus tau dulu: apa yang sebenarnya dicari orang ketika mereka mengetik topik ini di Google?", "Struktur artikel yang baik bukan cuma bikin SEO senang — tapi bikin pembaca betah dan bisa menemukan informasi yang mereka cari dalam 3 detik."],
             en: ["Before writing a single line, you need to know: what are people actually looking for when they search this topic?", "A well-structured article doesn't just please SEO — it keeps readers engaged and helps them find what they need in 3 seconds."]
+        },
+        opening_structures: {
+            id: [
+            "Buka dengan jawaban langsung atas pertanyaan inti (satu kalimat to-the-point) -> lalu breakdown detailnya step by step",
+            "Buka dengan data/statistik yang mengejutkan -> jelaskan konteksnya -> baru turun ke langkah praktis",
+            "Buka dengan perbandingan dua pendekatan -> tunjukkin mana yang lebih efektif -> jelaskan kenapa",
+            "Buka dengan 'kalau lo cuma inget satu hal dari ini, inget ini:' -> lalu perluas pelan-pelan"
+        ],
+            en: [
+            "Open with a direct answer to the core question (one to-the-point sentence) -> then break down details step by step",
+            "Open with surprising data/statistics -> explain the context -> then get into practical steps",
+            "Open by comparing two approaches -> show which is more effective -> explain why",
+            "Open with 'if you only remember one thing from this, remember this:' -> then expand slowly"
+        ]
         },
         substyles: {
             intent: {
@@ -137,6 +165,20 @@ const WRITING_STYLES = {
             id: ["Okay, jujur aja: pertama kali gw belajar ini, gw juga bingung setengah mati. Tapi tenang, gw bakal jabarin pelan-pelan.", "Lo tau perasaan 'oh pantes aja' pas tau sesuatu? Nah itu yang bakal lo rasain setelah baca ini."],
             en: ["Okay, let's be real: the first time I learned this, I was also completely confused. But don't worry, I'll walk you through it slowly.", "You know that lightbulb moment feeling? That's what you'll have after reading this."]
         },
+        opening_structures: {
+            id: [
+            "Buka kayak lo lagi ngobrol santai -- pake nada personal, kayak cerita ke temen",
+            "Buka dengan pengakuan jujur kayak 'gw juga dulu bingung' -> baru pelan-pelan jelasin",
+            "Buka dengan analogi dadakan yang relatable -> 'sebenernya ini mirip kayak...' -> baru sambungin ke topik",
+            "Buka dengan pertanyaan retoris ringan -> iyesin -- 'pernah ngerasa kan?' -> lalu jelasin kenapa"
+        ],
+            en: [
+            "Open like you're having a casual chat -- personal tone, like telling a friend",
+            "Open with an honest admission like 'I used to be confused too' -> then slowly explain",
+            "Open with a relatable off-the-cuff analogy -> 'it's actually like...' -> then connect to the topic",
+            "Open with a light rhetorical question -> validate -- 'you've felt that right?' -> then explain why"
+        ]
+        },
         substyles: {
             coach: {
                 name: { id: "Friendly Coach", en: "Friendly Coach" },
@@ -189,6 +231,20 @@ const WRITING_STYLES = {
         examples: {
             id: ["Tahun 1972, seorang programmer sendirian di ruangan gelap mengetik baris kode yang akan mengubah cara manusia berkomunikasi selamanya. Ia tidak tahu itu.", "Ada dua cara menjelaskan konsep ini: dengan diagram, atau dengan cerita tentang seorang nelayan yang salah memahami peta. Tebak mana yang lebih diingat?"],
             en: ["In 1972, a lone programmer sat in a dark room typing lines of code that would forever change how humans communicate. He didn't know it yet.", "There are two ways to explain this concept: with diagrams, or with a story about a fisherman who misread his map. Guess which one sticks?"]
+        },
+        opening_structures: {
+            id: [
+            "Buka dengan scene setting: waktu, tempat, tokoh, suasana -- bangun dramanya dulu baru masuk konsep",
+            "Buka dengan satu kalimat pembuka pendek yang bombastis -> baru break jadi narasi pelan-pelan",
+            "Buka dari ending cerita dulu -> lalu flashback ke awal -- bikin penasaran baru jalanin timeline",
+            "Buka dengan dialog dua orang -> dari percakapan itu muncul problem -> lalu breakdown"
+        ],
+            en: [
+            "Open with scene setting: time, place, character, atmosphere -- build the drama first, then enter the concept",
+            "Open with one short bombastic sentence -> then break into a slow narrative",
+            "Open with the ending first -> then flashback to the beginning -- build curiosity, then walk the timeline",
+            "Open with a dialogue between two people -> a problem emerges from the conversation -> then break it down"
+        ]
         },
         substyles: {
             hero: {
@@ -243,6 +299,20 @@ const WRITING_STYLES = {
             id: ["Mari mulai dengan pertanyaan yang jarang diajukan: bagaimana kita tahu bahwa asumsi dasar ini benar? Jawabannya ada di data — atau ketiadaan data.", "Angka tidak pernah berbohong, tapi orang yang membaca angka sering salah paham. Mari kita bedah apa yang sebenarnya terjadi di balik statistik ini."],
             en: ["Let's start with a question rarely asked: how do we know this basic assumption is correct? The answer lies in the data — or the lack of it.", "Numbers never lie, but the people reading them often misunderstand. Let's dissect what's really happening behind these statistics."]
         },
+        opening_structures: {
+            id: [
+            "Buka dengan satu data statistik yang kontra-intuitif -> lalu ajukan pertanyaan 'kenapa ini terjadi?' -> breakdown analitis",
+            "Buka dengan asumsi umum yang ternyata salah -> bongkar pakai bukti -> ganti dengan pemahaman yang benar",
+            "Buka dengan perbandingan dua skenario (X vs Y) -> analisis perbedaan akarnya -> tarik kesimpulan",
+            "Buka langsung dengan thesis statement yang tegas (satu kalimat) -> lalu breakdown pelan-pelan dengan data pendukung"
+        ],
+            en: [
+            "Open with one counter-intuitive data point -> then ask 'why does this happen?' -> analytical breakdown",
+            "Open with a common assumption that turns out wrong -> dismantle with evidence -> replace with correct understanding",
+            "Open with a comparison of two scenarios (X vs Y) -> analyze the root differences -> draw conclusions",
+            "Open directly with a strong thesis statement (one sentence) -> then slowly break it down with supporting data"
+        ]
+        },
         substyles: {
             data: {
                 name: { id: "Data-Driven Breakdown", en: "Data-Driven Breakdown" },
@@ -295,6 +365,20 @@ const WRITING_STYLES = {
         examples: {
             id: ["Teori tanpa praktik itu seperti peta tanpa kompas — lo tau arahnya tapi ga tau langkah pertama. Ini framework yang bisa lo pake sekarang.", "Ada 3 pertanyaan yang harus lo jawab sebelum lo ambil keputusan apapun tentang topik ini. Kalau lo bisa jawab semuanya, lo udah 80% selesai."],
             en: ["Theory without practice is like a map without a compass — you know the direction but not the first step. Here's a framework you can use right now.", "There are 3 questions you need to answer before making any decision about this topic. If you can answer them all, you're 80% done."]
+        },
+        opening_structures: {
+            id: [
+            "Buka dengan masalah konkret yang langsung bisa di-identifikasi -> tawarkan framework sebagai solusi -> breakdown langkah-langkahnya",
+            "Buka dengan 'ini cara gampangnya:' -> satu baris sederhana -> lalu breakdown framework detail",
+            "Buka dengan satu kesalahan umum yang sering dilakukan orang -> kasih framework untuk menghindarinya",
+            "Buka dengan metafora sistem (proses alami) -> petakan ke framework -> lalu step by step"
+        ],
+            en: [
+            "Open with a concrete problem the reader can immediately identify -> offer a framework as solution -> break down the steps",
+            "Open with 'here's the easy way:' -> one simple line -> then break down the detailed framework",
+            "Open with one common mistake people often make -> give a framework to avoid it",
+            "Open with a system metaphor (natural process) -> map it to the framework -> then step by step"
+        ]
         },
         substyles: {
             mental: {
@@ -349,6 +433,20 @@ const WRITING_STYLES = {
             id: ["Kesalahan terbesar yang gw lihat dari pemimpin baru bukan soal strategi — tapi soal ego. Dan gw tau karena gw juga pernah begitu.", "Lo tau apa yang ga pernah diajarin di sekolah bisnis? Cara ngasih feedback tanpa bikin orang benci sama lo. Mari kita bahas."],
             en: ["The biggest mistake I see in new leaders isn't about strategy — it's about ego. And I know because I've been there too.", "You know what they never teach in business school? How to give feedback without making people hate you. Let's talk about it."]
         },
+        opening_structures: {
+            id: [
+            "Buka dengan momen kegagalan personal yang jujur -> refleksi apa yang dipelajari -> hubungkan ke topik",
+            "Buka dengan paradoks: 'semakin lo X, semakin Y... tapi kok gitu?' -> bongkar asumsi yang salah -> kasih insight baru",
+            "Buka dengan pertanyaan reflektif ke pembaca -> beri jeda buat mikir -> baru kasih jawaban",
+            "Buka dengan observasi kontra-intuitif tentang perilaku manusia di organisasi -> kaitkan ke konteks"
+        ],
+            en: [
+            "Open with an honest personal failure moment -> reflect on what was learned -> connect to the topic",
+            "Open with a paradox: 'the more you X, the more Y... but why?' -> dismantle wrong assumptions -> give new insight",
+            "Open with a reflective question to the reader -> give pause to think -> then provide the answer",
+            "Open with a counter-intuitive observation about human behavior in organizations -> connect to context"
+        ]
+        },
         substyles: {
             contrarian_analogy: {
                 name: { id: "Contrarian Analogy", en: "Contrarian Analogy" },
@@ -401,6 +499,20 @@ const WRITING_STYLES = {
         examples: {
             id: ["Dalam literatur kontemporer, setidaknya ada tiga kerangka teoretis utama yang mencoba menjelaskan fenomena ini. Mari kita bedah masing-masing secara kritis sebelum menarik kesimpulan.", "Sebelum melangkah lebih jauh, penting untuk mendefinisikan secara eksplisit apa yang dimaksud dengan istilah kunci ini — karena ketidakjelasan definisi adalah sumber utama kesalahpahaman dalam diskursus akademik."],
             en: ["In contemporary literature, there are at least three major theoretical frameworks attempting to explain this phenomenon. Let's critically examine each before drawing conclusions.", "Before going further, it's crucial to explicitly define what this key term means — because definitional ambiguity is a primary source of misunderstanding in academic discourse."]
+        },
+        opening_structures: {
+            id: [
+            "Buka dengan definisi formal yang presisi -> jelaskan mengapa definisi ini penting -> turun ke elaborasi",
+            "Buka dengan gap dalam literatur: 'meski banyak yang membahas X, masih jarang yang menyentuh Y' -> baru isi pembahasan",
+            "Buka dengan pertanyaan riset yang spesifik -> metodologi -> temuan -> diskusi",
+            "Buka dengan tiga kerangka teoretis utama -> bandingkan secara kritis -> pilih yang paling relevan"
+        ],
+            en: [
+            "Open with a precise formal definition -> explain why this definition matters -> go into elaboration",
+            "Open with a gap in the literature: 'while many have discussed X, few have touched on Y' -> then the discussion",
+            "Open with a specific research question -> methodology -> findings -> discussion",
+            "Open with three major theoretical frameworks -> compare critically -> choose the most relevant one"
+        ]
         },
         substyles: {
             literature: {
@@ -455,6 +567,20 @@ const WRITING_STYLES = {
             id: ["Berhenti sebentar. Sebelum lo lanjut baca, coba jawab dulu: apa yang lo pikir tau tentang topik ini — dan bagaimana lo tau kalo itu benar?", "Kalau lo harus ngejelasin konsep ini ke anak 5 tahun, apa analogi pertama yang muncul di kepala lo? Kenapa justru itu?"],
             en: ["Pause for a moment. Before you read on, try to answer: what do you think you know about this topic — and how do you know it's true?", "If you had to explain this concept to a 5-year-old, what's the first analogy that comes to mind? And why that one?"]
         },
+        opening_structures: {
+            id: [
+            "Buka dengan pertanyaan langsung yang nantang asumsi dasar pembaca -> beri waktu mikir -> baru breakdown",
+            "Buka dengan paradoks: 'X itu benar. Tapi Y juga benar. Kok bisa?' -> bongkar asumsi yang bikin keliatan kontradiktif",
+            "Buka dengan pertanyaan yang kelihatan sederhana -- tapi jawabannya ternyata kompleks -> dialektika",
+            "Buka dengan statement provokatif -> lalu tantang: 'apakah lo yakin?' -> dekonstruksi"
+        ],
+            en: [
+            "Open with a direct question that challenges the reader's basic assumptions -> give time to think -> then break down",
+            "Open with a paradox: 'X is true. But Y is also true. How?' -> dismantle the assumptions that make it seem contradictory",
+            "Open with a question that looks simple -- but the answer turns out complex -> dialectic process",
+            "Open with a provocative statement -> then challenge: 'are you sure?' -> deconstruction"
+        ]
+        },
         substyles: {
             inquiry: {
                 name: { id: "Maieutic Inquiry", en: "Maieutic Inquiry" },
@@ -508,6 +634,20 @@ const WRITING_STYLES = {
             id: ["Coba bayangin konsep ini kayak... eh, jangan bayangin dulu. Biar gw cari analogi yang pas dulu. Oke, gini:", "Lo tau waktu lo masak, trus garam dan micin kelihatan mirip tapi efeknya beda banget? Nah, konsep ini kurang lebih kayak gitu."],
             en: ["Imagine this concept as... actually, don't imagine yet. Let me find the right analogy first. OK, here it is:", "You know how salt and MSG look almost identical but have completely different effects? This concept is kind of like that."]
         },
+        opening_structures: {
+            id: [
+            "Buka dengan analogi singkat dari kehidupan sehari-hari yang relatable -> 'nah konsep ini mirip banget' -> mapping elemen demi elemen",
+            "Buka dengan tebak-tebakan: 'coba tebak apa persamaan X dan Y?' (dua hal yang ga nyambung) -> jembatani",
+            "Buka dengan mental model yang udah dikenal pembaca -> 'sama aja, cuma beda domain' -> translate",
+            "Buka dengan eliminasi: singkirkan semua istilah teknis dulu -> jelaskan intinya dengan analogi -> baru kasih label teknisnya"
+        ],
+            en: [
+            "Open with a short relatable everyday analogy -> 'this concept is just like that' -> map element by element",
+            "Open with a riddle: 'guess what X and Y have in common?' (two unrelated things) -> bridge them",
+            "Open with a mental model the reader already knows -> 'same thing, different domain' -> translate",
+            "Open by elimination: strip away all technical terms first -> explain the core with an analogy -> then add the technical label"
+        ]
+        },
         substyles: {
             eli5: {
                 name: { id: "Elegant Analogy (ELI5 untuk Dewasa)", en: "Elegant Analogy (ELI5 for Adults)" },
@@ -560,6 +700,20 @@ const WRITING_STYLES = {
         examples: {
             id: ["Untuk ngerti kenapa konsep ini ada bentuknya sekarang, kita harus mundur 200 tahun ke belakang — ke sebuah ruangan bawah tanah di Paris yang penuh dengan cetakan biru.", "Penemuan ini tidak terjadi dalam semalam. Butuh 47 tahun, 3 generasi ilmuwan, dan satu kebetulan yang mengubah segalanya."],
             en: ["To understand why this concept exists in its current form, we need to go back 200 years — to a basement in Paris filled with blueprints.", "This discovery didn't happen overnight. It took 47 years, 3 generations of scientists, and one lucky accident that changed everything."]
+        },
+        opening_structures: {
+            id: [
+            "Buka dengan scene setting dari era tertentu (detail suasana zaman) -> baru tarik ke konsep modern",
+            "Buka dengan 'tahukah lo kalo konsep ini udah ada sejak...' -> jelaskan evolusinya secara kronologis",
+            "Buka dengan tokoh spesifik dan masalah yang dihadapinya saat itu -> perjalanan -> terobosan -> dampak ke masa kini",
+            "Buka dengan counterfactual: 'bagaimana kalo penemuan ini ga pernah terjadi?' -> baru jelaskan realitanya dan kenapa itu penting"
+        ],
+            en: [
+            "Open with scene setting from a specific era (detailed period atmosphere) -> then connect to the modern concept",
+            "Open with 'did you know this concept has existed since...' -> explain its evolution chronologically",
+            "Open with a specific figure and the problem they faced -> their journey -> breakthrough -> impact on the present",
+            "Open with a counterfactual: 'what if this discovery never happened?' -> then explain the reality and why it matters"
+        ]
         },
         substyles: {
             eureka: {
@@ -825,6 +979,13 @@ function getWritingStyleInstruction(style, substyle, nodeName, nodeDesc) {
         for (const ex of styleData.examples[lang]) {
             instr += `- ${ex}\n`;
         }
+    }
+
+    // Random opening paragraph structure — ensures structural variety even within same style+substyle
+    if (styleData.opening_structures && styleData.opening_structures[lang] && styleData.opening_structures[lang].length > 0) {
+        const structures = styleData.opening_structures[lang];
+        const selectedStructure = structures[Math.floor(Math.random() * structures.length)];
+        instr += `\n\nOPENING STRUCTURE (FOLLOW THIS STRICTLY):\n${selectedStructure}`;
     }
 
     return instr + " " + slopRules;
