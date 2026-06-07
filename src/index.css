@@ -4823,7 +4823,32 @@ mark[data-note]::after {
 }
 
 .home-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
     margin-top: 1rem;
+}
+
+.btn-login-home {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-inv);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    transition: all var(--t);
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-login-home:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
 }
 
 .btn-learn-more {

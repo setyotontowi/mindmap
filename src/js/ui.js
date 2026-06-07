@@ -3752,6 +3752,15 @@ function renderUserProfile() {
     const profileArea = document.getElementById('user-profile-area');
     if (!profileArea) return;
 
+    const homeLoginBtn = document.getElementById('btn-login-home');
+    if (homeLoginBtn) {
+        if (state.currentUser) {
+            homeLoginBtn.style.display = 'none';
+        } else {
+            homeLoginBtn.style.display = 'inline-block';
+        }
+    }
+
     if (state.currentUser) {
         profileArea.innerHTML = `
             <div class="user-avatar-wrapper" id="user-avatar-wrapper">
