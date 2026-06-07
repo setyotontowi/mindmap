@@ -1002,6 +1002,7 @@ a:hover { text-decoration: underline; }
 }
 
 .status-btn {
+    width: 120px;
     flex: 1;
     padding: 5px 8px;
     border-radius: var(--radius-sm);
