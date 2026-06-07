@@ -43,6 +43,20 @@ const WRITING_STYLES = {
                     id: "Fokus pada Benefit-Driven: jelaskan setiap fitur atau konsep dengan murni menerjemahkannya langsung ke keuntungan konkret dan nilai praktis yang akan didapatkan oleh pembaca.",
                     en: "Focus on Benefit-Driven content: explain every feature or concept by purely translating it into concrete benefits and practical value for the reader."
                 }
+            },
+            fomo: {
+                name: { id: "FOMO & Urgency", en: "FOMO & Urgency" },
+                instruction: {
+                    id: "Gunakan urgensi dan FOMO (Fear of Missing Out): tonjolkan konsekuensi dari tidak bertindak, peluang yang terbatas, atau waktu yang tidak bisa diputar kembali. Buat pembaca merasa bahwa memahami topik ini adalah kebutuhan mendesak, bukan sekadar pilihan.",
+                    en: "Use urgency and FOMO (Fear of Missing Out): highlight the consequences of inaction, limited opportunities, or time that cannot be turned back. Make the reader feel that understanding this topic is an urgent need, not just an option."
+                }
+            },
+            storysell: {
+                name: { id: "Storyselling", en: "Storyselling" },
+                instruction: {
+                    id: "Gunakan pendekatan Storyselling: jual ide/konsep melalui narasi yang memikat tanpa terkesan hard-selling. Bangun koneksi emosional dulu, lalu selipkan nilai jual secara alami di dalam cerita. Pembaca tidak boleh merasa 'dijual'i.",
+                    en: "Use a Storyselling approach: sell the idea/concept through engaging narratives without sounding like a hard sell. Build emotional connection first, then naturally weave in the value proposition. The reader should not feel 'sold to'."
+                }
             }
         }
     },
@@ -72,6 +86,20 @@ const WRITING_STYLES = {
                 instruction: {
                     id: "Sajikan materi dalam bentuk tutorial langkah-demi-langkah yang praktis, konkret, dan terukur. Berikan panduan yang bisa langsung dieksekusi dengan hasil yang jelas.",
                     en: "Present the material as a highly practical, concrete, and measurable step-by-step tutorial. Provide immediately executable guidelines with clear expected outcomes."
+                }
+            },
+            checklist: {
+                name: { id: "Checklist & Listicle", en: "Checklist & Listicle" },
+                instruction: {
+                    id: "Sajikan informasi dalam format daftar atau checklist yang terstruktur. Setiap poin harus berdiri sendiri sebagai informasi yang bernilai, mudah dipindai, dan langsung bisa ditindaklanjuti. Gunakan bullet point atau numbered list dengan sub-heading yang jelas.",
+                    en: "Present information in a structured list or checklist format. Each point must stand alone as valuable information, easy to scan, and immediately actionable. Use bullet points or numbered lists with clear sub-headings."
+                }
+            },
+            comparison: {
+                name: { id: "Comparison & Alternatives", en: "Comparison & Alternatives" },
+                instruction: {
+                    id: "Sajikan perbandingan sistematis antara beberapa opsi, pendekatan, atau alat. Gunakan tabel perbandingan atau struktur pro-vs-kontra yang seimbang. Akhiri dengan rekomendasi berdasarkan use case spesifik.",
+                    en: "Present systematic comparisons between options, approaches, or tools. Use comparison tables or balanced pro-vs-con structures. End with recommendations based on specific use cases."
                 }
             }
         }
@@ -103,6 +131,20 @@ const WRITING_STYLES = {
                     id: "Format penjelasan mengalir seperti dialog tanya-jawab (Q&A) interaktif, yang secara antisipatif menjawab keraguan, sanggahan, atau pertanyaan yang biasanya muncul di kepala pembaca.",
                     en: "Format the explanation like an interactive Q&A dialogue, anticipating and directly answering the doubts, concerns, or questions likely to arise in the reader's head."
                 }
+            },
+            anecdote: {
+                name: { id: "Personal Anecdote", en: "Personal Anecdote" },
+                instruction: {
+                    id: "Buka dengan pengalaman pribadi yang relevan dan autentik. Ceritakan momen 'saya dulu juga pernah bingung soal ini' lalu tunjukkan perjalanan menemukan jawabannya. Bikin pembaca merasa tidak sendiri dalam perjuangan memahami topik ini.",
+                    en: "Open with a relevant, authentic personal experience. Share a 'I used to be confused about this too' moment, then show the journey of finding the answer. Make the reader feel they're not alone in struggling with this topic."
+                }
+            },
+            dialogue: {
+                name: { id: "Two-Person Dialogue", en: "Two-Person Dialogue" },
+                instruction: {
+                    id: "Sajikan penjelasan dalam format dialog antara dua karakter fiktif: satu sebagai penanya yang lugu/awam, satu sebagai penjawab yang sabar. Biarkan percakapan mengalir alami dan mencakup kesalahpahaman umum yang diperbaiki secara organik.",
+                    en: "Present the explanation as a dialogue between two fictional characters: one as a curious/naive questioner, one as a patient explainer. Let the conversation flow naturally and cover common misconceptions that get corrected organically."
+                }
             }
         }
     },
@@ -132,6 +174,20 @@ const WRITING_STYLES = {
                 instruction: {
                     id: "Buka artikel dengan Anekdot Pendek (Anecdotal Hook) yang sangat menarik dan relevan sebagai pintu masuk yang memikat sebelum mengurai konsep dasar secara mendalam.",
                     en: "Open the article with a highly engaging and relevant short anecdote (Anecdotal Hook) as a captivating gateway before unpacking the underlying concepts in detail."
+                }
+            },
+            parallel: {
+                name: { id: "Parallel Narrative", en: "Parallel Narrative" },
+                instruction: {
+                    id: "Gunakan dua cerita yang berjalan beriringan: satu dari masa lalu/konteks historis dan satu dari masa kini/modern. Tunjukkan bagaimana pola yang sama muncul di dua era berbeda, lalu tarik benang merah yang memperkuat pemahaman konsep.",
+                    en: "Use two parallel stories: one from the past/historical context and one from the modern day. Show how the same pattern emerges across two different eras, then weave the common thread that deepens understanding of the concept."
+                }
+            },
+            metaphor: {
+                name: { id: "Extended Metaphor", en: "Extended Metaphor" },
+                instruction: {
+                    id: "Pilih satu metafora utama dan pertahankan dari awal hingga akhir penjelasan. Setiap bagian dari konsep dipetakan ke elemen metafora yang konsisten. Jangan ganti metafora di tengah jalan. Metafora harus cukup kuat untuk menopang keseluruhan narasi.",
+                    en: "Choose one core metaphor and maintain it throughout the entire explanation. Every part of the concept maps to a consistent element of the metaphor. Do not switch metaphors midway. The metaphor must be strong enough to support the entire narrative."
                 }
             }
         }
@@ -163,6 +219,20 @@ const WRITING_STYLES = {
                     id: "Gunakan First Principles Review: bongkar konsep rumit ini dari elemen penyusunnya yang paling mendasar dan tidak terbantahkan, lalu bangun pemahaman ke atas langkah demi langkah tanpa mengasumsikan apa pun.",
                     en: "Use a First Principles Review: deconstruct this complex concept into its most fundamental, undeniable truth/components, then rebuild the understanding step-by-step without assumptions."
                 }
+            },
+            comparative: {
+                name: { id: "Comparative Analysis", en: "Comparative Analysis" },
+                instruction: {
+                    id: "Lakukan analisis perbandingan sistematis: tempatkan dua atau lebih fenomena/konsep berdampingan, identifikasi persamaan dan perbedaan kunci, lalu tarik kesimpulan tentang mengapa perbedaan itu ada dan apa implikasinya. Gunakan tabel atau matriks perbandingan.",
+                    en: "Perform systematic comparative analysis: place two or more phenomena/concepts side by side, identify key similarities and differences, then draw conclusions about why those differences exist and their implications. Use comparison tables or matrices."
+                }
+            },
+            systematic: {
+                name: { id: "Systematic Review", en: "Systematic Review" },
+                instruction: {
+                    id: "Lakukan tinjauan sistematis: kumpulkan bukti dari berbagai sumber, evaluasi kualitasnya secara objektif, sintesis temuan, dan sajikan kesimpulan yang berimbang. Struktur seperti makalah review ilmiah: metode → temuan → diskusi → kesimpulan.",
+                    en: "Perform a systematic review: gather evidence from multiple sources, evaluate quality objectively, synthesize findings, and present balanced conclusions. Structure like a scientific review paper: method → findings → discussion → conclusion."
+                }
             }
         }
     },
@@ -193,6 +263,20 @@ const WRITING_STYLES = {
                     id: "Tekankan pada Best Practices (praktik terbaik) dan Pitfalls (jebakan/kesalahan umum) di lapangan. Sajikan panduan do's & don'ts yang teruji dan cara menghindarinya secara taktis.",
                     en: "Emphasize field-tested Best Practices and common Pitfalls. Provide clear checklists of do's & don'ts and practical strategies to avoid failures."
                 }
+            },
+            decision: {
+                name: { id: "Decision Framework", en: "Decision Framework" },
+                instruction: {
+                    id: "Sajikan kerangka pengambilan keputusan yang terstruktur. Berikan flow chart atau pohon keputusan: 'Jika X, maka Y; jika Z, maka W'. Bantu pembaca menentukan pilihan terbaik berdasarkan konteks dan prioritas mereka sendiri. Akhiri dengan rekomendasi bersyarat.",
+                    en: "Present a structured decision-making framework. Provide a flow chart or decision tree: 'If X, then Y; if Z, then W'. Help readers determine the best choice based on their own context and priorities. End with conditional recommendations."
+                }
+            },
+            matrix: {
+                name: { id: "Matrix Analysis", en: "Matrix Analysis" },
+                instruction: {
+                    id: "Gunakan analisis matriks 2×2 atau lebih: petakan konsep ke dalam sumbu-sumbu yang berlawanan (misal: dampak × usaha, urgensi × pentingnya). Identifikasi kuadran mana yang paling relevan dan mengapa. Bantu pembaca memposisikan diri mereka dalam matriks tersebut.",
+                    en: "Use 2×2 (or larger) matrix analysis: map concepts onto opposing axes (e.g., impact × effort, urgency × importance). Identify which quadrant is most relevant and why. Help readers position themselves within the matrix."
+                }
             }
         }
     },
@@ -208,6 +292,34 @@ const WRITING_STYLES = {
                 instruction: {
                     id: "Buka dengan analogi ilmiah atau sejarah yang unik, lalu hubungkan ke tema bisnis. Tantang kebijaksanaan konvensional sejak awal, dan gunakan subjudul tebal untuk mengurai konsep ke dalam konteks organisasi yang praktis.",
                     en: "Open with a unique scientific or historical analogy, then connect it to a business theme. Challenge conventional wisdom early on, and use bold subheadings to unpack the concept into practical organizational contexts."
+                }
+            },
+            reflection: {
+                name: { id: "Leadership Reflection", en: "Leadership Reflection" },
+                instruction: {
+                    id: "Sajikan sebagai refleksi kepemimpinan yang jujur dan rentan. Akui kesalahan, kegagalan, atau momen ketidakpastian yang pernah dialami. Gunakan suara orang pertama yang autentik dan tunjukkan bagaimana pengalaman itu membentuk perspektif. Tujuan: membuat pembaca merasa 'saya juga pernah begitu'.",
+                    en: "Present as an honest, vulnerable leadership reflection. Acknowledge mistakes, failures, or moments of uncertainty experienced. Use an authentic first-person voice and show how that experience shaped perspective. Goal: make readers feel 'I've been there too'."
+                }
+            },
+            paradox: {
+                name: { id: "Leadership Paradox", en: "Leadership Paradox" },
+                instruction: {
+                    id: "Eksplorasi paradoks dalam kepemimpinan: situasi di mana dua kebenaran yang tampak bertentangan sama-sama valid. Misal: 'delegasi vs kendali', 'empati vs ketegasan'. Jelaskan mengapa keduanya diperlukan dan bagaimana menyeimbangkannya secara kontekstual, bukan memilih salah satu.",
+                    en: "Explore paradoxes in leadership: situations where two seemingly contradictory truths are both valid. For example: 'delegation vs control', 'empathy vs firmness'. Explain why both are necessary and how to balance them contextually, rather than choosing one over the other."
+                }
+            },
+            vision: {
+                name: { id: "Visionary Foresight", en: "Visionary Foresight" },
+                instruction: {
+                    id: "Ambil perspektif jangka panjang: gambarkan tren yang sedang berkembang, antisipasi pergeseran industri, dan undang pembaca untuk membayangkan masa depan yang mungkin terjadi. Gunakan format '3 skenario' (optimis, pesimis, dan paling mungkin) untuk membingkai ketidakpastian secara konstruktif.",
+                    en: "Take a long-term perspective: describe emerging trends, anticipate industry shifts, and invite readers to imagine possible futures. Use a '3 scenarios' format (optimistic, pessimistic, and most likely) to frame uncertainty constructively."
+                }
+            },
+            culture: {
+                name: { id: "Culture Building", en: "Culture Building" },
+                instruction: {
+                    id: "Fokus pada dinamika budaya organisasi: bagaimana norma, ritual, dan nilai-nilai tak tertulis memengaruhi cara tim bekerja. Berikan contoh konkret perubahan budaya yang berhasil, kerangka untuk mendiagnosis masalah budaya, dan langkah praktis untuk membangun budaya yang sehat.",
+                    en: "Focus on organizational culture dynamics: how unwritten norms, rituals, and values affect how teams work. Provide concrete examples of successful cultural change, frameworks for diagnosing cultural issues, and practical steps for building healthy culture."
                 }
             }
         }
@@ -239,6 +351,20 @@ const WRITING_STYLES = {
                     id: "Sebutkan studi/paper kunci, lembaga riset terkemuka, atau tokoh perintis utama yang secara historis menemukan atau memajukan konsep ini guna memberikan kredibilitas akademis.",
                     en: "Mention key milestone papers/studies, prominent research institutions, or pioneer figures who historically discovered or advanced this concept to establish academic credibility."
                 }
+            },
+            "comparative-study": {
+                name: { id: "Comparative Study", en: "Comparative Study" },
+                instruction: {
+                    id: "Bandingkan berbagai teori atau temuan penelitian yang relevan secara sistematis. Identifikasi area konsensus dan kontroversi dalam literatur. Sajikan bukti yang mendukung dan menentang masing-masing posisi sebelum mencapai kesimpulan yang berimbang.",
+                    en: "Systematically compare relevant theories or research findings. Identify areas of consensus and controversy in the literature. Present evidence for and against each position before reaching a balanced conclusion."
+                }
+            },
+            taxonomy: {
+                name: { id: "Classification & Taxonomy", en: "Classification & Taxonomy" },
+                instruction: {
+                    id: "Klasifikasikan dan kategorikan elemen-elemen konsep ini ke dalam taksonomi yang terstruktur. Definisikan hierarki, hubungan antar kategori, dan kriteria yang membedakan satu kategori dari yang lain. Gunakan format seperti: Kelas → Subkelas → Karakteristik → Contoh.",
+                    en: "Classify and categorize the elements of this concept into a structured taxonomy. Define the hierarchy, relationships between categories, and criteria distinguishing one category from another. Use a format like: Class → Subclass → Characteristics → Examples."
+                }
             }
         }
     },
@@ -268,6 +394,20 @@ const WRITING_STYLES = {
                 instruction: {
                     id: "Sertakan pertanyaan reflektif mendalam di sela-sela penjelasan yang memaksa pembaca memikirkan implikasi etis, praktis, atau koneksi antardomain dari topik ini.",
                     en: "Embed deep reflective prompts throughout the text that compel the reader to contemplate the ethical, practical implications, or cross-domain connections of this topic."
+                }
+            },
+            dialectic: {
+                name: { id: "Dialectic Process", en: "Dialectic Process" },
+                instruction: {
+                    id: "Gunakan metode dialektika Hegelian: tesis (satu sisi argumen) → antithesis (sisi yang berlawanan) → sintesis (resolusi yang lebih tinggi yang mengakomodasi kebenaran dari kedua sisi). Tuntun pembaca melewati ketegangan intelektual menuju pemahaman yang lebih utuh.",
+                    en: "Use the Hegelian dialectic method: thesis (one side of the argument) → antithesis (the opposing side) → synthesis (a higher resolution accommodating the truth from both sides). Guide the reader through intellectual tension toward a more complete understanding."
+                }
+            },
+            paradox: {
+                name: { id: "Paradox Exploration", en: "Paradox Exploration" },
+                instruction: {
+                    id: "Eksplorasi paradoks atau kontradiksi logis yang terkait dengan topik ini. Ajukan 'bagaimana mungkin X dan Y sama-sama benar?' lalu bongkar asumsi yang membuatnya tampak kontradiktif. Gunakan paradoks sebagai alat untuk mencapai wawasan yang lebih dalam.",
+                    en: "Explore paradoxes or logical contradictions related to this topic. Ask 'how can X and Y both be true?' then deconstruct the assumptions that make them seem contradictory. Use the paradox as a tool to reach deeper insight."
                 }
             }
         }
@@ -299,6 +439,20 @@ const WRITING_STYLES = {
                     id: "Ajak pembaca melakukan simulasi mental sudut pandang pertama: bayangkan diri mereka berada dalam situasi atau sistem tertentu, lalu rasakan proses dan implikasinya secara langsung. Gunakan bahasa yang dewasa dan elegan, seperti seorang profesional yang merenungkan proses kerja suatu sistem — bukan seperti bermain peran.",
                     en: "Invite the reader into a first-person mental simulation: imagine themselves within a specific situation or system, then experience the process and implications firsthand. Use mature, elegant language — like a professional contemplating how a system works — not role-playing game style."
                 }
+            },
+            everyday: {
+                name: { id: "Everyday Phenomenon", en: "Everyday Phenomenon" },
+                instruction: {
+                    id: "Jelaskan konsep abstrak melalui fenomena sehari-hari yang semua orang pernah alami. Misal: menjelaskan 'cache' dengan analogi dapur restoran, atau 'load balancing' dengan antrian kasir. Gunakan pengalaman universal sebagai jembatan menuju pemahaman teknis.",
+                    en: "Explain abstract concepts through everyday phenomena everyone has experienced. For example: explaining 'cache' with a restaurant kitchen analogy, or 'load balancing' with a checkout queue. Use universal experiences as a bridge to technical understanding."
+                }
+            },
+            "mental-model": {
+                name: { id: "Mental Model Bridge", en: "Mental Model Bridge" },
+                instruction: {
+                    id: "Hubungkan konsep baru dengan model mental yang sudah dikenal pembaca. Misal: jelaskan 'neural network' seperti cara otak belajar, atau 'encryption' seperti kunci dan gembok. Bangun jembatan dari yang sudah dipahami ke yang baru, tanpa jargon.",
+                    en: "Bridge new concepts to mental models the reader already knows. For example: explain 'neural networks' like how the brain learns, or 'encryption' like locks and keys. Build bridges from the familiar to the new, without jargon."
+                }
             }
         }
     },
@@ -328,6 +482,20 @@ const WRITING_STYLES = {
                 instruction: {
                     id: "Soroti kisah hidup singkat, kepribadian unik, motivasi terdalam, serta rintangan yang dihadapi oleh tokoh sentral di balik penemuan konsep ini.",
                     en: "Highlight the short life story, unique personality traits, deepest motivations, and obstacles faced by the central figure behind this concept's discovery."
+                }
+            },
+            "era-deepdive": {
+                name: { id: "Period Deep-Dive", en: "Period Deep-Dive" },
+                instruction: {
+                    id: "Fokus secara mendalam pada satu periode atau era spesifik yang menjadi titik balik perkembangan konsep ini. Gambarkan konteks sosial, politik, dan intelektual saat itu. Jelaskan mengapa era khusus ini yang melahirkan terobosan, bukan era sebelumnya atau sesudahnya.",
+                    en: "Deeply focus on one specific period or era that was a turning point for this concept's development. Describe the social, political, and intellectual context of that time. Explain why this particular era birthed the breakthrough, not the era before or after."
+                }
+            },
+            counterfactual: {
+                name: { id: "Counterfactual History", en: "Counterfactual History" },
+                instruction: {
+                    id: "Jelajahi skenario 'bagaimana jika': apa yang akan terjadi jika penemuan ini tidak pernah dibuat? Atau jika dibuat 100 tahun lebih awal? Atau oleh orang yang berbeda? Gunakan counterfactual untuk menyoroti mengapa kondisi tertentu diperlukan agar konsep ini lahir dan mengapa bentuknya seperti sekarang.",
+                    en: "Explore 'what if' scenarios: what would have happened if this discovery was never made? Or if it was made 100 years earlier? Or by a different person? Use counterfactuals to highlight why certain conditions were necessary for this concept to emerge and why it took its current form."
                 }
             }
         }
