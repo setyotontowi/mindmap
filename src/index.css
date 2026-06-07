@@ -3977,9 +3977,11 @@ mark[data-note]::after {
     #detail-drawer .modal-footer .status-btn {
         flex: 1 !important;
         text-align: center !important;
-        padding: 6px 4px !important;
+        padding: 6px 8px !important;
         font-size: 0.72rem !important;
         white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
         border-radius: 6px !important;
         border: 1px solid transparent !important;
     }
