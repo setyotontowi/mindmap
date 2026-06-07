@@ -228,6 +228,29 @@ a:hover { text-decoration: underline; }
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.chat-messages:hover {
+    scrollbar-color: var(--text-3) transparent;
+}
+
+.chat-messages:hover::-webkit-scrollbar-thumb {
+    background: var(--text-3);
 }
 
 .chat-bubble {
@@ -1217,6 +1240,29 @@ a:hover { text-decoration: underline; }
     flex-grow: 1;
     max-height: none;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.chat-sidebar.mode-history .history-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-sidebar.mode-history .history-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-sidebar.mode-history .history-content::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.chat-sidebar.mode-history .history-content:hover {
+    scrollbar-color: var(--text-3) transparent;
+}
+
+.chat-sidebar.mode-history .history-content:hover::-webkit-scrollbar-thumb {
+    background: var(--text-3);
 }
 
 .chat-sidebar.mode-history .history-toggle-btn {
@@ -1308,6 +1354,29 @@ a:hover { text-decoration: underline; }
     gap: 6px;
     max-height: 220px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+}
+
+.history-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.history-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.history-content::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 4px;
+}
+
+.history-content:hover {
+    scrollbar-color: var(--text-3) transparent;
+}
+
+.history-content:hover::-webkit-scrollbar-thumb {
+    background: var(--text-3);
 }
 
 .history-content.hidden {
