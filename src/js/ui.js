@@ -3842,6 +3842,12 @@ function renderUserProfile() {
         quotaBanner.style.display = state.currentUser ? 'none' : '';
     }
 
+    // Sidebar title — ganti judul sesi history kalo belum login
+    const sidebarTitle = document.getElementById('sidebar-history-title');
+    if (sidebarTitle) {
+        sidebarTitle.textContent = state.currentUser ? 'Riwayat Mindmap' : 'Koleksi Publik';
+    }
+
     const getProfileHTML = (avatarWrapperId, dropdownId, settingsBtnId, logoutBtnId) => {
         if (state.currentUser) {
             return `
