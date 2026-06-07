@@ -3,16 +3,16 @@
    ========================================================================== */
 let svg, g, zoomBehavior;
 let treeLayout, rootNodeData;
-const nodeHeight = 65;
+const nodeHeight = 80;
 const margin = { top: 20, right: 120, bottom: 20, left: 40 };
 
 // Fungsi helper untuk menghitung lebar node secara dinamis berdasarkan panjang judulnya
 function getNodeWidth(nodeData) {
     const title = nodeData.name || '';
-    // Hitung lebar: base 100px + rata-rata 6.5px per karakter judul
-    const calculated = 100 + title.length * 6.5;
-    // Beri batas minimal 160px dan maksimal 280px
-    return Math.min(280, Math.max(160, Math.round(calculated)));
+    // Hitung lebar: base 110px + rata-rata 6.5px per karakter judul
+    const calculated = 110 + title.length * 6.5;
+    // Beri batas minimal 170px dan maksimal 290px
+    return Math.min(290, Math.max(170, Math.round(calculated)));
 }
 
 function initD3Canvas() {
@@ -53,15 +53,15 @@ function initD3Canvas() {
 
     // Tree Layout Generator (Horizontal)
     treeLayout = d3.tree()
-        .nodeSize([95, 270]) // Jarak dasar vertikal 95px, horizontal 270px
+        .nodeSize([115, 280]) // Jarak dasar vertikal 115px, horizontal 280px
         .separation((a, b) => {
             // Jika mereka memiliki induk (parent) yang sama
             if (a.parent === b.parent) {
-                return 1.2; // Jarak vertikal 1.2 * 95px = 114px
+                return 1.2; // Jarak vertikal 1.2 * 115px = 138px
             }
             // Jika berbeda induk (cabang bersebelahan), beri jarak yang lapang
             // untuk mencegah tabrakan ketika salah satu cabang memiliki anak yang banyak
-            return 2.5; // Jarak vertikal 2.5 * 95px = 237.5px
+            return 2.5; // Jarak vertikal 2.5 * 115px = 287.5px
         });
 }
 
@@ -82,11 +82,11 @@ function getNodeHeight(nodeData) {
         descLines = Math.min(2, Math.ceil(desc.length / charsPerLineDesc) || 1);
     }
     
-    // Base padding (20px) + tinggi judul + tinggi deskripsi
-    const calculated = 20 + (titleLines * 15) + (descLines * 13);
+    // Base padding (32px) + tinggi judul + tinggi deskripsi
+    const calculated = 32 + (titleLines * 16) + (descLines * 14);
     
-    // Batasi tinggi antara 60px (minimal) dan 90px (maksimal)
-    return Math.min(90, Math.max(60, calculated));
+    // Batasi tinggi antara 76px (minimal) dan 110px (maksimal)
+    return Math.min(110, Math.max(76, calculated));
 }
 
 function getAncestorNodePath(root, targetName) {

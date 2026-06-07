@@ -3198,7 +3198,7 @@ function exportToSVG() {
             background: #ffffff;
             border: 1px solid #e4e4e7;
             border-radius: 6px;
-            padding: 0.5rem 0.65rem;
+            padding: 0.8rem 1.1rem;
             box-sizing: border-box;
             width: 100%;
             height: 100%;
@@ -3220,19 +3220,15 @@ function exportToSVG() {
             line-height: 1.3;
             margin-top: 3px;
         }
-        .node-card.level-0 { border-left: 3px solid #18181b; }
         .node-card.level-0 .node-title { color: #18181b; }
-        .node-card.level-1 { border-left: 3px solid #2563eb; }
         .node-card.level-1 .node-title { color: #2563eb; }
-        .node-card.level-2 { border-left: 3px solid #16a34a; }
         .node-card.level-2 .node-title { color: #16a34a; }
-        .node-card.level-3 { border-left: 3px solid #9333ea; }
         .node-card.level-3 .node-title { color: #9333ea; }
         .node-card.status-doing::after {
             content: '';
             position: absolute;
-            bottom: 5px;
-            right: 6px;
+            bottom: 8px;
+            right: 8px;
             width: 5px;
             height: 5px;
             border-radius: 50%;
@@ -3241,8 +3237,8 @@ function exportToSVG() {
         .node-card.status-done::after {
             content: '';
             position: absolute;
-            bottom: 5px;
-            right: 6px;
+            bottom: 8px;
+            right: 8px;
             width: 5px;
             height: 5px;
             border-radius: 50%;
@@ -3311,7 +3307,7 @@ function exportToPNG() {
             background: #ffffff;
             border: 1px solid #e4e4e7;
             border-radius: 6px;
-            padding: 0.5rem 0.65rem;
+            padding: 0.8rem 1.1rem;
             box-sizing: border-box;
             width: 100%;
             height: 100%;
@@ -3333,19 +3329,15 @@ function exportToPNG() {
             line-height: 1.3;
             margin-top: 3px;
         }
-        .node-card.level-0 { border-left: 3px solid #18181b; }
         .node-card.level-0 .node-title { color: #18181b; }
-        .node-card.level-1 { border-left: 3px solid #2563eb; }
         .node-card.level-1 .node-title { color: #2563eb; }
-        .node-card.level-2 { border-left: 3px solid #16a34a; }
         .node-card.level-2 .node-title { color: #16a34a; }
-        .node-card.level-3 { border-left: 3px solid #9333ea; }
         .node-card.level-3 .node-title { color: #9333ea; }
         .node-card.status-doing::after {
             content: '';
             position: absolute;
-            bottom: 5px;
-            right: 6px;
+            bottom: 8px;
+            right: 8px;
             width: 5px;
             height: 5px;
             border-radius: 50%;
@@ -3354,8 +3346,8 @@ function exportToPNG() {
         .node-card.status-done::after {
             content: '';
             position: absolute;
-            bottom: 5px;
-            right: 6px;
+            bottom: 8px;
+            right: 8px;
             width: 5px;
             height: 5px;
             border-radius: 50%;
