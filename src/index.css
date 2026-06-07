@@ -5286,6 +5286,7 @@ mark[data-note]::after {
 .sidebar-profile-area .user-dropdown {
     position: absolute;
     bottom: calc(100% + 8px);
+    top: auto;
     right: 0;
     background: var(--surface);
     border: 1px solid var(--border);
