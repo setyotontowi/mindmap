@@ -288,7 +288,7 @@ function updateMindmap(sourceData) {
         .attr('class', d => {
             const ancestorClass = isAncestorNode(d) ? 'is-back-node' : '';
             const transparentClass = isLeftmostTransparentNode(d) ? 'is-transparent-ancestor' : '';
-            return `node-card level-${Math.min(d.depth, 4)} ${getNodeStatusClass(d.data.name)} ${ancestorClass} ${transparentClass}`;
+            return `node-card level-${Math.min(d.depth, 9)} ${getNodeStatusClass(d.data.name)} ${ancestorClass} ${transparentClass}`;
         })
         .on('click', (event, d) => {
             event.stopPropagation();
@@ -334,7 +334,7 @@ function updateMindmap(sourceData) {
             const hasChildren = d.data.children && d.data.children.length > 0 ? 'has-children' : '';
             const ancestorClass = isAncestorNode(d) ? 'is-back-node' : '';
             const transparentClass = isLeftmostTransparentNode(d) ? 'is-transparent-ancestor' : '';
-            return `node-card level-${Math.min(d.depth, 4)} ${getNodeStatusClass(d.data.name)} ${isLoading} ${isCollapsed} ${hasChildren} ${ancestorClass} ${transparentClass}`;
+            return `node-card level-${Math.min(d.depth, 9)} ${getNodeStatusClass(d.data.name)} ${isLoading} ${isCollapsed} ${hasChildren} ${ancestorClass} ${transparentClass}`;
         });
 
     // Tambahkan atau perbarui collapse/expand toggle button
@@ -455,8 +455,23 @@ async function handleNodeClick(d3Node) {
     if (state.nodeCache[nodeName]) {
         state.activeNode = d3Node.data;
         
-        // Proteksi Tambahan: Jika di cache ada subtopics tapi di D3 children-nya kosong, bangun ulang children-nya!
         const cacheData = state.nodeCache[nodeName];
+        if (cacheData) {
+            if (cacheData.writingStyle && (!d3Node.data.writingStyle || d3Node.data.writingStyle === 'auto')) {
+                d3Node.data.writingStyle = cacheData.writingStyle;
+                d3Node.data.writingSubStyle = cacheData.writingSubStyle || 'auto';
+                saveState();
+            } else if (!cacheData.writingStyle && typeof getContentAwareStyleAndSubstyle === 'function') {
+                const choice = getContentAwareStyleAndSubstyle(nodeName, d3Node.data.description);
+                cacheData.writingStyle = choice.style;
+                cacheData.writingSubStyle = choice.substyle;
+                d3Node.data.writingStyle = choice.style;
+                d3Node.data.writingSubStyle = choice.substyle;
+                saveState();
+            }
+        }
+        
+        // Proteksi Tambahan: Jika di cache ada subtopics tapi di D3 children-nya kosong, bangun ulang children-nya!
         if (cacheData.subtopics && cacheData.subtopics.length > 0) {
             if (!d3Node.data.children) {
                 d3Node.data.children = [];
@@ -824,7 +839,18 @@ window.getAncestorNodePath = getAncestorNodePath;
 /* ==========================================================================
    PRECAPTURE: Render mindmap to Canvas for sharing (image in Web Share)
    ========================================================================== */
-const LEVEL_COLORS = { 0: '#006644', 1: '#0e7490', 2: '#15803d', 3: '#0369a1', 4: '#b45309' };
+const LEVEL_COLORS = {
+    0: '#303841',
+    1: '#0e7490',
+    2: '#FF5722',
+    3: '#0284c7',
+    4: '#059669',
+    5: '#7c3aed',
+    6: '#db2777',
+    7: '#ea580c',
+    8: '#ca8a04',
+    9: '#4f46e5'
+};
 
 function precaptureMindmapImage() {
     state.mindmapImage = null; // Reset
@@ -885,7 +911,7 @@ function precaptureMindmapImage() {
         const nw = getNodeWidth(d.data);
         const nh = getNodeHeight(d.data);
         const x = d.y, y = d.x - nh / 2;
-        const level = Math.min(d.depth, 4);
+        const level = Math.min(d.depth, 9);
         const cr = 6; // corner radius
 
         // Card shadow

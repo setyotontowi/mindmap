@@ -26,12 +26,16 @@
     --glass-blur:   blur(20px) saturate(180%);
     --glass-shadow: 0 8px 32px 0 rgba(44, 57, 71, 0.05);
 
-    /* Level colors */
     --l0: #303841;
-    --l1: #2C3947;
+    --l1: #0e7490;
     --l2: #FF5722;
     --l3: #0284c7;
     --l4: #059669;
+    --l5: #7c3aed;
+    --l6: #db2777;
+    --l7: #ea580c;
+    --l8: #ca8a04;
+    --l9: #4f46e5;
 
     --radius-sm:  6px;
     --radius:     12px;
@@ -471,6 +475,12 @@ a:hover { text-decoration: underline; }
 .node-card.level-1 .node-title { color: var(--l1); }
 .node-card.level-2 .node-title { color: var(--l2); }
 .node-card.level-3 .node-title { color: var(--l3); }
+.node-card.level-4 .node-title { color: var(--l4); }
+.node-card.level-5 .node-title { color: var(--l5); }
+.node-card.level-6 .node-title { color: var(--l6); }
+.node-card.level-7 .node-title { color: var(--l7); }
+.node-card.level-8 .node-title { color: var(--l8); }
+.node-card.level-9 .node-title { color: var(--l9); }
 
 /* Status dot */
 .node-card::after {
@@ -2904,40 +2914,65 @@ mark[data-note]::after {
     transform: translateY(0) scale(1);
 }
 
-/* Style for study status pills in footer */
-.status-pills .status-btn {
-    background: var(--bg-subtle);
+/* Style for study status pills in footer (Segmented Control style) */
+.status-pills {
+    display: inline-flex;
+    background: var(--bg-hover);
+    padding: 3px;
+    border-radius: 8px;
     border: 1px solid var(--border);
+    gap: 2px;
+}
+
+.status-pills .status-btn {
+    background: transparent;
+    border: 1px solid transparent;
     color: var(--text-2);
-    padding: 6px 12px;
+    padding: 6px 14px;
     font-size: 0.72rem;
     font-weight: 600;
-    border-radius: var(--radius-md);
+    border-radius: 6px;
     cursor: pointer;
     transition: all var(--t);
+    white-space: nowrap;
 }
 
 .status-pills .status-btn:hover {
-    background: var(--bg-hover);
+    background: var(--bg-subtle);
     color: var(--text);
 }
 
 .status-pills .status-btn.active[data-status="todo"] {
-    background: var(--accent-light);
-    border-color: var(--accent);
+    background: var(--bg);
+    border-color: var(--border);
     color: var(--accent);
+    box-shadow: var(--shadow-xs);
 }
 
 .status-pills .status-btn.active[data-status="doing"] {
     background: #fef3c7;
-    border-color: #f59e0b;
+    border-color: #fde68a;
     color: #b45309;
+    box-shadow: var(--shadow-xs);
+}
+
+[data-theme="dark"] .status-pills .status-btn.active[data-status="doing"] {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
 }
 
 .status-pills .status-btn.active[data-status="done"] {
     background: #d1fae5;
-    border-color: #10b981;
+    border-color: #bbf7d0;
     color: #047857;
+    box-shadow: var(--shadow-xs);
+}
+
+[data-theme="dark"] .status-pills .status-btn.active[data-status="done"] {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #34d399;
 }
 
 /* Support for standalone side-by-side Q&A modal card */
@@ -3749,17 +3784,22 @@ mark[data-note]::after {
     #detail-drawer .modal-footer .status-pills {
         flex: 1 !important;
         display: flex !important;
-        gap: 6px !important;
+        gap: 2px !important;
         width: 100% !important;
+        background: var(--bg-hover) !important;
+        padding: 3px !important;
+        border-radius: 8px !important;
+        border: 1px solid var(--border) !important;
     }
     
     #detail-drawer .modal-footer .status-btn {
         flex: 1 !important;
         text-align: center !important;
-        padding: 8px 4px !important;
+        padding: 6px 4px !important;
         font-size: 0.72rem !important;
         white-space: nowrap !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
+        border: 1px solid transparent !important;
     }
     
     #detail-drawer .modal-footer .footer-widget-learners {
@@ -3963,6 +4003,11 @@ mark[data-note]::after {
     --l2: #ff7a50;
     --l3: #38bdf8;
     --l4: #34d399;
+    --l5: #a78bfa;
+    --l6: #f472b6;
+    --l7: #fb923c;
+    --l8: #facc15;
+    --l9: #818cf8;
 
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
@@ -5380,6 +5425,94 @@ mark[data-note]::after {
 
 [data-theme="dark"] .history-menu-item.active {
     background: rgba(142, 164, 188, 0.15);
+}
+
+/* Custom mouse hover glow spotlight effect */
+.home-search-btn, 
+.btn-sidebar-new-research, 
+.control-btn, 
+.status-btn, 
+.history-menu-item, 
+.nav-tab, 
+.suggested-pill-dashboard, 
+.node-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.home-search-btn::before, 
+.btn-sidebar-new-research::before, 
+.control-btn::before, 
+.status-btn::before, 
+.history-menu-item::before, 
+.nav-tab::before, 
+.suggested-pill-dashboard::before, 
+.node-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(120px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.15), transparent 85%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Light mode overrides for glow contrast */
+[data-theme="light"] .home-search-btn::before,
+[data-theme="light"] .btn-sidebar-new-research::before,
+[data-theme="light"] .control-btn::before,
+[data-theme="light"] .status-btn::before,
+[data-theme="light"] .history-menu-item::before,
+[data-theme="light"] .nav-tab::before,
+[data-theme="light"] .suggested-pill-dashboard::before {
+    background: radial-gradient(120px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(0, 0, 0, 0.04), transparent 85%);
+}
+
+[data-theme="dark"] .home-search-btn::before, 
+[data-theme="dark"] .btn-sidebar-new-research::before, 
+[data-theme="dark"] .control-btn::before, 
+[data-theme="dark"] .status-btn::before, 
+[data-theme="dark"] .history-menu-item::before, 
+[data-theme="dark"] .nav-tab::before, 
+[data-theme="dark"] .suggested-pill-dashboard::before {
+    background: radial-gradient(120px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.18), transparent 85%);
+}
+
+/* For nodes on D3 canvas which need a slightly colored glow */
+.node-card::before {
+    background: radial-gradient(150px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(16, 185, 129, 0.08), transparent 85%) !important;
+}
+
+[data-theme="dark"] .node-card::before {
+    background: radial-gradient(150px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(16, 185, 129, 0.15), transparent 85%) !important;
+}
+
+.home-search-btn:hover::before, 
+.btn-sidebar-new-research:hover::before, 
+.control-btn:hover::before, 
+.status-btn:hover::before, 
+.history-menu-item:hover::before, 
+.nav-tab:hover::before, 
+.suggested-pill-dashboard:hover::before, 
+.node-card:hover::before {
+    opacity: 1;
+}
+
+/* Ensure contents stay above the pseudo-element glow */
+.node-card .node-title,
+.node-card .node-desc,
+.node-card .collapse-toggle,
+.home-search-btn i,
+.btn-sidebar-new-research span,
+.btn-sidebar-new-research i,
+.control-btn i,
+.status-btn span,
+.history-menu-item span,
+.history-menu-item i,
+.nav-tab span {
+    position: relative;
+    z-index: 2;
 }
 
 
