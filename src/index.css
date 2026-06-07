@@ -4912,57 +4912,128 @@ mark[data-note]::after {
 }
 
 .global-sidebar {
-    width: 260px;
+    width: 240px; /* Reduced width from 260px */
     height: 100vh;
     background: var(--surface);
     border-right: 1px solid var(--border);
     display: none;
     flex-direction: column;
-    padding: 1.25rem 1rem;
+    padding: 1rem 0.85rem; /* Reduced padding from 1.25rem 1rem */
     box-sizing: border-box;
     flex-shrink: 0;
     z-index: 100;
+    transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s, width 0.25s;
+}
+
+.global-sidebar.collapsed {
+    margin-left: -240px;
+    padding-left: 0;
+    padding-right: 0;
+    border-right: none;
 }
 
 /* Brand Area */
 .sidebar-brand {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
     font-family: var(--font-header);
-    font-size: 1.15rem;
+    font-size: 1.05rem; /* Reduced size from 1.15rem */
     font-weight: 800;
     color: var(--accent);
     letter-spacing: -0.3px;
-    margin-bottom: 1.5rem;
-    padding-left: 6px;
+    margin-bottom: 1.25rem;
+    padding-left: 4px;
+}
+
+.brand-logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .sidebar-brand .brand-icon {
-    width: 20px;
-    height: 20px;
+    width: 18px; /* Reduced from 20px */
+    height: 18px;
+}
+
+.btn-sidebar-toggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-3);
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--t), color var(--t);
+}
+
+.btn-sidebar-toggle:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+.btn-sidebar-toggle i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Floating Open Toggle Button (Desktop only) */
+.sidebar-toggle-btn-open {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 99;
+    box-shadow: var(--shadow-sm);
+    transition: background var(--t), color var(--t), transform var(--t);
+}
+
+.sidebar-toggle-btn-open:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+    transform: scale(1.05);
+}
+
+@media (min-width: 769px) {
+    .sidebar-toggle-btn-open.visible {
+        display: flex !important;
+    }
 }
 
 /* Sidebar Sections */
 .sidebar-section {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem; /* Reduced margin */
 }
 
 .sidebar-section-title {
-    font-size: 0.72rem;
+    font-size: 0.65rem; /* Reduced from 0.72rem */
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--text-3);
-    margin-bottom: 8px;
-    padding-left: 6px;
+    margin-bottom: 6px;
+    padding-left: 4px;
 }
 
 /* Section 1: Search & New exploration */
 .sidebar-section.section-search {
-    gap: 8px;
+    gap: 6px;
 }
 
 .sidebar-search-box {
@@ -4971,7 +5042,7 @@ mark[data-note]::after {
     background: var(--bg-subtle);
     border: 1px solid var(--border);
     border-radius: 9999px;
-    padding: 4px 12px;
+    padding: 3px 10px; /* Reduced padding from 4px 12px */
     transition: border-color var(--t), box-shadow var(--t);
 }
 
@@ -4982,8 +5053,8 @@ mark[data-note]::after {
 }
 
 .sidebar-search-box .search-icon {
-    width: 14px;
-    height: 14px;
+    width: 12px; /* Reduced from 14px */
+    height: 12px;
     color: var(--text-3);
     margin-right: 6px;
     flex-shrink: 0;
@@ -4993,9 +5064,9 @@ mark[data-note]::after {
     background: transparent;
     border: none;
     outline: none;
-    font-size: 0.8rem;
+    font-size: 0.78rem; /* Reduced from 0.8rem */
     color: var(--text);
-    padding: 4px 0;
+    padding: 3px 0;
     width: 100%;
 }
 
@@ -5011,9 +5082,9 @@ mark[data-note]::after {
     background: var(--accent);
     color: var(--accent-inv);
     border: 1px solid var(--accent);
-    font-size: 0.82rem;
+    font-size: 0.78rem; /* Reduced from 0.82rem */
     font-weight: 600;
-    padding: 8px 12px;
+    padding: 6px 12px; /* Reduced from 8px 12px */
     border-radius: 9999px;
     cursor: pointer;
     transition: background var(--t), transform var(--t);
@@ -5025,8 +5096,8 @@ mark[data-note]::after {
 }
 
 .btn-sidebar-new-research i {
-    width: 14px;
-    height: 14px;
+    width: 12px; /* Reduced from 14px */
+    height: 12px;
 }
 
 /* Section 2: Nav List */
@@ -5034,6 +5105,16 @@ mark[data-note]::after {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.sidebar-menu-list .history-menu-item {
+    font-size: 0.78rem !important; /* Reduced from 0.82rem */
+    padding: 6px 10px !important; /* Reduced from 8px 12px */
+}
+
+.sidebar-menu-list .history-menu-item i {
+    width: 13px !important; /* Reduced from 15px */
+    height: 13px !important;
 }
 
 /* Section 3: History List */
@@ -5054,9 +5135,9 @@ mark[data-note]::after {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* Reduced from 0.8rem */
     color: var(--text-2);
-    padding: 6px 10px;
+    padding: 5px 8px; /* Reduced from 6px 10px */
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: background var(--t), color var(--t);
@@ -5081,8 +5162,8 @@ mark[data-note]::after {
 }
 
 .sidebar-history-item .history-icon {
-    width: 14px;
-    height: 14px;
+    width: 12px; /* Reduced from 14px */
+    height: 12px;
     color: var(--text-3);
     flex-shrink: 0;
 }
@@ -5121,51 +5202,51 @@ mark[data-note]::after {
 }
 
 .sidebar-history-delete i {
-    width: 13px;
-    height: 13px;
+    width: 12px;
+    height: 12px;
 }
 
 /* Section 4: Footer settings and profile */
 .sidebar-section.section-footer {
     border-top: 1px solid var(--border);
-    padding-top: 1rem;
+    padding-top: 0.75rem; /* Reduced from 1rem */
     margin-top: auto;
     margin-bottom: 0;
-    gap: 12px;
+    gap: 8px;
 }
 
-.sidebar-sync-status {
+.sidebar-sync-status-dot {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.72rem;
-    color: var(--text-2);
-    padding-left: 6px;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
 }
 
-.sidebar-sync-status .sync-dot {
+.sidebar-sync-status-dot .sync-dot {
     color: var(--accent);
-    font-size: 10px;
+    font-size: 8px;
+    animation: pulse 2s infinite ease-in-out;
 }
 
 .sidebar-footer-actions {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
 }
 
 .sidebar-footer-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 0.82rem;
+    font-size: 0.78rem; /* Reduced from 0.82rem */
     font-weight: 500;
     color: var(--text-2);
-    padding: 8px 12px;
+    padding: 6px 10px; /* Reduced from 8px 12px */
     border-radius: var(--radius-sm);
     transition: background var(--t), color var(--t);
     flex-grow: 1;
@@ -5178,15 +5259,15 @@ mark[data-note]::after {
 }
 
 .sidebar-footer-btn i {
-    width: 15px;
-    height: 15px;
-    color: var(--text-3);
+    width: 13px; /* Reduced from 15px */
+    height: 13px;
 }
 
 .sidebar-profile-area {
     display: flex;
     align-items: center;
     position: relative;
+    margin-left: auto; /* Push avatar to the right */
 }
 
 .sidebar-profile-area .user-avatar-wrapper {
@@ -5195,8 +5276,8 @@ mark[data-note]::after {
 }
 
 .sidebar-profile-area .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 28px; /* Reduced from 32px */
+    height: 28px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--border);

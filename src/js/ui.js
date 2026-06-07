@@ -775,6 +775,25 @@ function initUIEventListeners() {
     if (sidebarBtnSettings) {
         sidebarBtnSettings.addEventListener('click', openSettingsModal);
     }
+
+    // Sidebar collapsible toggle
+    const globalSidebar = document.getElementById('global-sidebar');
+    const btnToggleClose = document.getElementById('sidebar-btn-toggle-close');
+    const btnToggleOpen = document.getElementById('sidebar-btn-toggle-open');
+
+    if (globalSidebar && btnToggleClose && btnToggleOpen) {
+        btnToggleClose.addEventListener('click', () => {
+            globalSidebar.classList.add('collapsed');
+            btnToggleOpen.classList.add('visible');
+            if (typeof zoomFit === 'function') setTimeout(zoomFit, 260);
+        });
+
+        btnToggleOpen.addEventListener('click', () => {
+            globalSidebar.classList.remove('collapsed');
+            btnToggleOpen.classList.remove('visible');
+            if (typeof zoomFit === 'function') setTimeout(zoomFit, 260);
+        });
+    }
     
     // Tutup modal jika klik di luar kartu modal
     if (settingsModal) {
