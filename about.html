@@ -8,7 +8,21 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+	    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+	    <!-- Dark Mode Initializer -->
+	    <script>
+	        (function() {
+	            const theme = localStorage.getItem('app_theme') || 'system';
+	            if (theme === 'dark') {
+	                document.documentElement.setAttribute('data-theme', 'dark');
+	            } else if (theme === 'light') {
+	                document.documentElement.setAttribute('data-theme', 'light');
+	            } else {
+	                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+	                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+	            }
+	        })();
+	    </script>
     <style>
         /* =============================================
            DESIGN SYSTEM — Stitch "Rabbit Hole" Theme
@@ -49,18 +63,34 @@
             --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: var(--font);
-            font-size: 16px;
-            line-height: 1.6;
-            background: var(--background);
-            color: var(--on-surface);
-            -webkit-font-smoothing: antialiased;
-        }
+	        * { box-sizing: border-box; margin: 0; padding: 0; }
+	        
+	        [data-theme="dark"] {
+	            :root {
+	                --primary: #10b981;
+	                --primary-container: #059669;
+	                --surface: #0e1411;
+	                --surface-bright: #1c2722;
+	                --surface-dim: #0a0f0d;
+	                --surface-container-lowest: #070c0a;
+	                --surface-container-low: #111813;
+	                --surface-container: #151d19;
+	                --surface-container-high: #202823;
+	                --surface-container-highest: #2c3530;
+	                --on-surface: #e2e8e5;
+	                --on-surface-variant: #a3b8ad;
+	                --outline: #35483e;
+	                --outline-variant: #26332c;
+	                --background: #0e1411;
+	                --on-background: #e2e8e5;
+	                --tertiary: #94a4bd;
+	                --tertiary-container: #3a4a63;
+	                --primary-fixed: #00422b;
+	                --primary-fixed-dim: #006c49;
+	            }
+	        }
+	        
+	        body {
 
         /* =============================================
            TYPOGRAPHY SCALE
