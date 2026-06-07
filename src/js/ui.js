@@ -273,31 +273,31 @@ const WRITING_STYLES = {
         }
     },
     playful: {
-        name: { id: "ELI5 & Gamified Quest (Simple & Playful)", en: "ELI5 & Gamified Quest" },
+        name: { id: "Elegant Analogies & Intuitive Thinking", en: "Elegant Analogies & Intuitive Thinking" },
         instruction: {
-            id: "Gunakan gaya penulisan ELI5 & Gamified Quest yang sangat santai, imajinatif, ramah anak, dan menyenangkan. Buat konsep tersulit pun terasa seperti sebuah petualangan seru.",
-            en: "Use an ELI5 & Gamified Quest writing style that is highly casual, imaginative, child-friendly, and fun. Make even the most difficult concepts feel like an exciting adventure."
+            id: "Gunakan gaya penjelasan berbasis analogi yang elegan dan dewasa. Terjemahkan konsep abstrak ke dalam analogi kehidupan nyata yang relevan — tanpa nuansa permainan, tanpa sapaan 'selamat datang', tanpa narasi petualangan. Gunakan perbandingan yang cerdas, metafora yang indah, dan tetap pertahankan kedalaman intelektual.",
+            en: "Use an elegant, adult-oriented analogy-based explanation style. Translate abstract concepts into relevant real-world analogies — no gamification, no 'welcome adventurer' tone, no quest narratives. Use clever comparisons, beautiful metaphors, while maintaining intellectual depth."
         },
         substyles: {
             eli5: {
-                name: { id: "ELI5 (Explain Like I'm 5)", en: "ELI5 (Explain Like I'm 5)" },
+                name: { id: "Elegant Analogy (ELI5 untuk Dewasa)", en: "Elegant Analogy (ELI5 for Adults)" },
                 instruction: {
-                    id: "Gunakan kosakata yang sangat sederhana (bebas jargon teknis) dan buat analogi super-intuitif menggunakan mainan, makanan, atau petualangan anak-anak.",
-                    en: "Use extremely simple vocabulary (completely free of technical jargon) and build super-intuitive analogies using toys, food, or children's playground activities."
+                    id: "Jelaskan konsep rumit dengan analogi kehidupan nyata yang dewasa dan elegan. Pilih analogi dari dunia profesional, alam, hubungan sosial, kesehatan, atau fenomena yang familiar bagi orang dewasa. Hindari referensi mainan, game, kartun, atau dunia anak-anak. Fokus pada kesederhanaan yang cerdas tanpa mengorbankan keanggunan.",
+                    en: "Explain complex concepts using mature, elegant real-world analogies. Choose analogies from professional life, nature, social relationships, health, or phenomena familiar to adults. Avoid references to toys, games, cartoons, or children's world. Focus on intelligent simplicity without sacrificing elegance."
                 }
             },
             rpg: {
-                name: { id: "RPG Quest Frame", en: "RPG Quest Frame" },
+                name: { id: "Perspective Shift", en: "Perspective Shift" },
                 instruction: {
-                    id: "Bingkai materi sebagai misi/quest dalam video game RPG: sebutkan 'item legendaris' yang dicari, musuh yang harus dikalahkan (tantangan), dan keahlian baru yang didapat setelah memahami topik ini.",
-                    en: "Frame the topic as a quest in an RPG video game: identify the 'legendary item' to find, the enemies to defeat (challenges), and the new skills acquired upon mastering this topic."
+                    id: "Sajikan penjelasan sebagai perubahan perspektif yang mencerahkan. Ajak pembaca melihat konsep dari sudut pandang yang tak terduga — seolah-olah mereka adalah seorang ahli di bidang lain yang kebetulan mengamati. Gunakan kontras 'sebelum-sesudah' dan perbandingan lintas-domain yang dewasa. Hindari narasi petualangan, game, atau pahlawan.",
+                    en: "Present explanations as an enlightening perspective shift. Invite the reader to view the concept from an unexpected angle — as if they were an expert from another field observing it. Use 'before-after' contrasts and cross-domain comparisons. Avoid adventure, game, or hero narratives."
                 }
             },
             simulation: {
                 name: { id: "Mental Simulation", en: "Mental Simulation" },
                 instruction: {
-                    id: "Ajak pembaca melakukan simulasi mental orang pertama: bayangkan diri mereka menjadi objek kecil di dalam sistem (misal: elektron dalam sirkuit) dan rasakan prosesnya secara langsung.",
-                    en: "Invite the reader into a first-person mental simulation: imagine themselves as a tiny object within the system (e.g., an electron in a circuit) and live the process firsthand."
+                    id: "Ajak pembaca melakukan simulasi mental sudut pandang pertama: bayangkan diri mereka berada dalam situasi atau sistem tertentu, lalu rasakan proses dan implikasinya secara langsung. Gunakan bahasa yang dewasa dan elegan, seperti seorang profesional yang merenungkan proses kerja suatu sistem — bukan seperti bermain peran.",
+                    en: "Invite the reader into a first-person mental simulation: imagine themselves within a specific situation or system, then experience the process and implications firsthand. Use mature, elegant language — like a professional contemplating how a system works — not role-playing game style."
                 }
             }
         }

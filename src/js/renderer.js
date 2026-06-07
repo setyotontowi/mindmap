@@ -547,17 +547,24 @@ async function handleNodeClick(d3Node) {
         while (current) {
             if (current.data && current.data.writingStyle && current.data.writingStyle !== 'auto') {
                 selectedStyle = current.data.writingStyle;
-                selectedSubStyle = current.data.writingSubStyle || 'auto';
                 break;
             }
             current = current.parent;
         }
 
-        // Resolusi auto menjadi style acak dari system
+        // Resolusi style — content-aware → weighted random buat node ini
         if (selectedStyle === 'auto' && typeof getContentAwareStyleAndSubstyle === 'function') {
             const randomChoice = getContentAwareStyleAndSubstyle(d3Node.data.name, d3Node.data.description);
             selectedStyle = randomChoice.style;
-            selectedSubStyle = randomChoice.substyle;
+        }
+
+        // Random substyle — tiap node dapet substyle sendiri meski style warisan
+        if (selectedStyle !== 'auto' && typeof WRITING_STYLES !== 'undefined') {
+            const styleData = WRITING_STYLES[selectedStyle];
+            if (styleData) {
+                const substyles = Object.keys(styleData.substyles);
+                selectedSubStyle = substyles[Math.floor(Math.random() * substyles.length)];
+            }
         }
 
         // Simpan gaya penulisan yang diwarisi/terpilih ini ke data node saat ini agar konsisten
