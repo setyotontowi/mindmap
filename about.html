@@ -20,22 +20,22 @@
             --on-primary:             #ffffff;
             --primary-container:      #10b981;
             --on-primary-container:   #00422b;
-            --primary-fixed:          #6ffbbe;
-            --primary-fixed-dim:      #4edea3;
-            --surface:                #f4fbf4;
-            --surface-bright:         #f4fbf4;
-            --surface-dim:            #d4dcd5;
+            --primary-fixed:          #d1fae5;
+            --primary-fixed-dim:      #a7f3d0;
+            --surface:                #ffffff;
+            --surface-bright:         #ffffff;
+            --surface-dim:            #e5e7eb;
             --surface-container-lowest: #ffffff;
-            --surface-container-low:  #eef6ee;
-            --surface-container:      #e8f0e9;
-            --surface-container-high: #e3eae3;
-            --surface-container-highest: #dde4dd;
-            --on-surface:             #161d19;
-            --on-surface-variant:     #3c4a42;
-            --outline:                #6c7a71;
-            --outline-variant:        #bbcabf;
-            --background:             #f4fbf4;
-            --on-background:          #161d19;
+            --surface-container-low:  #f9fafb;
+            --surface-container:      #f3f4f6;
+            --surface-container-high: #e5e7eb;
+            --surface-container-highest: #d1d5db;
+            --on-surface:             #111827;
+            --on-surface-variant:     #4b5563;
+            --outline:                #9ca3af;
+            --outline-variant:        #e5e7eb;
+            --background:             #ffffff;
+            --on-background:          #111827;
             --tertiary:               #505f76;
             --tertiary-container:     #94a4bd;
 
@@ -100,13 +100,13 @@
             left: 0;
             right: 0;
             z-index: 50;
-            background: rgba(244, 251, 244, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(187, 202, 191, 0.3);
+            border-bottom: 1px solid var(--outline-variant);
             transition: var(--transition);
         }
-        .navbar.scrolled { box-shadow: 0 1px 12px rgba(0, 108, 73, 0.06); }
+        .navbar.scrolled { box-shadow: 0 1px 12px rgba(0, 0, 0, 0.06); }
         .navbar-inner {
             display: flex;
             align-items: center;
@@ -184,9 +184,9 @@
             padding-top: 8rem;
             padding-bottom: 6rem;
             text-align: center;
-            /* Dot-grid pattern — from Stitch design */
-            background-color: var(--background);
-            background-image: radial-gradient(var(--outline-variant) 0.5px, transparent 0.5px);
+            /* Dot-grid pattern — neutral dots as subtle texture */
+            background-color: #ffffff;
+            background-image: radial-gradient(#d1d5db 0.5px, transparent 0.5px);
             background-size: 24px 24px;
         }
         .hero-badge {
@@ -267,10 +267,10 @@
         .hero-preview-glow {
             position: absolute;
             inset: -4px;
-            background: linear-gradient(135deg, rgba(0,108,73,0.18) 0%, rgba(80,95,118,0.12) 100%);
+            background: linear-gradient(135deg, rgba(0,108,73,0.1) 0%, rgba(107,114,128,0.08) 100%);
             border-radius: 1.25rem;
             filter: blur(20px);
-            opacity: 0.5;
+            opacity: 0.6;
         }
         .hero-preview-frame {
             position: relative;
@@ -319,7 +319,7 @@
         /* =============================================
            STEPS SECTION
            ============================================= */
-        .steps-section { background: var(--surface); }
+        .steps-section { background: var(--surface-container-low); }
         .steps-header { text-align: center; }
         .steps-header .section-desc { margin-left: auto; margin-right: auto; }
 
@@ -404,13 +404,13 @@
             height: auto;
             border-radius: var(--radius);
             border: 1px solid var(--outline-variant);
-            background: var(--surface-container-low);
+            background: var(--surface-container);
         }
 
         /* =============================================
            FEATURES GRID
            ============================================= */
-        .features-section { background: var(--surface-container-lowest); }
+        .features-section { background: #ffffff; }
         .features-header { text-align: center; }
         .features-header .section-desc { margin-left: auto; margin-right: auto; }
 
@@ -467,7 +467,7 @@
         /* =============================================
            TESTIMONIAL
            ============================================= */
-        .testimonial-section { background: var(--surface-container-lowest); border-top: 1px solid rgba(187, 202, 191, 0.2); }
+        .testimonial-section { background: var(--surface-container-low); border-top: 1px solid var(--outline-variant); }
         .testimonial-inner {
             max-width: 48rem;
             margin: 0 auto;
@@ -514,7 +514,7 @@
         /* =============================================
            CTA SECTION
            ============================================= */
-        .cta-section { background: var(--surface); }
+        .cta-section { background: #ffffff; }
         .cta-box {
             background: var(--primary);
             border-radius: var(--radius-2xl);
@@ -555,11 +555,11 @@
         .cta-box p {
             position: relative;
             z-index: 1;
-            color: var(--primary-fixed);
+            color: #d1fae5;
             font-size: 1.125rem;
             max-width: 36rem;
             margin: 0 auto 2rem;
-            opacity: 0.9;
+            opacity: 0.95;
             line-height: 1.6;
         }
         .btn-cta {
@@ -586,8 +586,8 @@
            FOOTER
            ============================================= */
         footer {
-            background: var(--surface);
-            border-top: 1px solid rgba(187, 202, 191, 0.2);
+            background: var(--surface-container-low);
+            border-top: 1px solid var(--outline-variant);
             padding: 3rem 0;
         }
         .footer-inner {
@@ -801,10 +801,10 @@
                         <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <pattern id="d1" width="16" height="16" patternUnits="userSpaceOnUse">
-                                    <circle cx="1.5" cy="1.5" r="1" fill="rgba(0,108,73,0.12)"/>
+                                    <circle cx="1.5" cy="1.5" r="1" fill="rgba(107,114,128,0.15)"/>
                                 </pattern>
                             </defs>
-                            <rect width="360" height="200" fill="#eef6ee"/>
+                            <rect width="360" height="200" fill="#f9fafb"/>
                             <rect width="360" height="200" fill="url(#d1)"/>
                             <g transform="translate(30, 72)">
                                 <rect width="300" height="56" rx="28" fill="white" stroke="#006c49" stroke-width="2"/>
@@ -833,7 +833,7 @@
                     </div>
                     <div class="step-illustration">
                         <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="360" height="200" fill="#eef6ee"/>
+                            <rect width="360" height="200" fill="#f9fafb"/>
                             <rect width="360" height="200" fill="url(#d1)"/>
                             <path d="M 80 100 C 120 100 130 55 170 55" stroke="#bbcabf" stroke-width="2" fill="none"/>
                             <path d="M 80 100 H 240" stroke="#006c49" stroke-width="3" fill="none"/>
@@ -870,7 +870,7 @@
                     </div>
                     <div class="step-illustration">
                         <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="360" height="200" fill="#eef6ee"/>
+                            <rect width="360" height="200" fill="#f9fafb"/>
                             <rect width="360" height="200" fill="url(#d1)"/>
                             <!-- Article panel -->
                             <rect x="18" y="18" width="200" height="164" rx="8" fill="white" stroke="#dde4dd" stroke-width="1"/>
