@@ -482,16 +482,17 @@ a:hover { text-decoration: underline; }
 .node-card.level-8 .node-title { color: var(--l8); }
 .node-card.level-9 .node-title { color: var(--l9); }
 
-/* Status dot */
+/* Status left line indicator */
 .node-card::after {
     content: '';
     position: absolute;
-    bottom: 8px;
-    right: 8px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--border-mid);
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: transparent;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    transition: background var(--t);
 }
 
 .node-card.status-doing::after { background: #f59e0b; }
@@ -1429,37 +1430,41 @@ a:hover { text-decoration: underline; }
 }
 
 .node-card.has-children {
-    padding-right: 28px !important;
+    padding-right: 36px !important;
 }
 
 .collapse-toggle {
     position: absolute;
-    right: 8px; /* Di dalam card agar tidak terpotong oleh foreignObject */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--surface);
-    border: 1px solid var(--border-mid);
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: rgba(0, 0, 0, 0.02);
+    border-left: 1px solid var(--border-mid);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 10;
-    box-shadow: var(--shadow-xs);
-    transition: background var(--t), border-color var(--t), transform var(--t);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    transition: background var(--t);
+}
+
+[data-theme="dark"] .collapse-toggle {
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .collapse-toggle:hover {
-    background: var(--bg-hover);
-    border-color: var(--text-2);
-    transform: translateY(-50%) scale(1.1);
+    background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .collapse-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .collapse-toggle i {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     color: var(--text-2);
     display: flex;
     align-items: center;
@@ -2440,6 +2445,7 @@ mark[data-note]::after {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
 }
 
 .status-label {
@@ -2922,6 +2928,7 @@ mark[data-note]::after {
     border-radius: 8px;
     border: 1px solid var(--border);
     gap: 2px;
+    flex-shrink: 0;
 }
 
 .status-pills .status-btn {
@@ -2935,6 +2942,7 @@ mark[data-note]::after {
     cursor: pointer;
     transition: all var(--t);
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .status-pills .status-btn:hover {
@@ -5502,7 +5510,6 @@ mark[data-note]::after {
 /* Ensure contents stay above the pseudo-element glow */
 .node-card .node-title,
 .node-card .node-desc,
-.node-card .collapse-toggle,
 .home-search-btn i,
 .btn-sidebar-new-research span,
 .btn-sidebar-new-research i,

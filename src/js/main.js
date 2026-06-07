@@ -72,24 +72,24 @@ if (document.readyState === 'loading') {
 function setRandomGreeting() {
     const greetings = [
         {
-            subtitle: "Hai! Apa yang ingin kamu pelajari hari ini? Masuk sedalam mungkin ke dalam 'rabbit hole' topik belajarmu!",
-            placeholder: "Ketik topik, buku, skill, atau apa saja di sini..."
+            subtitle: "Apa yang ingin kamu pelajari hari ini?",
+            placeholder: "Ketik topik atau skill di sini..."
         },
         {
-            subtitle: "Halo! Topik menarik apa yang ingin kamu gali secara visual sekarang?",
-            placeholder: "Contoh: Mekanika Kuantum, Cara Kerja Blockchain, Belajar Memasak..."
+            subtitle: "Topik apa yang ingin kamu gali secara visual?",
+            placeholder: "Contoh: Mekanika Kuantum, Blockchain..."
         },
         {
-            subtitle: "Selamat datang! Yuk, masuk ke dalam rabbit hole topik belajarmu. Mau mulai dari mana?",
-            placeholder: "Beri tahu aku topik apa saja yang ingin kamu kuasai hari ini..."
+            subtitle: "Yuk, masuk ke rabbit hole topik belajarmu.",
+            placeholder: "Ketik topik yang ingin kamu kuasai..."
         },
         {
-            subtitle: "Hai pembelajar! Siap menjelajahi konsep baru dan membuat mindmap interaktif hari ini?",
-            placeholder: "Apa saja yang membuatmu penasaran hari ini?"
+            subtitle: "Siap membuat mindmap interaktif hari ini?",
+            placeholder: "Ketik apa saja yang membuatmu penasaran..."
         },
         {
-            subtitle: "Halo! Masukkan topik apa saja, dan mari kita buat mindmap-nya menggunakan AI!",
-            placeholder: "Ketik konsep atau subjek belajarmu di sini..."
+            subtitle: "Mari buat mindmap topik belajarmu dengan AI.",
+            placeholder: "Ketik subjek belajarmu di sini..."
         }
     ];
 

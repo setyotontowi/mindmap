@@ -1926,33 +1926,8 @@ function renderNodeDetail(title, markdownText) {
     // Terapkan sorotan (highlight) dan catatan tempel
     applyHighlights(title);
 
-    // Tampilkan log system style engine jika ada di cache
-    const cache = state.nodeCache[title];
-    if (cache && cache.writingStyle && WRITING_STYLES[cache.writingStyle]) {
-        const styleData = WRITING_STYLES[cache.writingStyle];
-        const styleName = state.language === 'en' ? styleData.name.en : styleData.name.id;
-        let substyleName = '';
-        if (cache.writingSubStyle && cache.writingSubStyle !== 'auto' && styleData.substyles[cache.writingSubStyle]) {
-            const substyleData = styleData.substyles[cache.writingSubStyle];
-            substyleName = ' - ' + (state.language === 'en' ? substyleData.name.en : substyleData.name.id);
-        }
-        
-        const logHtml = `
-            <div class="style-engine-log" style="margin-top: 2.5rem; padding: 0.75rem 1rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; font-size: 0.72rem; color: var(--text-2); display: flex; align-items: center; justify-content: space-between;">
-                <span style="display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="terminal" style="width: 14px; height: 14px; color: var(--accent);"></i>
-                    <strong>[Style Log]</strong> 
-                    <span>Gaya Penulisan: <code>${styleName}${substyleName}</code></span>
-                </span>
-            </div>
-        `;
-        content.innerHTML += logHtml;
 
-        // Re-create icons for the newly added lucide icons
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-    }
+
     
     // Render Q&A khusus jika kolom Q&A sedang terbuka
     const qaCol = document.getElementById('drawer-col-qa');
