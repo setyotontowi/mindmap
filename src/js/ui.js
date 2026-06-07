@@ -3789,7 +3789,7 @@ function renderUserProfile() {
                 <div class="user-dropdown" id="user-dropdown">
                     <a href="/api/auth/google" class="dropdown-item" style="text-decoration: none;">
                         <i data-lucide="log-in"></i>
-                        <span>Masuk</span>
+                        <span>Masuk untuk menyimpan peta</span>
                     </a>
                     <button id="btn-profile-settings" class="dropdown-item">
                         <i data-lucide="settings"></i>
