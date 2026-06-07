@@ -3836,6 +3836,12 @@ function renderUserProfile() {
         }
     }
 
+    // FOMO banner — munculin kalau belum login
+    const quotaBanner = document.getElementById('quota-banner');
+    if (quotaBanner) {
+        quotaBanner.style.display = state.currentUser ? 'none' : '';
+    }
+
     const getProfileHTML = (avatarWrapperId, dropdownId, settingsBtnId, logoutBtnId) => {
         if (state.currentUser) {
             return `
