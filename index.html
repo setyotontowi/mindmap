@@ -31,6 +31,85 @@
  
 <body>
     <div class="app-container-redesign">
+        <!-- Global Sidebar (Desktop) -->
+        <aside class="global-sidebar">
+            <div class="sidebar-brand">
+                <i data-lucide="brain" class="brand-icon"></i>
+                <span>Lubang Kelinci</span>
+            </div>
+
+            <!-- Section 1: Cari mindmap -->
+            <div class="sidebar-section section-search">
+                <div class="sidebar-search-box">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="sidebar-search-input" placeholder="Cari mindmap..." autocomplete="off">
+                </div>
+                <button class="btn-sidebar-new-research" id="sidebar-btn-new-research">
+                    <i data-lucide="plus"></i>
+                    <span>Pencarian Baru</span>
+                </button>
+            </div>
+
+            <!-- Section 2: Tombol tombol yang ada di dashboard -->
+            <div class="sidebar-section section-nav">
+                <div class="sidebar-section-title">Dashboard</div>
+                <div class="sidebar-menu-list">
+                    <button class="history-menu-item active" id="history-menu-item-history">
+                        <i data-lucide="history"></i>
+                        <span>Riwayat</span>
+                    </button>
+                    <button class="history-menu-item" id="history-menu-item-exploration">
+                        <i data-lucide="compass"></i>
+                        <span>Eksplorasi</span>
+                    </button>
+                    <button class="history-menu-item" id="history-menu-item-reader">
+                        <i data-lucide="book-open"></i>
+                        <span>Pembaca</span>
+                    </button>
+                    <button class="history-menu-item" id="history-menu-item-library">
+                        <i data-lucide="library"></i>
+                        <span>Koleksi</span>
+                    </button>
+                    <button class="history-menu-item" id="history-menu-item-bookmarks">
+                        <i data-lucide="bookmark"></i>
+                        <span>Markah Buku</span>
+                    </button>
+                    <button class="history-menu-item" id="history-menu-item-highlights">
+                        <i data-lucide="highlighter"></i>
+                        <span>Sorotan</span>
+                    </button>
+                    <button class="history-menu-item" id="history-menu-item-stats">
+                        <i data-lucide="bar-chart-2"></i>
+                        <span>Statistik</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Section 3: history mindmap -->
+            <div class="sidebar-section section-history">
+                <div class="sidebar-section-title">Riwayat Mindmap</div>
+                <div class="sidebar-history-scroll" id="sidebar-history-list">
+                    <div style="font-size: 0.75rem; color: var(--text-3); text-align: center; padding: 10px 0;">Memuat riwayat...</div>
+                </div>
+            </div>
+
+            <!-- Section 4: Bawah -> setting dan profile (kecil) -->
+            <div class="sidebar-section section-footer">
+                <div class="sidebar-sync-status">
+                    <span class="sync-dot">●</span>
+                    <span id="sidebar-sync-text">Menghubungkan...</span>
+                </div>
+                
+                <div class="sidebar-footer-actions">
+                    <button class="sidebar-footer-btn" id="sidebar-btn-settings" title="Pengaturan">
+                        <i data-lucide="settings"></i>
+                        <span>Pengaturan</span>
+                    </button>
+                    <div class="sidebar-profile-area" id="sidebar-profile-area"></div>
+                </div>
+            </div>
+        </aside>
+
         <!-- Global Header -->
         <header class="global-header">
             <div class="header-left">
@@ -344,52 +423,7 @@
             <!-- 4. Halaman Dashboard / History -->
             <div class="screen-container hidden" id="screen-dashboard-view">
                 <div class="history-screen-wrapper">
-                    <!-- History Sub-Sidebar -->
-                    <aside class="history-sub-sidebar">
-                        <div class="history-profile-card">
-                            <div class="user-avatar" style="background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; border-radius: 50%;">RH</div>
-                            <div>
-                                <div class="history-profile-title">Rabbit Hole</div>
-                                <div class="history-profile-subtitle">Deep Learning</div>
-                            </div>
-                        </div>
-                        
-                        <button class="btn-new-research-history" id="btn-new-topic-dashboard">
-                            <i data-lucide="plus"></i>
-                            <span>New Research</span>
-                        </button>
-                        
-                        <div class="history-menu-list">
-                            <button class="history-menu-item active" id="history-menu-item-history">
-                                <i data-lucide="history"></i>
-                                <span>History</span>
-                            </button>
-                            <button class="history-menu-item" id="history-menu-item-exploration">
-                                <i data-lucide="compass"></i>
-                                <span>Exploration</span>
-                            </button>
-                            <button class="history-menu-item" id="history-menu-item-reader">
-                                <i data-lucide="book-open"></i>
-                                <span>Reader</span>
-                            </button>
-                            <button class="history-menu-item" id="history-menu-item-library">
-                                <i data-lucide="library"></i>
-                                <span>Collections</span>
-                            </button>
-                            <button class="history-menu-item" id="history-menu-item-bookmarks">
-                                <i data-lucide="bookmark"></i>
-                                <span>Bookmarks</span>
-                            </button>
-                            <button class="history-menu-item" id="history-menu-item-highlights">
-                                <i data-lucide="highlighter"></i>
-                                <span>Highlights</span>
-                            </button>
-                            <button class="history-menu-item" id="history-menu-item-stats">
-                                <i data-lucide="bar-chart-2"></i>
-                                <span>Stats</span>
-                            </button>
-                        </div>
-                    </aside>
+
 
                     <!-- History Content (Subview 1) -->
                     <div class="history-main-content" id="subview-history">

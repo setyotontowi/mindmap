@@ -741,6 +741,40 @@ function initUIEventListeners() {
     if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettingsModal);
     if (btnCancelSettings) btnCancelSettings.addEventListener('click', closeSettingsModal);
     if (btnSaveSettings) btnSaveSettings.addEventListener('click', saveSettings);
+
+    // Global sidebar buttons and search
+    const sidebarSearchInput = document.getElementById('sidebar-search-input');
+    if (sidebarSearchInput) {
+        sidebarSearchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.sidebar-history-item');
+            items.forEach(item => {
+                const titleEl = item.querySelector('.history-item-title');
+                if (titleEl) {
+                    const titleText = titleEl.textContent.toLowerCase();
+                    if (titleText.includes(query)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
+
+    const sidebarBtnNewResearch = document.getElementById('sidebar-btn-new-research');
+    if (sidebarBtnNewResearch) {
+        sidebarBtnNewResearch.addEventListener('click', () => {
+            switchScreen('search');
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) setTimeout(() => chatInput.focus(), 50);
+        });
+    }
+
+    const sidebarBtnSettings = document.getElementById('sidebar-btn-settings');
+    if (sidebarBtnSettings) {
+        sidebarBtnSettings.addEventListener('click', openSettingsModal);
+    }
     
     // Tutup modal jika klik di luar kartu modal
     if (settingsModal) {
@@ -2256,6 +2290,49 @@ async function loadHistoryList() {
             }
         }
 
+        // Render to new global sidebar container if it exists
+        const sidebarContainer = document.getElementById('sidebar-history-list');
+        if (sidebarContainer) {
+            sidebarContainer.innerHTML = '';
+            if (mindmaps.length === 0) {
+                sidebarContainer.innerHTML = `<div style="font-size: 0.75rem; color: var(--text-3); text-align: center; padding: 10px 0;">Belum ada riwayat.</div>`;
+            } else {
+                mindmaps.forEach(mm => {
+                    const item = document.createElement('div');
+                    const isActive = mm.id === state.currentMindmapId;
+                    item.className = `sidebar-history-item ${isActive ? 'active' : ''}`;
+                    
+                    item.innerHTML = `
+                        <i data-lucide="git-branch" class="history-icon"></i>
+                        <span class="history-item-title" title="${mm.name}">${mm.name}</span>
+                        <button class="sidebar-history-delete" title="Hapus" data-id="${mm.id}">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    `;
+                    
+                    item.addEventListener('click', (e) => {
+                        if (e.target.closest('.sidebar-history-delete')) return;
+                        loadMindmapById(mm.id);
+                        switchScreen('mindmaps');
+                    });
+                    
+                    const deleteBtn = item.querySelector('.sidebar-history-delete');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            if (confirm(`Apakah Anda yakin ingin menghapus mindmap "${mm.name}"?`)) {
+                                await deleteMindmapById(mm.id);
+                                loadHistoryList();
+                            }
+                        });
+                    }
+                    
+                    sidebarContainer.appendChild(item);
+                });
+                if (window.lucide) window.lucide.createIcons();
+            }
+        }
+
         // REDESIGN: Render cards to the main Dashboard page
         const cardsContainer = document.getElementById('redesign-history-cards-container');
         if (cardsContainer) {
@@ -3749,9 +3826,6 @@ async function checkAuthStatus() {
 }
 
 function renderUserProfile() {
-    const profileArea = document.getElementById('user-profile-area');
-    if (!profileArea) return;
-
     const homeLoginBtn = document.getElementById('btn-login-home');
     if (homeLoginBtn) {
         if (state.currentUser) {
@@ -3761,48 +3835,65 @@ function renderUserProfile() {
         }
     }
 
-    if (state.currentUser) {
-        profileArea.innerHTML = `
-            <div class="user-avatar-wrapper" id="user-avatar-wrapper">
-                <img src="${state.currentUser.picture || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}" alt="${state.currentUser.name}" class="user-avatar" id="user-avatar-img" />
-                <div class="user-dropdown" id="user-dropdown">
-                    <div style="font-size: 0.72rem; font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-                        ${state.currentUser.name}
+    const getProfileHTML = (avatarWrapperId, dropdownId, settingsBtnId, logoutBtnId) => {
+        if (state.currentUser) {
+            return `
+                <div class="user-avatar-wrapper" id="${avatarWrapperId}">
+                    <img src="${state.currentUser.picture || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'}" alt="${state.currentUser.name}" class="user-avatar" />
+                    <div class="user-dropdown" id="${dropdownId}">
+                        <div style="font-size: 0.72rem; font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                            ${state.currentUser.name}
+                        </div>
+                        <button id="${settingsBtnId}" class="dropdown-item">
+                            <i data-lucide="settings"></i>
+                            <span>Pengaturan</span>
+                        </button>
+                        <button id="${logoutBtnId}" class="dropdown-item">
+                            <i data-lucide="log-out"></i>
+                            <span>Keluar</span>
+                        </button>
                     </div>
-                    <button id="btn-profile-settings" class="dropdown-item">
-                        <i data-lucide="settings"></i>
-                        <span>Pengaturan</span>
-                    </button>
-                    <button id="btn-logout" class="dropdown-item">
-                        <i data-lucide="log-out"></i>
-                        <span>Keluar</span>
-                    </button>
                 </div>
-            </div>
-        `;
-    } else {
-        profileArea.innerHTML = `
-            <div class="user-avatar-wrapper" id="user-avatar-wrapper">
-                <div class="user-avatar" id="user-avatar-img" style="display: flex; align-items: center; justify-content: center; background: var(--bg-subtle); color: var(--text-2); cursor: pointer;">
-                    <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+            `;
+        } else {
+            return `
+                <div class="user-avatar-wrapper" id="${avatarWrapperId}">
+                    <div class="user-avatar" style="display: flex; align-items: center; justify-content: center; background: var(--bg-subtle); color: var(--text-2); cursor: pointer;">
+                        <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                    </div>
+                    <div class="user-dropdown" id="${dropdownId}">
+                        <a href="/api/auth/google" class="dropdown-item" style="text-decoration: none;">
+                            <i data-lucide="log-in"></i>
+                            <span>Masuk</span>
+                        </a>
+                        <button id="${settingsBtnId}" class="dropdown-item">
+                            <i data-lucide="settings"></i>
+                            <span>Pengaturan</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="user-dropdown" id="user-dropdown">
-                    <a href="/api/auth/google" class="dropdown-item" style="text-decoration: none;">
-                        <i data-lucide="log-in"></i>
-                        <span>Masuk untuk menyimpan peta</span>
-                    </a>
-                    <button id="btn-profile-settings" class="dropdown-item">
-                        <i data-lucide="settings"></i>
-                        <span>Pengaturan</span>
-                    </button>
-                </div>
-            </div>
-        `;
+            `;
+        }
+    };
+
+    const profileArea = document.getElementById('user-profile-area');
+    if (profileArea) {
+        profileArea.innerHTML = getProfileHTML('user-avatar-wrapper', 'user-dropdown', 'btn-profile-settings', 'btn-logout');
+        bindProfileEvents('user-avatar-wrapper', 'user-dropdown', 'btn-profile-settings', 'btn-logout');
     }
 
-    // Bind event listeners for the unified dropdown
-    const avatarWrapper = document.getElementById('user-avatar-wrapper');
-    const dropdown = document.getElementById('user-dropdown');
+    const sidebarProfileArea = document.getElementById('sidebar-profile-area');
+    if (sidebarProfileArea) {
+        sidebarProfileArea.innerHTML = getProfileHTML('sidebar-user-avatar-wrapper', 'sidebar-user-dropdown', 'sidebar-btn-profile-settings', 'sidebar-btn-logout');
+        bindProfileEvents('sidebar-user-avatar-wrapper', 'sidebar-user-dropdown', 'sidebar-btn-profile-settings', 'sidebar-btn-logout');
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+}
+
+function bindProfileEvents(avatarWrapperId, dropdownId, settingsBtnId, logoutBtnId) {
+    const avatarWrapper = document.getElementById(avatarWrapperId);
+    const dropdown = document.getElementById(dropdownId);
     
     if (avatarWrapper && dropdown) {
         avatarWrapper.addEventListener('click', (e) => {
@@ -3810,14 +3901,12 @@ function renderUserProfile() {
             dropdown.classList.toggle('open');
         });
         
-        // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             dropdown.classList.remove('open');
         });
     }
 
-    // Bind Settings Button
-    const btnProfileSettings = document.getElementById('btn-profile-settings');
+    const btnProfileSettings = document.getElementById(settingsBtnId);
     if (btnProfileSettings) {
         btnProfileSettings.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -3826,8 +3915,7 @@ function renderUserProfile() {
         });
     }
 
-    // Bind Logout Button (if logged in)
-    const btnLogout = document.getElementById('btn-logout');
+    const btnLogout = document.getElementById(logoutBtnId);
     if (btnLogout) {
         btnLogout.addEventListener('click', async (e) => {
             e.stopPropagation();
@@ -3924,6 +4012,9 @@ function switchScreen(screenName) {
 }
 
 function switchDashboardSubview(subviewName) {
+    if (typeof switchScreen === 'function') {
+        switchScreen('dashboard');
+    }
     const subviews = {
         'history': { menuItemId: 'history-menu-item-history', elementId: 'subview-history' },
         'exploration': { menuItemId: 'history-menu-item-exploration', elementId: 'subview-exploration' },

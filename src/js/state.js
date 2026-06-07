@@ -57,6 +57,9 @@ window.ensureAllNodeUUIDs = ensureAllNodeUUIDs;
 function showSyncStatus(statusText) {
     const el = document.getElementById('sync-status');
     if (el) el.innerText = statusText;
+    
+    const sidebarSync = document.getElementById('sidebar-sync-text');
+    if (sidebarSync) sidebarSync.innerText = statusText;
 }
 
 async function saveState(skipDBSync = false) {
