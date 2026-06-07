@@ -634,14 +634,45 @@ function updateSubStyleDropdown(styleSelectId, substyleSelectId, selectedSubStyl
     }
 }
 
-function saveNodeStylePreference() {
-    if (!state.activeNode) return;
-    const styleSelect = document.getElementById('drawer-style-select');
-    const substyleSelect = document.getElementById('drawer-substyle-select');
-    if (styleSelect && substyleSelect) {
-        state.activeNode.writingStyle = styleSelect.value;
-        state.activeNode.writingSubStyle = substyleSelect.value;
-        saveState();
+function updateDrawerFooterStyleText(nodeName = null) {
+    const footerTextEl = document.getElementById('drawer-footer-style-text');
+    if (!footerTextEl) return;
+
+    const prefix = state.language === 'en' ? 'Style: ' : 'Gaya: ';
+    const autoText = state.language === 'en' ? 'Automatic' : 'Otomatis';
+
+    let name = nodeName || (state.activeNode ? state.activeNode.name : null);
+    if (!name) {
+        footerTextEl.textContent = prefix + autoText;
+        return;
+    }
+
+    let style = 'auto';
+    let substyle = 'auto';
+
+    if (state.activeNode && state.activeNode.name === name) {
+        style = state.activeNode.writingStyle || 'auto';
+        substyle = state.activeNode.writingSubStyle || 'auto';
+    }
+
+    // Fallback/override with cache data if present
+    if (state.nodeCache && state.nodeCache[name]) {
+        const cache = state.nodeCache[name];
+        if (cache.writingStyle) style = cache.writingStyle;
+        if (cache.writingSubStyle) substyle = cache.writingSubStyle;
+    }
+
+    if (style === 'auto' || !WRITING_STYLES[style]) {
+        footerTextEl.textContent = prefix + autoText;
+    } else {
+        const styleData = WRITING_STYLES[style];
+        const styleName = state.language === 'en' ? styleData.name.en : styleData.name.id;
+        let substyleName = '';
+        if (substyle !== 'auto' && styleData.substyles && styleData.substyles[substyle]) {
+            const substyleData = styleData.substyles[substyle];
+            substyleName = ' - ' + (state.language === 'en' ? substyleData.name.en : substyleData.name.id);
+        }
+        footerTextEl.textContent = prefix + styleName + substyleName;
     }
 }
 
@@ -699,18 +730,7 @@ function initUIEventListeners() {
         }
     });
 
-    // 1c. Writing Style Event Listeners
-    const drawerStyleSelect = document.getElementById('drawer-style-select');
-    const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');
-    if (drawerStyleSelect && drawerSubstyleSelect) {
-        drawerStyleSelect.addEventListener('change', () => {
-            updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', 'auto');
-            saveNodeStylePreference();
-        });
-        drawerSubstyleSelect.addEventListener('change', () => {
-            saveNodeStylePreference();
-        });
-    }
+
 
     const regenStyleSelect = document.getElementById('regenerate-style-select');
     const regenSubstyleSelect = document.getElementById('regenerate-substyle-select');
@@ -1704,18 +1724,8 @@ function openDetailDrawer(title) {
     // Setup status tombol belajar aktif
     updateDrawerStatusSelector(title);
 
-    // Setup writing style selectors
-    const drawerStyleSelect = document.getElementById('drawer-style-select');
-    const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');
-    if (drawerStyleSelect && drawerSubstyleSelect) {
-        if (state.activeNode) {
-            drawerStyleSelect.value = state.activeNode.writingStyle || 'auto';
-            updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', state.activeNode.writingSubStyle || 'auto');
-        } else {
-            drawerStyleSelect.value = 'auto';
-            updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', 'auto');
-        }
-    }
+    // Update style text in footer
+    updateDrawerFooterStyleText(title);
 
     // Update UI based on ownership
     updateOwnerUI();
@@ -1887,6 +1897,7 @@ function renderDrawerError(title, errorMsg) {
 
 function renderNodeDetail(title, markdownText) {
     stopDrawerLoadingTrivia();
+    updateDrawerFooterStyleText(title);
     
     // Update Bookmark Button Visual Status
     if (state.bookmarks) {
@@ -2850,8 +2861,17 @@ function openRegenerateNodeModal() {
     const styleSelect = document.getElementById('regenerate-style-select');
     const substyleSelect = document.getElementById('regenerate-substyle-select');
     if (styleSelect && substyleSelect) {
-        styleSelect.value = state.activeNode.writingStyle || 'auto';
-        updateSubStyleDropdown('regenerate-style-select', 'regenerate-substyle-select', state.activeNode.writingSubStyle || 'auto');
+        let currentStyle = state.activeNode.writingStyle || 'auto';
+        let currentSubStyle = state.activeNode.writingSubStyle || 'auto';
+        
+        if (currentStyle === 'auto' && state.nodeCache && state.nodeCache[state.activeNode.name]) {
+            const cache = state.nodeCache[state.activeNode.name];
+            currentStyle = cache.writingStyle || 'auto';
+            currentSubStyle = cache.writingSubStyle || 'auto';
+        }
+        
+        styleSelect.value = currentStyle;
+        updateSubStyleDropdown('regenerate-style-select', 'regenerate-substyle-select', currentSubStyle);
     }
 
     if (modal) modal.classList.add('open');
@@ -2900,13 +2920,8 @@ async function submitRegenerateNode(e) {
     targetNode.writingStyle = selectedStyle;
     targetNode.writingSubStyle = selectedSubStyle;
     
-    // Sinkronkan ke dropdown detail drawer agar sama/sinkron
-    const drawerStyleSelect = document.getElementById('drawer-style-select');
-    const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');
-    if (drawerStyleSelect && drawerSubstyleSelect) {
-        drawerStyleSelect.value = selectedStyle;
-        updateSubStyleDropdown('drawer-style-select', 'drawer-substyle-select', selectedSubStyle);
-    }
+    // Sinkronkan ke footer detail drawer agar sama/sinkron
+    updateDrawerFooterStyleText(nodeName);
 
     const styleInstruction = getWritingStyleInstruction(selectedStyle, selectedSubStyle, nodeName, nodeDesc);
 

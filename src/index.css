@@ -4,28 +4,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg:          #ffffff;
-    --bg-subtle:   #f4f9f4; /* Sage Green */
-    --bg-hover:    #ecf3ec;
+    --bg:          #F5F5F5;
+    --bg-subtle:   #eef2f5;
+    --bg-hover:    #e2e7ec;
     --surface:     #ffffff;
 
-    --border:      #d0dfd7; /* Pale Sage border */
-    --border-mid:  #b3cbbd;
+    --border:      #e0e3e6;
+    --border-mid:  #c8ccd1;
 
-    --text:        #1a2e26; /* Charcoal Green */
-    --text-2:      #536c61; /* Muted Sage Green */
-    --text-3:      #8ba89a; /* Pale text */
+    --text:        #303841;
+    --text-2:      #525d6b;
+    --text-3:      #8c97a5;
 
-    --accent:      #006644; /* Forest Green / Dark Teal */
-    --accent-2:    #004d33; /* Darker Forest Green hover */
+    --accent:      #2C3947;
+    --accent-2:    #1c2630;
     --accent-inv:  #ffffff;
 
-    /* Level colors — beautiful teal/emerald range */
-    --l0: #006644;
-    --l1: #0e7490; /* Teal-blue */
-    --l2: #15803d; /* Emerald */
-    --l3: #0369a1; /* Sky-blue */
-    --l4: #b45309; /* Amber */
+    /* Glassmorphism Light Tokens */
+    --glass-bg:     rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-blur:   blur(20px) saturate(180%);
+    --glass-shadow: 0 8px 32px 0 rgba(44, 57, 71, 0.05);
+
+    /* Level colors */
+    --l0: #303841;
+    --l1: #2C3947;
+    --l2: #FF5722;
+    --l3: #0284c7;
+    --l4: #059669;
 
     --radius-sm:  6px;
     --radius:     12px;
@@ -36,18 +42,73 @@
     --chat-width: 340px;
     --drawer-width: 780px;
 
-    --shadow-xs: 0 1px 2px rgba(0, 102, 68, 0.04);
-    --shadow-sm: 0 1px 4px rgba(0, 102, 68, 0.06), 0 0 0 1px rgba(0, 102, 68, 0.03);
-    --shadow-md: 0 4px 12px rgba(0, 102, 68, 0.06), 0 0 0 1px rgba(0, 102, 68, 0.03);
-    --shadow-lg: 0 8px 24px rgba(0, 102, 68, 0.08), 0 0 0 1px rgba(0, 102, 68, 0.03);
+    --shadow-xs: 0 1px 2px rgba(44, 57, 71, 0.04);
+    --shadow-sm: 0 1px 4px rgba(44, 57, 71, 0.06), 0 0 0 1px rgba(44, 57, 71, 0.03);
+    --shadow-md: 0 4px 12px rgba(44, 57, 71, 0.06), 0 0 0 1px rgba(44, 57, 71, 0.03);
+    --shadow-lg: 0 8px 24px rgba(44, 57, 71, 0.08), 0 0 0 1px rgba(44, 57, 71, 0.03);
 
     --t: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Green Emerald Mobile variables */
-    --primary-green: #00a374;
-    --primary-green-dark: #0d5240;
-    --primary-green-light: #e6f7f3;
-    --bg-mobile: #f4f6f5;
+    /* Mobile theme variables */
+    --primary-green: #2C3947;
+    --primary-green-dark: #1c2630;
+    --primary-green-light: #eef2f5;
+    --bg-mobile: #F5F5F5;
+}
+
+/* Ambient decorative blurred blobs for glassmorphism backdrop */
+.ambient-blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(140px);
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.15;
+    mix-blend-mode: multiply;
+    animation: float-blob 12s infinite alternate ease-in-out;
+}
+
+[data-theme="dark"] .ambient-blob {
+    opacity: 0.22;
+    mix-blend-mode: screen;
+}
+
+.blob-1 {
+    top: -10%;
+    left: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, #2C3947 0%, rgba(44, 57, 71, 0) 70%);
+}
+
+.blob-2 {
+    bottom: -15%;
+    right: -10%;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, #FF5722 0%, rgba(255, 87, 34, 0) 70%);
+    animation-delay: -3s;
+}
+
+.blob-3 {
+    top: 40%;
+    left: 45%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, #0284c7 0%, rgba(2, 132, 199, 0) 70%);
+    animation-delay: -6s;
+}
+
+@keyframes float-blob {
+    0% {
+        transform: translate(0, 0) scale(1);
+    }
+    50% {
+        transform: translate(30px, -20px) scale(1.05);
+    }
+    100% {
+        transform: translate(-20px, 40px) scale(0.95);
+    }
 }
 
 
@@ -341,8 +402,10 @@ a:hover { text-decoration: underline; }
 .link.active { stroke: var(--l1); stroke-width: 1.5px; }
 
 .node-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-sm);
     padding: 0.8rem 1.1rem;
     width: 100%;
@@ -354,10 +417,11 @@ a:hover { text-decoration: underline; }
     transition: border-color var(--t), box-shadow var(--t), background var(--t);
     position: relative;
     user-select: none;
+    box-shadow: var(--glass-shadow);
 }
 
 .node-card:hover {
-    border-color: var(--border-mid);
+    border-color: var(--accent);
     background: var(--bg-hover);
     box-shadow: var(--shadow-sm);
 }
@@ -456,10 +520,10 @@ a:hover { text-decoration: underline; }
 }
 #breadcrumb-bar .breadcrumb-item:hover {
     background: var(--bg-hover);
-    color: var(--accent);
+    color: var(--text);
 }
 #breadcrumb-bar .breadcrumb-item.active {
-    color: var(--accent);
+    color: var(--text);
     font-weight: 600;
 }
 #breadcrumb-bar .breadcrumb-sep {
@@ -475,7 +539,7 @@ a:hover { text-decoration: underline; }
     font-size: 13px;
 }
 #breadcrumb-bar .breadcrumb-root:hover {
-    color: var(--accent);
+    color: var(--text);
     background: var(--bg-hover);
 }
 
@@ -1769,7 +1833,7 @@ mark[data-note]::after {
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background: var(--bg-page);
+    background: transparent;
 }
 
 .screen-container {
@@ -1779,7 +1843,7 @@ mark[data-note]::after {
     display: flex;
     overflow: hidden;
     position: relative;
-    background: var(--bg-page);
+    background: transparent;
 }
 
 .screen-container.hidden {
@@ -1789,8 +1853,10 @@ mark[data-note]::after {
 /* Global Navigation Header */
 .global-header {
     height: 56px;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2286,8 +2352,8 @@ mark[data-note]::after {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: #e0ece6;
-    color: var(--accent);
+    background: var(--bg-subtle);
+    color: var(--text);
     font-weight: 600;
     font-size: 0.78rem;
     padding: 8px;
@@ -2626,8 +2692,8 @@ mark[data-note]::after {
 }
 
 .history-menu-item.active {
-    background: #e0ece6;
-    color: var(--accent);
+    background: var(--bg-subtle);
+    color: var(--text);
     font-weight: 600;
 }
 
@@ -3869,38 +3935,44 @@ mark[data-note]::after {
    DARK MODE STYLES
    ========================================================================== */
 [data-theme="dark"] {
-    --bg:          #0e1411; /* Clean deep charcoal/dark green background */
-    --bg-subtle:   #151d19; /* Slightly lighter deep charcoal green */
-    --bg-hover:    #1c2722;
-    --surface:     #141b18; /* Cards/modals */
+    --bg:          #303841;
+    --bg-subtle:   #252b32;
+    --bg-hover:    #3b4550;
+    --surface:     #37404a;
 
-    --border:      #26332c; /* Dark sage border */
-    --border-mid:  #35483e;
+    --border:      #444f5c;
+    --border-mid:  #556373;
 
-    --text:        #e2e8e5; /* Soft clean off-white */
-    --text-2:      #a3b8ad; /* Soft muted sage green */
-    --text-3:      #698074; /* Muted pale green */
+    --text:        #F5F5F5;
+    --text-2:      #b6c0cc;
+    --text-3:      #828f9e;
 
-    --accent:      #10b981; /* Premium Emerald/Mint Green */
-    --accent-2:    #059669; /* Darker Emerald hover */
-    --accent-inv:  #0e1411; /* Dark background text color for contrast */
+    --accent:      #8ea4bc;
+    --accent-2:    #7ba0c2;
+    --accent-inv:  #303841;
+
+    /* Glassmorphism Dark Tokens */
+    --glass-bg:     rgba(48, 56, 65, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-blur:   blur(20px) saturate(180%);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 
     /* Level colors adjusted for dark mode readability */
-    --l0: #34d399; /* Bright Emerald */
-    --l1: #22d3ee; /* Bright Cyan */
-    --l2: #4ade80; /* Bright Green */
-    --l3: #38bdf8; /* Bright Sky-blue */
-    --l4: #fbbf24; /* Bright Amber */
+    --l0: #F5F5F5;
+    --l1: #8ea4bc;
+    --l2: #ff7a50;
+    --l3: #38bdf8;
+    --l4: #34d399;
 
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.02);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02);
 
-    --primary-green: #10b981;
-    --primary-green-dark: #059669;
-    --primary-green-light: #16241e;
-    --bg-mobile: #0e1411;
+    --primary-green: #8ea4bc;
+    --primary-green-dark: #303841;
+    --primary-green-light: #252b32;
+    --bg-mobile: #303841;
 }
 
 /* Dark Mode overrides for hardcoded light/white backgrounds */
@@ -4741,18 +4813,20 @@ mark[data-note]::after {
     display: flex;
     align-items: center;
     width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
     border-radius: 9999px;
     padding: 6px 6px 6px 1.5rem;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--glass-shadow);
     transition: border-color var(--t), box-shadow var(--t), transform var(--t);
     margin-bottom: 2rem;
 }
 
 .home-search-box:focus-within {
     border-color: var(--accent);
-    box-shadow: var(--shadow-lg), 0 0 0 4px rgba(16, 185, 129, 0.1);
+    box-shadow: var(--glass-shadow), 0 0 0 4px rgba(118, 171, 174, 0.15);
     transform: translateY(-1px);
 }
 
@@ -4908,8 +4982,10 @@ mark[data-note]::after {
 .global-sidebar {
     width: 240px; /* Reduced width from 260px */
     height: 100vh;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-right: 1px solid var(--glass-border);
     display: none;
     flex-direction: column;
     padding: 1rem 0.85rem; /* Reduced padding from 1.25rem 1rem */
@@ -5146,8 +5222,8 @@ mark[data-note]::after {
 }
 
 .sidebar-history-item.active {
-    background: #e0ece6;
-    color: var(--accent);
+    background: var(--bg-subtle);
+    color: var(--text);
     font-weight: 600;
 }
 
@@ -5303,7 +5379,7 @@ mark[data-note]::after {
 }
 
 [data-theme="dark"] .history-menu-item.active {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(142, 164, 188, 0.15);
 }
 
 
