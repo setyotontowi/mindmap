@@ -688,6 +688,17 @@ function initUIEventListeners() {
     const chatForm = document.getElementById('chat-form');
     if (chatForm) chatForm.addEventListener('submit', handleChatSubmit);
 
+    // Global shortcut Ctrl+K / Cmd+K to focus search input
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                e.preventDefault();
+                chatInput.focus();
+            }
+        }
+    });
+
     // 1c. Writing Style Event Listeners
     const drawerStyleSelect = document.getElementById('drawer-style-select');
     const drawerSubstyleSelect = document.getElementById('drawer-substyle-select');

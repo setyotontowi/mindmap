@@ -31,8 +31,8 @@
     --radius:     12px;
     --radius-lg:  16px;
 
-    --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-header: 'Outfit', sans-serif;
+    --font: 'Geist', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-header: 'Geist', 'Outfit', sans-serif;
     --chat-width: 340px;
     --drawer-width: 780px;
 
@@ -4706,6 +4706,156 @@ mark[data-note]::after {
 [data-theme="dark"] .highlight-keep-card.hl-green { background-color: rgba(34, 197, 94, 0.05); }
 [data-theme="dark"] .highlight-keep-card.hl-blue { background-color: rgba(59, 130, 246, 0.05); }
 [data-theme="dark"] .highlight-keep-card.hl-pink { background-color: rgba(236, 72, 153, 0.05); }
+
+/* ==========================================================================
+   MINIMAL HOME SCREEN REDESIGN ("Lubang Kelinci")
+   ========================================================================== */
+.minimal-home-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 640px;
+    width: 100%;
+    padding: 2rem;
+    animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.home-title {
+    font-family: var(--font-header);
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.75rem;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--text) 60%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.home-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-2);
+    margin-bottom: 2.5rem;
+    max-width: 480px;
+    line-height: 1.5;
+}
+
+.home-search-box {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    padding: 6px 6px 6px 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: border-color var(--t), box-shadow var(--t), transform var(--t);
+    margin-bottom: 2rem;
+}
+
+.home-search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-lg), 0 0 0 4px rgba(16, 185, 129, 0.1);
+    transform: translateY(-1px);
+}
+
+.home-search-box .search-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-3);
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.home-search-box input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 1.05rem;
+    padding: 8px 0;
+    width: 100%;
+}
+
+.home-search-box input::placeholder {
+    color: var(--text-3);
+}
+
+.home-search-box .kbd-shortcut {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-3);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-right: 12px;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.home-search-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-inv);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--t), transform var(--t);
+    flex-shrink: 0;
+}
+
+.home-search-btn:hover {
+    background: var(--accent-2);
+    transform: scale(1.05);
+}
+
+.home-search-btn i {
+    width: 18px;
+    height: 18px;
+}
+
+.home-actions {
+    margin-top: 1rem;
+}
+
+.btn-learn-more {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-2);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    transition: all var(--t);
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-learn-more:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+}
+
+/* Make sure search screen wrapper is clean and dot-grid */
+#screen-search-view .search-screen-wrapper {
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    align-items: center;
+    justify-content: center;
+}
+
 
 
 
