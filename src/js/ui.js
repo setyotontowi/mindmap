@@ -22,6 +22,15 @@ const WRITING_STYLES = {
             id: "Gunakan gaya penulisan Direct Copywriting yang berorientasi pada konversi dan persuasi menggunakan formula teruji (seperti AIDA atau PAS). Buat agar pembaca merasa terpikat dan terdorong untuk bertindak.",
             en: "Use a Direct Copywriting writing style focused on conversion and persuasion using proven formulas (such as AIDA or PAS). Make the reader feel engaged and compelled to take action."
         },
+        temperature: 0.35,
+        persona: {
+            id: "Kamu adalah seorang copywriter senior yang jago banget nulis copy konversi. Lo paham psikologi pembaca, tau cara bikin mereka penasaran, dan ga pernah pakai gimmick murahan.",
+            en: "You're a senior copywriter who excels at writing conversion copy. You understand reader psychology, know how to spark curiosity, and never use cheap gimmicks."
+        },
+        examples: {
+            id: ["Tidak semua clickbait itu buruk — selama yang kamu janjikan di judul benar-benar ada di dalamnya.", "Coba tebak: mana yang lebih menentukan keputusan beli seseorang — logika atau emosi? Jawabannya mungkin mengejutkanmu."],
+            en: ["Not all clickbait is bad — as long as what you promise in the headline actually delivers.", "Guess what matters more in a purchase decision: logic or emotion? The answer might surprise you."]
+        },
         substyles: {
             aida: {
                 name: { id: "AIDA Model", en: "AIDA Model" },
@@ -65,6 +74,15 @@ const WRITING_STYLES = {
         instruction: {
             id: "Gunakan gaya penulisan Technical & SEO Content yang padat informasi, fokus pada penyusunan heading (H2/H3) yang logis, terstruktur rapi, mudah dipindai (scannable), dan menjawab Search Intent dengan tepat.",
             en: "Use a Technical & SEO Content writing style: highly informative, focused on logical heading structures (H2/H3), clean layouts, highly scannable, and perfectly addressing Search Intent."
+        },
+        temperature: 0.25,
+        persona: {
+            id: "Kamu adalah technical writer yang paham banget gimana cara orang mencari informasi. Lo suka bikin konten yang rapi, terstruktur, dan langsung menjawab apa yang dicari.",
+            en: "You're a technical writer who deeply understands how people search for information. You create clean, structured content that directly answers what they're looking for."
+        },
+        examples: {
+            id: ["Sebelum lo nulis satu baris pun, lo harus tau dulu: apa yang sebenarnya dicari orang ketika mereka mengetik topik ini di Google?", "Struktur artikel yang baik bukan cuma bikin SEO senang — tapi bikin pembaca betah dan bisa menemukan informasi yang mereka cari dalam 3 detik."],
+            en: ["Before writing a single line, you need to know: what are people actually looking for when they search this topic?", "A well-structured article doesn't just please SEO — it keeps readers engaged and helps them find what they need in 3 seconds."]
         },
         substyles: {
             intent: {
@@ -110,6 +128,15 @@ const WRITING_STYLES = {
             id: "Gunakan gaya penulisan Conversational Persona yang santai, hangat, dan ramah seperti mengobrol dengan mentor pribadi. Gunakan nada bicara yang bersahabat dan hindari jargon kaku yang menjemukan.",
             en: "Use a Conversational Persona writing style: casual, warm, and friendly, like having a chat with a personal mentor. Use a friendly tone and avoid dry, academic jargon."
         },
+        temperature: 0.6,
+        persona: {
+            id: "Kamu adalah mentor yang hangat dan humble. Lo ngobrol kayak lagi ngopi bareng temen — santai, bersahabat, tapi tetep dalem ilmunya.",
+            en: "You're a warm, humble mentor. You talk like you're having coffee with a friend — relaxed, friendly, but still deep in knowledge."
+        },
+        examples: {
+            id: ["Okay, jujur aja: pertama kali gw belajar ini, gw juga bingung setengah mati. Tapi tenang, gw bakal jabarin pelan-pelan.", "Lo tau perasaan 'oh pantes aja' pas tau sesuatu? Nah itu yang bakal lo rasain setelah baca ini."],
+            en: ["Okay, let's be real: the first time I learned this, I was also completely confused. But don't worry, I'll walk you through it slowly.", "You know that lightbulb moment feeling? That's what you'll have after reading this."]
+        },
         substyles: {
             coach: {
                 name: { id: "Friendly Coach", en: "Friendly Coach" },
@@ -153,6 +180,15 @@ const WRITING_STYLES = {
         instruction: {
             id: "Gunakan gaya penulisan Story-Driven Content yang membungkus informasi/topik menggunakan teknik penceritaan (storytelling) yang emosional, memikat, dan mengalir dengan indah.",
             en: "Use a Story-Driven Content writing style: wrapping the information or topic in an emotional, engaging, and beautifully flowing narrative."
+        },
+        temperature: 0.6,
+        persona: {
+            id: "Kamu adalah pendongeng ulung. Lo percaya cerita yang bagus itu lebih nempel daripada data mentah. Tapi cerita lo selalu punya tujuan, bukan sekadar dongeng.",
+            en: "You're a master storyteller. You believe a good story sticks better than raw data. But your stories always serve a purpose, not just tales for the sake of it."
+        },
+        examples: {
+            id: ["Tahun 1972, seorang programmer sendirian di ruangan gelap mengetik baris kode yang akan mengubah cara manusia berkomunikasi selamanya. Ia tidak tahu itu.", "Ada dua cara menjelaskan konsep ini: dengan diagram, atau dengan cerita tentang seorang nelayan yang salah memahami peta. Tebak mana yang lebih diingat?"],
+            en: ["In 1972, a lone programmer sat in a dark room typing lines of code that would forever change how humans communicate. He didn't know it yet.", "There are two ways to explain this concept: with diagrams, or with a story about a fisherman who misread his map. Guess which one sticks?"]
         },
         substyles: {
             hero: {
@@ -198,6 +234,15 @@ const WRITING_STYLES = {
             id: "Gunakan gaya penulisan Analytical Case Study yang mendalam, objektif, logis, terstruktur, berbasis bukti, dan didukung oleh data empiris atau analisis sistematis.",
             en: "Use an Analytical Case Study writing style: deep, objective, highly logical, well-structured, evidence-based, and backed by empirical data or systematic analysis."
         },
+        temperature: 0.15,
+        persona: {
+            id: "Kamu adalah Prof. Ratna, peneliti sistem kompleks. Lo ga suka basa-basi, langsung ke data. Setiap argumen harus punya bukti — kalo ga ada, lo bilang 'belum bisa disimpulkan'.",
+            en: "You're Prof. Ratna, a complex systems researcher. No small talk, straight to the data. Every argument needs evidence — if there's none, you say 'inconclusive'."
+        },
+        examples: {
+            id: ["Mari mulai dengan pertanyaan yang jarang diajukan: bagaimana kita tahu bahwa asumsi dasar ini benar? Jawabannya ada di data — atau ketiadaan data.", "Angka tidak pernah berbohong, tapi orang yang membaca angka sering salah paham. Mari kita bedah apa yang sebenarnya terjadi di balik statistik ini."],
+            en: ["Let's start with a question rarely asked: how do we know this basic assumption is correct? The answer lies in the data — or the lack of it.", "Numbers never lie, but the people reading them often misunderstand. Let's dissect what's really happening behind these statistics."]
+        },
         substyles: {
             data: {
                 name: { id: "Data-Driven Breakdown", en: "Data-Driven Breakdown" },
@@ -241,6 +286,15 @@ const WRITING_STYLES = {
         instruction: {
             id: "Gunakan gaya penulisan Actionable Frameworks yang mengajarkan metode praktis, model mental, atau kerangka berpikir orisinal yang bisa langsung dipraktikkan oleh pembaca dalam kehidupan sehari-hari.",
             en: "Use an Actionable Frameworks writing style: teaching practical methods, mental models, or original frameworks that the reader can immediately implement in real life."
+        },
+        temperature: 0.2,
+        persona: {
+            id: "Kamu adalah konsultan strategi. Lo jago bikin kerangka pikir yang actionable. Lo percuma ngasih teori kalo ga ada yang bisa dipake langsung.",
+            en: "You're a strategy consultant. You excel at creating actionable frameworks. Theories are useless if they can't be applied immediately."
+        },
+        examples: {
+            id: ["Teori tanpa praktik itu seperti peta tanpa kompas — lo tau arahnya tapi ga tau langkah pertama. Ini framework yang bisa lo pake sekarang.", "Ada 3 pertanyaan yang harus lo jawab sebelum lo ambil keputusan apapun tentang topik ini. Kalau lo bisa jawab semuanya, lo udah 80% selesai."],
+            en: ["Theory without practice is like a map without a compass — you know the direction but not the first step. Here's a framework you can use right now.", "There are 3 questions you need to answer before making any decision about this topic. If you can answer them all, you're 80% done."]
         },
         substyles: {
             mental: {
@@ -286,6 +340,15 @@ const WRITING_STYLES = {
             id: "Gunakan gaya penulisan Insightful Leadership yang menantang asumsi umum. Tulis dengan nada percakapan yang profesional tanpa jargon korporat. Fokus pada elemen manusia, psikologi, dan alasan 'mengapa' di balik sebuah perilaku.",
             en: "Use an Insightful Leadership writing style that challenges common assumptions. Write in a professional, conversational tone without corporate jargon. Focus on the human element, psychology, and the 'why' behind behaviors."
         },
+        temperature: 0.35,
+        persona: {
+            id: "Kamu adalah CEO yang udah 20 tahun di lapangan, udah gagal berkali-kali dan belajar banyak. Ga pake bullshit korporat.",
+            en: "You're a CEO with 20 years in the field, failed many times and learned a lot. No corporate BS."
+        },
+        examples: {
+            id: ["Kesalahan terbesar yang gw lihat dari pemimpin baru bukan soal strategi — tapi soal ego. Dan gw tau karena gw juga pernah begitu.", "Lo tau apa yang ga pernah diajarin di sekolah bisnis? Cara ngasih feedback tanpa bikin orang benci sama lo. Mari kita bahas."],
+            en: ["The biggest mistake I see in new leaders isn't about strategy — it's about ego. And I know because I've been there too.", "You know what they never teach in business school? How to give feedback without making people hate you. Let's talk about it."]
+        },
         substyles: {
             contrarian_analogy: {
                 name: { id: "Contrarian Analogy", en: "Contrarian Analogy" },
@@ -329,6 +392,15 @@ const WRITING_STYLES = {
         instruction: {
             id: "Gunakan gaya penulisan Academic & Research yang berbobot ilmiah tinggi, formal, objektif, dan didukung dengan struktur teori yang kuat layaknya sebuah publikasi akademis terpercaya.",
             en: "Use an Academic & Research writing style: highly scholarly, formal, objective, and backed by a strong theoretical framework akin to a reputable academic publication."
+        },
+        temperature: 0.15,
+        persona: {
+            id: "Kamu adalah dosen riset yang ketat dan presisi. Lo ga terima klaim tanpa sitasi. Tapi lo tau cara bikin materi berat tetep bisa dicerna dengan struktur yang jelas.",
+            en: "You're a rigorous research professor. You don't accept claims without citations. But you also know how to make heavy material digestible with clear structure."
+        },
+        examples: {
+            id: ["Dalam literatur kontemporer, setidaknya ada tiga kerangka teoretis utama yang mencoba menjelaskan fenomena ini. Mari kita bedah masing-masing secara kritis sebelum menarik kesimpulan.", "Sebelum melangkah lebih jauh, penting untuk mendefinisikan secara eksplisit apa yang dimaksud dengan istilah kunci ini — karena ketidakjelasan definisi adalah sumber utama kesalahpahaman dalam diskursus akademik."],
+            en: ["In contemporary literature, there are at least three major theoretical frameworks attempting to explain this phenomenon. Let's critically examine each before drawing conclusions.", "Before going further, it's crucial to explicitly define what this key term means — because definitional ambiguity is a primary source of misunderstanding in academic discourse."]
         },
         substyles: {
             literature: {
@@ -374,6 +446,15 @@ const WRITING_STYLES = {
             id: "Gunakan gaya penulisan Socratic Dialogue yang mengedepankan proses penyelidikan, merangsang pemikiran kritis, serta menuntun pembaca menemukan konsep dasar melalui rangkaian pertanyaan terstruktur.",
             en: "Use a Socratic Dialogue writing style that emphasizes inquiry, stimulates critical thinking, and guides the reader to discover core concepts through structured sequences of questions."
         },
+        temperature: 0.5,
+        persona: {
+            id: "Kamu adalah filsuf yang sabar. Lo ga ngasih jawaban, lo ngasih pertanyaan. Biar pembaca yang nyari jawabannya sendiri.",
+            en: "You're a patient philosopher. You don't give answers, you give questions. Let the reader find the answers themselves."
+        },
+        examples: {
+            id: ["Berhenti sebentar. Sebelum lo lanjut baca, coba jawab dulu: apa yang lo pikir tau tentang topik ini — dan bagaimana lo tau kalo itu benar?", "Kalau lo harus ngejelasin konsep ini ke anak 5 tahun, apa analogi pertama yang muncul di kepala lo? Kenapa justru itu?"],
+            en: ["Pause for a moment. Before you read on, try to answer: what do you think you know about this topic — and how do you know it's true?", "If you had to explain this concept to a 5-year-old, what's the first analogy that comes to mind? And why that one?"]
+        },
         substyles: {
             inquiry: {
                 name: { id: "Maieutic Inquiry", en: "Maieutic Inquiry" },
@@ -418,6 +499,15 @@ const WRITING_STYLES = {
             id: "Gunakan gaya penjelasan berbasis analogi yang elegan dan dewasa. Terjemahkan konsep abstrak ke dalam analogi kehidupan nyata yang relevan — tanpa nuansa permainan, tanpa sapaan 'selamat datang', tanpa narasi petualangan. Gunakan perbandingan yang cerdas, metafora yang indah, dan tetap pertahankan kedalaman intelektual.",
             en: "Use an elegant, adult-oriented analogy-based explanation style. Translate abstract concepts into relevant real-world analogies — no gamification, no 'welcome adventurer' tone, no quest narratives. Use clever comparisons, beautiful metaphors, while maintaining intellectual depth."
         },
+        temperature: 0.5,
+        persona: {
+            id: "Kamu adalah guru yang pinter banget nyari analogi. Lo bisa jelasin quantum physics pake analogi dapur. Elegan, dewasa, dan ngena.",
+            en: "You're a teacher with a gift for analogies. You could explain quantum physics using a kitchen analogy. Elegant, mature, and spot-on."
+        },
+        examples: {
+            id: ["Coba bayangin konsep ini kayak... eh, jangan bayangin dulu. Biar gw cari analogi yang pas dulu. Oke, gini:", "Lo tau waktu lo masak, trus garam dan micin kelihatan mirip tapi efeknya beda banget? Nah, konsep ini kurang lebih kayak gitu."],
+            en: ["Imagine this concept as... actually, don't imagine yet. Let me find the right analogy first. OK, here it is:", "You know how salt and MSG look almost identical but have completely different effects? This concept is kind of like that."]
+        },
         substyles: {
             eli5: {
                 name: { id: "Elegant Analogy (ELI5 untuk Dewasa)", en: "Elegant Analogy (ELI5 for Adults)" },
@@ -461,6 +551,15 @@ const WRITING_STYLES = {
         instruction: {
             id: "Gunakan gaya penulisan Historical & Evolutionary yang memaparkan konsep sebagai sebuah perjalanan sejarah, menelusuri bagaimana ide ini lahir dari kebutuhan manusia memecahkan masalah nyata pada zamannya.",
             en: "Use a Historical & Evolutionary writing style that presents concepts as a historical journey, tracing how the idea was born out of human necessity to solve real-world problems in its era."
+        },
+        temperature: 0.25,
+        persona: {
+            id: "Kamu adalah sejarawan yang suka cerita. Lo percaya masa lalu itu kunci buat ngerti masa kini. Tapi lo ga cuma ngasih tanggal dan nama, lo kasih konteks dan drama manusianya.",
+            en: "You're a historian who loves stories. You believe the past is the key to understanding the present. But you don't just give dates and names — you provide context and human drama."
+        },
+        examples: {
+            id: ["Untuk ngerti kenapa konsep ini ada bentuknya sekarang, kita harus mundur 200 tahun ke belakang — ke sebuah ruangan bawah tanah di Paris yang penuh dengan cetakan biru.", "Penemuan ini tidak terjadi dalam semalam. Butuh 47 tahun, 3 generasi ilmuwan, dan satu kebetulan yang mengubah segalanya."],
+            en: ["To understand why this concept exists in its current form, we need to go back 200 years — to a basement in Paris filled with blueprints.", "This discovery didn't happen overnight. It took 47 years, 3 generations of scientists, and one lucky accident that changed everything."]
         },
         substyles: {
             eureka: {
@@ -703,15 +802,44 @@ function getWritingStyleInstruction(style, substyle, nodeName, nodeDesc) {
     const styleData = WRITING_STYLES[targetStyle];
     if (!styleData) return slopRules;
 
-    let instr = state.language === 'en' ? styleData.instruction.en : styleData.instruction.id;
+    // Persona prepend
+    let instr = '';
+    const lang = state.language === 'en' ? 'en' : 'id';
+    if (styleData.persona && styleData.persona[lang]) {
+        instr += `PERSONA: ${styleData.persona[lang]}\n\n`;
+    }
 
+    // Style instruction
+    instr += state.language === 'en' ? styleData.instruction.en : styleData.instruction.id;
+
+    // Substyle instruction
     if (targetSubstyle && targetSubstyle !== 'auto' && styleData.substyles[targetSubstyle]) {
         const substyleData = styleData.substyles[targetSubstyle];
         const substyleInstr = state.language === 'en' ? substyleData.instruction.en : substyleData.instruction.id;
         instr += " " + substyleInstr;
     }
 
+    // Few-shot examples for tone reference
+    if (styleData.examples && styleData.examples[lang] && styleData.examples[lang].length > 0) {
+        instr += "\n\nWRITING EXAMPLES (study the tone, DO NOT copy verbatim):\n";
+        for (const ex of styleData.examples[lang]) {
+            instr += `- ${ex}\n`;
+        }
+    }
+
     return instr + " " + slopRules;
+}
+
+/** Get temperature for a given style + optional substyle override */
+function getWritingStyleTemperature(style, substyle) {
+    if (!style || style === 'auto') return 0.2;
+    const styleData = WRITING_STYLES[style];
+    if (!styleData) return 0.2;
+    // Substyle can override temperature
+    if (substyle && substyle !== 'auto' && styleData.substyles[substyle] && styleData.substyles[substyle].temperature !== undefined) {
+        return styleData.substyles[substyle].temperature;
+    }
+    return styleData.temperature !== undefined ? styleData.temperature : 0.2;
 }
 
 function initUIEventListeners() {
@@ -1596,7 +1724,7 @@ async function handleChatSubmit(e) {
           ]
         }`;
 
-        const result = await callRouterAI(prompt);
+        const result = await callRouterAI(prompt, null, getWritingStyleTemperature(selectedStyle, selectedSubStyle));
         removeThinkingIndicator();
         if (loadingOverlay) {
             loadingOverlay.classList.add('hidden');
@@ -2939,7 +3067,7 @@ async function submitRegenerateNode(e) {
               "explanation": "Isi penjelasan lengkap dalam format Markdown di sini..."
             }`;
 
-            result = await callRouterAI(prompt);
+            result = await callRouterAI(prompt, null, getWritingStyleTemperature(selectedStyle, selectedSubStyle));
 
             // Validasi respon JSON
             if (result && result.explanation) {
@@ -3052,7 +3180,7 @@ async function submitRegenerateNode(e) {
               ]
             }`;
 
-            result = await callRouterAI(prompt);
+            result = await callRouterAI(prompt, null, getWritingStyleTemperature(selectedStyle, selectedSubStyle));
 
             // Validasi respon JSON
             if (result && result.explanation) {
@@ -5251,6 +5379,7 @@ function renderHighlightsList() {
 window.getRandomStyleAndSubstyle = getRandomStyleAndSubstyle;
 window.getContentAwareStyleAndSubstyle = getContentAwareStyleAndSubstyle;
 window.getWritingStyleInstruction = getWritingStyleInstruction;
+window.getWritingStyleTemperature = getWritingStyleTemperature;
 window.initUIEventListeners = initUIEventListeners;
 window.appendChatMessage = appendChatMessage;
 window.openDetailDrawer = openDetailDrawer;

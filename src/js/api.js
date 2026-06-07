@@ -8,7 +8,7 @@ function getSystemInstructions() {
     return `Anda adalah tutor ahli dan arsitek pembelajaran profesional. Tugas Anda adalah membantu pengguna mempelajari topik apa saja melalui peta pikiran (mindmap) terstruktur yang dinamis dan panduan belajar mendalam (deep dive) dalam Bahasa Indonesia yang interaktif.`;
 }
 
-async function callRouterAI(prompt, systemInstruction = null) {
+async function callRouterAI(prompt, systemInstruction = null, temperature = 0.2) {
     if (!systemInstruction) {
         systemInstruction = getSystemInstructions();
     }
@@ -25,7 +25,7 @@ async function callRouterAI(prompt, systemInstruction = null) {
             { role: "user", content: prompt }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.2,
+        temperature: temperature,
         stream: false,
         max_tokens: 8192,
         provider: state.aiProvider || 'deepseek',

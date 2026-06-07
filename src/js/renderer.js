@@ -618,7 +618,7 @@ async function handleNodeClick(d3Node) {
           ]
         }`;
 
-        const result = await callRouterAI(prompt);
+        const result = await callRouterAI(prompt, null, getWritingStyleTemperature(selectedStyle, selectedSubStyle));
 
         // Hapus status loading pada node
         delete d3Node.data.loading;
