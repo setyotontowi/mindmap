@@ -152,19 +152,36 @@
                         </form>
 
                         <!-- FOMO Quota Section -->
-                        <div class="quota-banner" style="max-width: 540px; margin-bottom: 0;">
+                        <div class="quota-banner" id="quota-banner" style="max-width: 540px; margin-bottom: 0;">
                             <div class="quota-banner-top">
                                 <span class="quota-label">Early Access</span>
-                                <span class="quota-percent">38 / 50</span>
+                                <span class="quota-percent" id="quota-percent">--%</span>
                             </div>
                             <div class="quota-bar-track">
-                                <div class="quota-bar-fill" style="width: 76%;"></div>
+                                <div class="quota-bar-fill" id="quota-bar-fill" style="width: 0%;"></div>
                             </div>
                             <div class="quota-banner-bottom">
-                                <span class="quota-status">Hanya 12 slot tersisa</span>
-                                <span class="quota-sub">Daftar sekarang</span>
+                                <span class="quota-status">Gratis Selamanya</span>
+                                <span class="quota-sub">Fitur dasar tanpa batas</span>
                             </div>
                         </div>
+                        <script>
+                        // FOMO Banner — realtime user count
+                        (function() {
+                            const MAX_USERS = 50;
+                            fetch('/api/user-count')
+                                .then(r => r.json())
+                                .then(data => {
+                                    const count = Math.min(data.count, MAX_USERS);
+                                    const pct = Math.round((count / MAX_USERS) * 100);
+                                    const el = document.getElementById('quota-percent');
+                                    const bar = document.getElementById('quota-bar-fill');
+                                    if (el) el.textContent = pct + '%';
+                                    if (bar) bar.style.width = pct + '%';
+                                })
+                                .catch(() => {});
+                        })();
+                        </script>
 
                         <div class="home-actions">
                             <a href="/about.html" class="btn-learn-more">Pelajari Cara Kerjanya</a>

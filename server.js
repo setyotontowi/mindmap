@@ -268,6 +268,17 @@ app.get('/api/mindmaps', (req, res) => {
     });
 });
 
+// GET /api/user-count — total registered users (for FOMO banner)
+app.get('/api/user-count', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT COUNT(*) as count FROM users');
+        res.json({ count: parseInt(result.rows[0].count, 10) });
+    } catch (err) {
+        console.error('[UserCount] Gagal query:', err.message);
+        res.json({ count: 0 });
+    }
+});
+
 // GET endpoint - Ambil mindmap aktif berdasarkan ID, atau paling terakhir diupdate jika tanpa ID
 app.get('/api/mindmap', (req, res) => {
     const id = req.query.id;
