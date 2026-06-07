@@ -139,50 +139,36 @@
             <!-- 1. Halaman Search -->
             <div class="screen-container" id="screen-search-view">
                 <div class="search-screen-wrapper">
-	                    <div class="search-screen-two-columns">
-	                        <!-- Left Column: Search Form and Topics -->
-	                        <div class="search-left-column">
-	                            <div class="enhanced-badge" style="align-self: flex-start;">
-	                                <i data-lucide="sparkles"></i>
-	                                <span>Enhanced exploration active</span>
-	                            </div>
-	                            
-	                            <form id="chat-form" class="search-box-container" style="margin-bottom: 2rem;">
-	                                <i data-lucide="search"></i>
-	                                <input type="text" id="chat-input" placeholder="Apa yang ingin kamu pelajari hari ini?" autocomplete="off" required>
-	                                <span class="kbd-shortcut">⌘K</span>
-	                                <button type="submit" id="btn-send-message" class="btn-search-redesign">Search</button>
-	                            </form>
-	                            
-	                            <div class="search-columns-grid" style="gap: 1.5rem; margin-bottom: 0;">
-	                                <div>
-	                                    <div class="search-column-title">
-	                                        <span>Recent Searches</span>
-	                                        <span class="clear-all-link" id="btn-clear-recent">Clear all</span>
-	                                    </div>
-	                                    <div class="recent-searches-list" id="recent-searches-container">
-	                                        <div class="recent-search-item">Neural architectures for LLMs</div>
-	                                        <div class="recent-search-item">Modernist architectural theory 1920-1940</div>
-	                                        <div class="recent-search-item">Quantum cryptography basics</div>
-	                                        <div class="recent-search-item">History of semantic web protocols</div>
-	                                    </div>
-	                                </div>
-	                                
-	                                <div>
-	                                    <div class="search-column-title">Suggested Topics</div>
-	                                    <div class="suggested-pills-wrap">
-	                                        <span class="suggested-pill">Bioinformatics</span>
-	                                        <span class="suggested-pill">Ethical AI</span>
-	                                        <span class="suggested-pill">Distributed Systems</span>
-	                                        <span class="suggested-pill">Macroeconomics</span>
-	                                        <span class="suggested-pill">Linguistics</span>
-	                                        <span class="suggested-pill">Renewable Energy</span>
-	                                        <span class="suggested-pill">Game Theory</span>
-	                                    </div>
-	                                </div>
-	                            </div>
-	                        </div>
-	                    </div>
+                    <div class="minimal-home-container">
+                        <p class="home-subtitle" style="margin-top: 1rem;">Topik apa yang ingin kamu gali secara visual?</p>
+                        
+                        <form id="chat-form" class="home-search-box">
+                            <i data-lucide="search" class="search-icon"></i>
+                            <input type="text" id="chat-input" placeholder="Apa yang ingin kamu pelajari hari ini?" autocomplete="off" required>
+                            <span class="kbd-shortcut">ctrl + k</span>
+                            <button type="submit" id="btn-send-message" class="home-search-btn" title="Cari / Eksplorasi">
+                                <i data-lucide="arrow-right"></i>
+                            </button>
+                        </form>
+
+                        <!-- FOMO Quota Section -->
+                        <div class="quota-banner" style="max-width: 540px; margin-bottom: 0;">
+                            <div class="quota-banner-top">
+                                <span class="quota-label">Early Access</span>
+                                <span class="quota-percent">38 / 50</span>
+                            </div>
+                            <div class="quota-bar-track">
+                                <div class="quota-bar-fill" style="width: 76%;"></div>
+                            </div>
+                            <div class="quota-banner-bottom">
+                                <span class="quota-status">Hanya 12 slot tersisa</span>
+                                <span class="quota-sub">Daftar sekarang</span>
+                            </div>
+                        </div>
+
+                        <div class="home-actions">
+                            <a href="/about.html" class="btn-learn-more">Pelajari Cara Kerjanya</a>
+                            <a href="/api/auth/google" class="btn-login-home" id="btn-login-home">Masuk untuk Menyimpan Peta</a>
                         </div>
                     </div>
                 </div>
