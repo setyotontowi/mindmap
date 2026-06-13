@@ -5752,6 +5752,11 @@ mark[data-note]::after {
     margin-left: 4px !important; /* Narrower margin in fullscreen */
 }
 
+#detail-drawer-overlay.fullscreen .drawer-col-materi {
+    padding: 2rem 10% !important;
+}
+
+
 
 
 
