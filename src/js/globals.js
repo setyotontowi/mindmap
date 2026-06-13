@@ -46,6 +46,7 @@ const iconMap = {
     'log-in': 'sign-in',
     'log-out': 'sign-out',
     'maximize-2': 'corners-out',
+    'minimize-2': 'corners-in',
     'message-square': 'chat-circle',
     'minus': 'minus',
     'more-vertical': 'dots-three-vertical',
