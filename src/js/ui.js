@@ -955,6 +955,10 @@ function initUIEventListeners() {
     if (btnToggleQa) {
         btnToggleQa.addEventListener('click', toggleDrawerQa);
     }
+    const btnToggleFullscreen = document.getElementById('btn-toggle-drawer-fullscreen');
+    if (btnToggleFullscreen) {
+        btnToggleFullscreen.addEventListener('click', toggleDrawerFullscreen);
+    }
 
     // 9. History Collapsible Toggler
     const btnToggleHistory = document.getElementById('btn-toggle-history');
@@ -1874,11 +1878,23 @@ function closeDetailDrawer() {
     if (header) header.classList.remove('header-hidden');
     if (bottomNav) bottomNav.classList.remove('nav-hidden');
 
+    // Reset fullscreen if closed
+    const overlay = document.getElementById('detail-drawer-overlay');
+    if (overlay) {
+        overlay.classList.remove('fullscreen');
+    }
+    const fsBtn = document.getElementById('btn-toggle-drawer-fullscreen');
+    if (fsBtn) {
+        fsBtn.innerHTML = '<i data-lucide="maximize-2"></i>';
+        fsBtn.setAttribute('title', 'Fullscreen');
+    }
+
     // Kembalikan ke layout standard (kecil) setelah transisi tutup selesai agar rapi untuk pemuatan berikutnya
     setTimeout(() => {
         drawer.style.width = ''; // Hapus inline width, kembali ke default CSS
         if (qaCol) qaCol.classList.add('collapsed');
         if (toggleBtn) toggleBtn.classList.remove('active');
+        if (window.lucide) window.lucide.createIcons();
     }, 300);
 }
 
@@ -2279,6 +2295,26 @@ function toggleDrawerQa() {
         qaCol.classList.add('collapsed');
         if (toggleBtn) toggleBtn.classList.remove('active');
         if (mobileToggleBtn) mobileToggleBtn.classList.remove('active');
+    }
+}
+
+function toggleDrawerFullscreen() {
+    const overlay = document.getElementById('detail-drawer-overlay');
+    const btn = document.getElementById('btn-toggle-drawer-fullscreen');
+    if (!overlay || !btn) return;
+
+    const isFullscreen = overlay.classList.toggle('fullscreen');
+    
+    if (isFullscreen) {
+        btn.innerHTML = '<i data-lucide="minimize-2"></i>';
+        btn.setAttribute('title', 'Exit Fullscreen');
+    } else {
+        btn.innerHTML = '<i data-lucide="maximize-2"></i>';
+        btn.setAttribute('title', 'Fullscreen');
+    }
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
     }
 }
 

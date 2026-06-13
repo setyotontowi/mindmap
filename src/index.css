@@ -3188,7 +3188,7 @@ mark[data-note]::after {
 
 #drawer-col-qa:not(.collapsed) {
     width: 400px !important;
-    margin-left: 16px !important;
+    margin-left: 8px !important;
     opacity: 1 !important;
     pointer-events: auto !important;
 }
@@ -5721,6 +5721,37 @@ mark[data-note]::after {
     position: relative;
     z-index: 2;
 }
+
+/* Fullscreen Detail Drawer Styles */
+#detail-drawer-overlay #detail-drawer:not(.resizing),
+#detail-drawer-overlay #drawer-col-qa {
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#detail-drawer-overlay.fullscreen {
+    align-items: stretch !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+#detail-drawer-overlay.fullscreen #detail-drawer {
+    flex: 1 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+}
+
+#detail-drawer-overlay.fullscreen #drawer-col-qa {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-right: none !important;
+    margin-left: 4px !important; /* Narrower margin in fullscreen */
+}
+
 
 
 
