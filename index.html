@@ -24,7 +24,10 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    </noscript>
     
     <!-- Custom Icon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -687,7 +690,7 @@
                             <p style="font-size: 0.72rem; color: var(--text-3); margin: 0;">Lacak aktivitas belajar (waktu baca, progress node) untuk statistik dan pengembangan fitur.</p>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="privacy-analytics-toggle" checked>
+                            <input type="checkbox" id="privacy-analytics-toggle" aria-label="Izinkan Analytics" checked>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -803,7 +806,7 @@
                 <div class="form-group" style="margin-top: 0.75rem;">
                     <label style="font-weight: 600; margin-bottom: 0.25rem;">Gaya Penulisan (Writing Style):</label>
                     <div style="display: flex; gap: 8px; margin-top: 5px;">
-                        <select id="regenerate-style-select" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
+                        <select id="regenerate-style-select" aria-label="Gaya Penulisan" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
                             <option value="auto">Otomatis (Auto)</option>
                             <option value="copywriting">Direct Copywriting</option>
                             <option value="seo">Technical & SEO Content</option>
@@ -817,7 +820,7 @@
                             <option value="playful">ELI5 & Gamified Quest</option>
                             <option value="historical">Historical & Evolutionary</option>
                         </select>
-                        <select id="regenerate-substyle-select" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
+                        <select id="regenerate-substyle-select" aria-label="Sub-Gaya Penulisan" style="flex: 1; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); outline: none; cursor: pointer;">
                             <option value="auto">Semua Sub-Gaya</option>
                         </select>
                     </div>
