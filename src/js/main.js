@@ -24,39 +24,27 @@ function initApp() {
     // Inisialisasi Canvas D3
     initD3Canvas();
 
-    // Periksa status login sebelum loadState
-    if (typeof checkAuthStatus === 'function') {
-        checkAuthStatus().then(() => {
-            // Restore mindmap dari sesi sebelumnya jika ada
-            loadState();
-            if (state.mindmapData) {
-                updateMindmap(state.mindmapData);
-                setTimeout(zoomFit, 100);
-                    
-                // Welcome message
-                const welcomeText = state.language === 'en'
-                    ? `Welcome back! Mindmap **${state.mindmapData.name}** has been restored from your last session. Let's continue learning! 📚`
-                    : `Selamat datang kembali! Mindmap **${state.mindmapData.name}** telah dipulihkan dari sesi terakhirmu. Lanjutkan belajar! 📚`;
-                appendChatMessage('bot', welcomeText);
-            }
-                
-            // Inisialisasi URL-based navigation
-            if (typeof initNavigation === 'function') {
-                initNavigation();
-            }
-        });
-    } else {
-        // Restore mindmap dari sesi sebelumnya jika ada
-        loadState();
-        if (state.mindmapData) {
-            updateMindmap(state.mindmapData);
-            setTimeout(zoomFit, 100);
-        }
+    // Restore mindmap dari sesi sebelumnya secara instan jika ada di local storage
+    loadState();
+    if (state.mindmapData) {
+        updateMindmap(state.mindmapData);
+        setTimeout(zoomFit, 100);
         
-        // Inisialisasi URL-based navigation
-        if (typeof initNavigation === 'function') {
-            initNavigation();
-        }
+        // Welcome message
+        const welcomeText = state.language === 'en'
+            ? `Welcome back! Mindmap **${state.mindmapData.name}** has been restored from your last session. Let's continue learning! 📚`
+            : `Selamat datang kembali! Mindmap **${state.mindmapData.name}** telah dipulihkan dari sesi terakhirmu. Lanjutkan belajar! 📚`;
+        appendChatMessage('bot', welcomeText);
+    }
+        
+    // Inisialisasi URL-based navigation
+    if (typeof initNavigation === 'function') {
+        initNavigation();
+    }
+
+    // Periksa status login di latar belakang secara asinkron tanpa memblokir pemuatan state
+    if (typeof checkAuthStatus === 'function') {
+        checkAuthStatus();
     }
 }
 

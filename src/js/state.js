@@ -204,9 +204,11 @@ async function syncFromDatabase(id = state.currentMindmapId) {
                 showSyncStatus('DB Kosong');
             }
         }
-        // Muat daftar riwayat
-        await loadHistoryList();
-        await fetchUserLibraryAndBookmarks();
+        // Muat daftar riwayat dan data sekunder secara asinkron (non-blocking) agar tidak memblokir render utama LCP
+        setTimeout(() => {
+            loadHistoryList();
+            fetchUserLibraryAndBookmarks();
+        }, 10);
     } catch (error) {
         console.warn('Gagal sinkron dari database PostgreSQL:', error);
         if (state.isOwner) {
@@ -544,7 +546,11 @@ async function fetchUserLibraryAndBookmarks() {
 
 async function fetchUserCollections() {
     try {
-        const res = await fetch('/api/collections');
+        const [res, bmkRes] = await Promise.all([
+            fetch('/api/collections'),
+            fetch('/api/bookmarks')
+        ]);
+
         if (res.ok) {
             const dbCollections = await res.json();
             if (dbCollections) {
@@ -558,13 +564,7 @@ async function fetchUserCollections() {
                 localStorage.setItem('app_library', JSON.stringify(state.library));
             }
         }
-    } catch (e) {
-        console.warn('Gagal fetch data collections dari DB:', e);
-    }
-    
-    // Bookmark fetch
-    try {
-        const bmkRes = await fetch('/api/bookmarks');
+
         if (bmkRes.ok) {
             const dbBookmarks = await bmkRes.json();
             if (dbBookmarks) {
@@ -573,7 +573,7 @@ async function fetchUserCollections() {
             }
         }
     } catch (e) {
-        console.warn('Gagal fetch data bookmarks dari DB:', e);
+        console.warn('Gagal fetch data collections/bookmarks dari DB:', e);
     }
     
     if (typeof window.renderLibraryGrid === 'function') {

@@ -774,6 +774,35 @@ a:hover { text-decoration: underline; }
     font-style: italic;
 }
 
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.markdown-body th,
+.markdown-body td {
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    text-align: left;
+}
+
+.markdown-body th {
+    background-color: var(--bg-subtle);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.markdown-body tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.015);
+}
+
+[data-theme="dark"] .markdown-body tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.015);
+}
+
 /* --- DRAWER NEW TWO-COLUMN LAYOUT & SIDE Q&A --- */
 .drawer-main-wrapper {
     display: flex;
