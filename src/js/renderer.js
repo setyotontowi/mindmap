@@ -8,11 +8,15 @@ const margin = { top: 20, right: 120, bottom: 20, left: 40 };
 
 // Fungsi helper untuk menghitung lebar node secara dinamis berdasarkan panjang judulnya
 function getNodeWidth(nodeData) {
+    const isMobile = window.innerWidth <= 768;
     const title = nodeData.name || '';
-    // Hitung lebar: base 110px + rata-rata 6.5px per karakter judul
-    const calculated = 110 + title.length * 6.5;
-    // Beri batas minimal 170px dan maksimal 290px
-    return Math.min(290, Math.max(170, Math.round(calculated)));
+    // Hitung lebar: base + rata-rata per karakter judul (lebih besar pada mobile)
+    const baseWidth = isMobile ? 140 : 110;
+    const charFactor = isMobile ? 7.5 : 6.5;
+    const minWidth = isMobile ? 210 : 170;
+    const maxWidth = isMobile ? 320 : 290;
+    const calculated = baseWidth + title.length * charFactor;
+    return Math.min(maxWidth, Math.max(minWidth, Math.round(calculated)));
 }
 
 function initD3Canvas() {
@@ -51,22 +55,26 @@ function initD3Canvas() {
         window.hasMindmapResizeListener = true;
     }
 
-    // Tree Layout Generator (Horizontal)
+    const isMobile = window.innerWidth <= 768;
+    // Tree Layout Generator (Horizontal) - Jarak vertikal & horizontal pada mobile disesuaikan
     treeLayout = d3.tree()
-        .nodeSize([115, 280]) // Jarak dasar vertikal 115px, horizontal 280px
+        .nodeSize(isMobile ? [120, 200] : [115, 280]) // Mobile vertikal 190px (2x lipat dari 95px)
         .separation((a, b) => {
+            if (isMobile) {
+                return a.parent === b.parent ? 1.05 : 1.8;
+            }
             // Jika mereka memiliki induk (parent) yang sama
             if (a.parent === b.parent) {
                 return 1.2; // Jarak vertikal 1.2 * 115px = 138px
             }
             // Jika berbeda induk (cabang bersebelahan), beri jarak yang lapang
-            // untuk mencegah tabrakan ketika salah satu cabang memiliki anak yang banyak
             return 2.5; // Jarak vertikal 2.5 * 115px = 287.5px
         });
 }
 
 // Fungsi helper untuk menghitung tinggi node secara dinamis berdasarkan konten teksnya
 function getNodeHeight(nodeData) {
+    const isMobile = window.innerWidth <= 768;
     const title = nodeData.name || '';
     const desc = nodeData.description || '';
     const currentWidth = getNodeWidth(nodeData);
@@ -82,11 +90,15 @@ function getNodeHeight(nodeData) {
         descLines = Math.min(2, Math.ceil(desc.length / charsPerLineDesc) || 1);
     }
     
-    // Base padding (32px) + tinggi judul + tinggi deskripsi
-    const calculated = 32 + (titleLines * 16) + (descLines * 14);
+    // Base padding + tinggi judul + tinggi deskripsi (lebih tinggi sedikit di mobile agar teks lega)
+    const basePadding = isMobile ? 38 : 32;
+    const titleLineHeight = isMobile ? 18 : 16;
+    const descLineHeight = isMobile ? 15 : 14;
+    const calculated = basePadding + (titleLines * titleLineHeight) + (descLines * descLineHeight);
     
-    // Batasi tinggi antara 76px (minimal) dan 110px (maksimal)
-    return Math.min(110, Math.max(76, calculated));
+    const minHeight = isMobile ? 86 : 76;
+    const maxHeight = isMobile ? 125 : 110;
+    return Math.min(maxHeight, Math.max(minHeight, calculated));
 }
 
 function getAncestorNodePath(root, targetName) {
@@ -148,6 +160,18 @@ function autoCollapseDeepNodes(node, currentDepth, maxDepth) {
 function updateMindmap(sourceData) {
     if (!sourceData) return;
 
+    // Refresh tree layout configuration based on current screen width
+    const isMobile = window.innerWidth <= 768;
+    if (treeLayout) {
+        treeLayout.nodeSize(isMobile ? [120, 200] : [115, 280])
+            .separation((a, b) => {
+                if (isMobile) {
+                    return a.parent === b.parent ? 1.05 : 1.8;
+                }
+                return a.parent === b.parent ? 1.2 : 2.5;
+            });
+    }
+
     // Sinkronisasi/render breadcrumbs
     if (typeof window.renderBreadcrumbs === 'function') {
         window.renderBreadcrumbs();
@@ -207,14 +231,15 @@ function updateMindmap(sourceData) {
 
     // 2. Tentukan koordinat y (horizontal) secara kumulatif berdasarkan lebar maksimum level sebelumnya
     const levelPositions = { 0: 0 };
+    const horizontalGap = isMobile ? 45 : 75; // Horizontal gap 2x lipat pada mobile (90px)
     rootNodeData.eachBefore(d => {
         if (d.depth === 0) {
             d.y = 0;
         } else {
             if (levelPositions[d.depth] === undefined) {
                 const prevLevel = d.depth - 1;
-                const prevMaxWidth = maxWidthsAtDepth[prevLevel] || 180;
-                levelPositions[d.depth] = levelPositions[prevLevel] + prevMaxWidth + 75; // 75px adalah gap horizontal dinamis yang lapang
+                const prevMaxWidth = maxWidthsAtDepth[prevLevel] || (isMobile ? 220 : 180);
+                levelPositions[d.depth] = levelPositions[prevLevel] + prevMaxWidth + horizontalGap;
             }
             d.y = levelPositions[d.depth];
         }
